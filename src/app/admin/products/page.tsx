@@ -20,6 +20,7 @@ const AdminList = () => {
     Categories: [],
     discountId: undefined,
     Options: [],
+    images: []
   });
   const [editMode, setEditMode] = useState<boolean>(false);
 

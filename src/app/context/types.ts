@@ -1,5 +1,3 @@
-import { File } from "buffer";
-
 export interface Product {
   id: number;
   name: string;
@@ -10,8 +8,8 @@ export interface Product {
   weight: number;
   discountId?: number;
   Categories: Category[];
-  Options?: number[];
-  images?: Image[];
+  Options?: Option[];
+  images: Image[];
 }
 
 export interface Category {

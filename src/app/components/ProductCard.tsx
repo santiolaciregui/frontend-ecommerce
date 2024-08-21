@@ -4,7 +4,6 @@ import { useCart } from "../context/CartContext";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import DOMPurify from 'isomorphic-dompurify';
 import Add from "./Add";
 
 interface Props {
@@ -29,14 +28,14 @@ const ProductCard = ({ product }: Props) => {
           </div>
         )}
         <Image
-          src={product.url || 'logo-verde-manzana.svg'}
+          src={product.images[0].url || 'logo-verde-manzana.svg'}
           alt=""
           layout="fill"
           sizes="25vw"
           className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity ease duration-500"
         />
-        {product.media?.items && <Image
-          src={product.media?.items[1]?.image?.url || 'logo-verde-manzana.svg'}
+        {product.images && <Image
+          src={product.images[1]?.url || 'logo-verde-manzana.svg'}
           alt=""
           layout="fill"
           sizes="25vw"
@@ -61,7 +60,7 @@ const ProductCard = ({ product }: Props) => {
       <Add 
         product={product} 
         variantId='000000-0000-00000-00000-000000000' 
-        stockNumber={product.stock?.quantity || 0}
+        stockNumber={product.stock || 0}
         quantity={1}
       />
     </Link>
