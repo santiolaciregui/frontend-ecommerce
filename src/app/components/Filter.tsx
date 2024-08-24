@@ -6,7 +6,7 @@ import { Category } from "../context/types";
 
 const Filter = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { replace } = useRouter();
@@ -24,9 +24,9 @@ const Filter = () => {
     loadCategories();
   }, []);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-    const { name, value, checked } = e.target;
-    
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, checked } = e.target as HTMLInputElement;
+
     if (name === 'category') {
       if (checked) {
         setSelectedCategories(prev => [...prev, value]);
