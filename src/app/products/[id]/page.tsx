@@ -75,7 +75,7 @@ const SinglePage = () => {
               <p>{product.description}</p>
             </div>
           ) : (
-            <h4 className="font-medium mb-4">Sin Información Adicion</h4>
+            <h4 className="font-medium mb-4">Sin Información Adicional</h4>
           )}
         </div>
       </div>

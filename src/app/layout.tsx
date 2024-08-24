@@ -34,25 +34,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-
     <html lang="en">
-
-      <body className={inter.className}>
-        
-        <div>
-          <Alert text='OFERTAS -  12 cuotas sin interes - 12 cuotas sin interés | 12% descuento con transferencia | GoCuotas 5% de descuento' />
-          <CartProvider>
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <Alert text='OFERTAS -  12 cuotas sin interes - 12 cuotas sin interés | 12% descuento con transferencia | GoCuotas 5% de descuento' />
+        <CartProvider>
           <UserProvider>
-          
             <Navbar />
-            {children}
+            <main className="flex-grow">
+              {children}
+            </main>
             <Footer/>
-            
           </UserProvider>
-          </CartProvider>
-          </div>
+        </CartProvider>
       </body>
     </html>
-
   );
 }

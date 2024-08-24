@@ -20,7 +20,7 @@ const AdminList = () => {
     Categories: [],
     discountId: undefined,
     Options: [],
-    images: []
+    images: [],
   });
   const [editMode, setEditMode] = useState<boolean>(false);
 
@@ -70,9 +70,9 @@ const AdminList = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Lista de Productos</h2>
           <Link 
-              href='/admin/create' className="w-36 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200"
+              href='/admin/products/create' className="w-36 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200"
           >
-              Añadir Productos
+              Añadir Producto
           </Link>
         </div>
 
@@ -92,8 +92,7 @@ const AdminList = () => {
                 <td className="px-6 py-4 border-b">{product.SKU}</td>
                 <td className="px-6 py-4 border-b">{product.name}</td>
                 <td className="px-6 py-4 border-b">
-                  {product.Categories?.toString()}
-                  {/* {categories.find(category => category.id === product.categories)?.name} */}
+                  {product.Categories.map(category => category.name).join(', ')}
                 </td>
                 <td className="px-6 py-4 border-b">${product.price}</td>
                 <td className="px-6 py-4 border-b">

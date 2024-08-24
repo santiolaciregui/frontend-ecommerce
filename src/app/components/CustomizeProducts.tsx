@@ -57,19 +57,21 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
   };
 
   const handleAddToCart = () => {
-    // Creamos un CartItem basado en el producto y las opciones seleccionadas
+    const selectedOptionsArray = Object.keys(selectedOptions).map((key) => {
+      const option = options.find(opt => opt.name === selectedOptions[key]);
+      return option as Option;
+    });
+
     const cartItem = {
       product,
-      variantId: Object.values(selectedOptions).join('-'), // Creamos un ID de variante basado en las opciones seleccionadas
+      options: selectedOptionsArray,
       quantity
     };
 
-    // Añadimos el CartItem al carrito
     addToCart(cartItem);
 
-    // Actualizamos el stock localmente
     setStockNumber((prevStock) => prevStock - quantity);
-    setQuantity(1); // Reiniciamos la cantidad a 1 después de agregar al carrito
+    setQuantity(1);
   };
 
   // Agrupar opciones por tipo

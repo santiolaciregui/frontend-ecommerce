@@ -1,12 +1,15 @@
-'use client';
+'use client'
 import React, { useState, useEffect } from 'react';
 import apiService from "../../../pages/api/products";
 import Image from 'next/image';
 import { Category, Product } from '@/app/context/types';
+import { createDiscount } from "../../../pages/api/discount";
 
 interface DiscountForm {
   name: string;
   discount_percent: number;
+  description: string;
+  active: string;  // Cambio a string para manejar el select
   category_id?: number;
   selectedProducts: number[];
 }
@@ -17,12 +20,15 @@ const DiscountForm = () => {
   const [formData, setFormData] = useState<DiscountForm>({
     name: '',
     discount_percent: 0,
+    description: '',
+    active: 'true', // Valor por defecto como string
     category_id: undefined,
     selectedProducts: [],
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -44,7 +50,7 @@ const DiscountForm = () => {
     fetchInitialData();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -62,10 +68,36 @@ const DiscountForm = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Send formData to the server using an appropriate service
-    console.log('Submitted Data', formData);
+    setLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const discountData = {
+        name: formData.name,
+        percentage: formData.discount_percent,
+        description: formData.description,
+        active: formData.active === 'true', // Convertimos el string a booleano
+        selectedProducts: formData.selectedProducts
+      };
+      await createDiscount(discountData);
+      setSuccessMessage('Descuento creado con éxito');
+      setFormData({
+        name: '',
+        discount_percent: 0,
+        description: '',
+        active: 'true',
+        category_id: undefined,
+        selectedProducts: [],
+      });
+    } catch (err) {
+      setError('Error al crear el descuento');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -94,6 +126,30 @@ const DiscountForm = () => {
             className="mt-1 block w-full p-2 border border-gray-300 rounded"
             required
           />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Descripción</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            rows={3}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Activo</label>
+          <select
+            name="active"
+            value={formData.active}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+          >
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
         </div>
 
         <div className="mb-4">
@@ -130,11 +186,11 @@ const DiscountForm = () => {
                   className="mr-2"
                 />
                 <div className="flex items-center space-x-4">
-                {product && product.images ? ( 
-                  <Image src={product.images[0].url || 'logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
-                ) : (
+                  {product && product.images ? ( 
+                    <Image src={product.images[0].url || '/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
+                  ) : (
                     <Image src={'/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
-                )}
+                  )}
                   <div>
                     <h4 className="text-sm font-medium">{product.name}</h4>
                     <p className="text-xs text-gray-500">
@@ -155,6 +211,7 @@ const DiscountForm = () => {
           {loading ? 'Guardando...' : 'Guardar Descuento'}
         </button>
         {error && <p className="mt-4 text-red-500">{error}</p>}
+        {successMessage && <p className="mt-4 text-green-500">{successMessage}</p>}
       </form>
     </div>
   );

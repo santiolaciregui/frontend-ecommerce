@@ -1,4 +1,8 @@
 {
-  "/success/page": "app/success/page.js",
+  "/admin/discount/create/page": "app/admin/discount/create/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/products/page": "app/admin/products/page.js",
+  "/admin/products/create/page": "app/admin/products/create/page.js",
+  "/products/page": "app/products/page.js",
   "/api/auth/[auth0]/route": "app/api/auth/[auth0]/route.js"
 }

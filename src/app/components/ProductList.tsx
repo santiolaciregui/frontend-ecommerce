@@ -36,7 +36,7 @@ const ProductList = ({ products, currentPage, hasPrev, hasNext, searchParams }: 
   return (
     <div className='mt-12 flex gap-x-8 gap-y-8 justify-start flex-wrap'>
       {products.map((product) => (
-        <ProductCard product={product}/>
+        <ProductCard product={product} key={product.id}/>
       ))}
       <Pagination 
         currentPage={currentPage} 

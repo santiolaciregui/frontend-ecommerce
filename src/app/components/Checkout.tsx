@@ -1,18 +1,27 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import AddressAutocomplete from './AddressAutocomplete';
-import { AddressDetails } from './AddressAutocomplete';
+import AddressAutocomplete, { AddressDetails } from './AddressAutocomplete';
+import axios from 'axios';
+import { CreditCard } from '../context/types';
 
 const Checkout: React.FC = () => {
+  const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
   const [deliveryOption, setDeliveryOption] = useState('delivery');
-  const [paymentOption, setPaymentOption] = useState('payment');
+  const [paymentOption, setPaymentOption] = useState('credit_card');
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [zip, setZip] = useState('');
   const [shippingCost, setShippingCost] = useState(5000); // Default shipping cost
-  const { cart, getTotalCart } = useCart();
+  const { cart, getTotalCart, clearCart } = useCart();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (deliveryOption === 'pickup') {
@@ -22,11 +31,70 @@ const Checkout: React.FC = () => {
     }
   }, [deliveryOption]);
 
+  useEffect(() => {
+    const fetchCreditCards = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get('/api/credit-cards'); // Reemplaza con la ruta correcta
+        setCreditCards(response.data); // Asumiendo que el array de tarjetas está en response.data
+      } catch (err) {
+        setError('Error fetching credit cards');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCreditCards();
+  }, []);
+
   const handleAddressSelect = (addressDetails: AddressDetails) => {
     setAddress(addressDetails.address);
     setCity(addressDetails.city);
     setProvince(addressDetails.province);
     setZip(addressDetails.zip);
+  };
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    const orderData = {
+      email,
+      firstName,
+      lastName,
+      phone,
+      shippingAddress: {
+        address,
+        city,
+        province,
+        zip,
+      },
+      deliveryOption,
+      paymentOption,
+      shippingCost,
+      totalAmount: getTotalCart() + shippingCost,
+      cartItems: cart.map(item => ({
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+        },
+        quantity: item.quantity,
+        options: item.options,
+      })),
+    };
+
+    try {
+      const response = await axios.post('/api/orders', orderData);
+      setSuccess('Order placed successfully!');
+      clearCart();
+    } catch (err) {
+      setError('There was an error processing your order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,6 +105,9 @@ const Checkout: React.FC = () => {
           <a href="/products" className="text-blue-500 hover:underline">Continuar comprando</a>
         </div>
 
+        {error && <p className="text-red-500">{error}</p>}
+        {success && <p className="text-green-500">{success}</p>}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <h2 className="text-xl font-semibold mb-4">Datos de contacto</h2>
@@ -44,19 +115,47 @@ const Checkout: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1" htmlFor="email">Email *</label>
-                  <input type="email" id="email" className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" htmlFor="firstName">Nombre *</label>
-                  <input type="text" id="firstName" className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                  <input
+                    type="text"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" htmlFor="lastName">Apellido *</label>
-                  <input type="text" id="lastName" className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                  <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1" htmlFor="phone">Teléfono *</label>
-                  <input type="tel" id="phone" className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
                 </div>
               </div>
 
@@ -95,15 +194,36 @@ const Checkout: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1" htmlFor="city">Ciudad *</label>
-                      <input type="text" id="city" value={city} className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                      <input
+                        type="text"
+                        id="city"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1" htmlFor="province">Provincia *</label>
-                      <input type="text" id="province" value={province} className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                      <input
+                        type="text"
+                        id="province"
+                        value={province}
+                        onChange={(e) => setProvince(e.target.value)}
+                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1" htmlFor="zip">CP *</label>
-                      <input type="text" id="zip" value={zip} className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                      <input
+                        type="text"
+                        id="zip"
+                        value={zip}
+                        onChange={(e) => setZip(e.target.value)}
+                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
                     </div>
                   </div>
                 )}
@@ -143,9 +263,32 @@ const Checkout: React.FC = () => {
                       onChange={() => setPaymentOption('personal_credit')}
                       className="mr-2"
                     />
-                    Credito Personal 
+                    Credito Personal
                   </label>
                 </div>
+                {paymentOption === 'credit_card' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Seleccione su tarjeta *</label>
+                      <select
+                        id="creditCard"
+                        name="creditCard"
+                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                        onChange={(e) => console.log('Selected card:', e.target.value)}
+                      >
+                        <option value="" disabled selected>Seleccione una tarjeta</option>
+                        {creditCards.map((card) => (
+                          <option key={card.id} value={card.id}>
+                            {card.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+
               </div>
             </form>
           </div>
@@ -177,7 +320,7 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
             </div>
-            <button className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600">Finalizar compra</button>
+            <button onClick={handleCheckout} className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600">Finalizar compra</button>
           </div>
         </div>
       </div>

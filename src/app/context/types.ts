@@ -6,10 +6,11 @@ export interface Product {
   SKU: string;
   stock: number;
   weight: number;
-  discountId?: number;
+  Discounts?: Discount[];
   Categories: Category[];
   Options?: Option[];
   images: Image[];
+  getFinalPrice: () => Promise<number>;
 }
 
 export interface Category {
@@ -30,7 +31,7 @@ export interface Image {
 
 export interface CartItem {
   product: Product;
-  variantId: string;
+  options: Option[];
   quantity: number;
 }
 
@@ -50,4 +51,10 @@ export interface Promotion {
   start_date: string;
   end_date: string;
 }
+
+export interface CreditCard {
+  id: number;
+  name: string;
+}
+
 
