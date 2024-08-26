@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const ProductImages = ({ items }: { items: any }) => {
     const [index, setIndex] = useState(0);
-    const API_URL = 'http://localhost:8002'
+    const API_URL = 'https://backend-ecommerce-aecr.onrender.com'
     return (
         <div>
             <div className="h-[500px] relative">

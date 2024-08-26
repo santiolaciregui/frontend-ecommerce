@@ -27,7 +27,7 @@ const ProductCard = ({ product }: Props) => {
   // Calcular la cuota mensual (ejemplo: 12 meses)
   const monthlyInstallment = (parseFloat(finalPrice) / 12).toFixed(2);
 
-  const API_URL = 'http://localhost:8002'
+  const API_URL = 'https://backend-ecommerce-aecr.onrender.com'
 
   return (
     <Link href={'/products/' + product.id} className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[22%]" key={product.id}>

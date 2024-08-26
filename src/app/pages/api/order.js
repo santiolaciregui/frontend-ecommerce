@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8002'; // Cambia esto según tu configuración de backend
+const API_BASE_URL = 'https://backend-ecommerce-aecr.onrender.com';  // Cambia esto según tu configuración de backend
 
 // Obtener todas las órdenes
 export const fetchOrders = async () => {
