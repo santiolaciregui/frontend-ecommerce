@@ -186,8 +186,8 @@ const DiscountForm = () => {
                   className="mr-2"
                 />
                 <div className="flex items-center space-x-4">
-                  {product && product.images ? ( 
-                    <Image src={product.images[0].url || '/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
+                  {product && product.Images ? ( 
+                    <Image src={product.Images[0].url || '/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
                   ) : (
                     <Image src={'/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
                   )}

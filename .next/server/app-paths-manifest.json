@@ -1,8 +1,10 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/products/create/page": "app/admin/products/create/page.js",
   "/products/page": "app/products/page.js",
   "/products/[id]/page": "app/products/[id]/page.js",
-  "/api/auth/[auth0]/route": "app/api/auth/[auth0]/route.js"
+  "/admin/page": "app/admin/page.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/admin/orders/page": "app/admin/orders/page.js",
+  "/admin/promotions/page": "app/admin/promotions/page.js",
+  "/admin/orders/[id]/page": "app/admin/orders/[id]/page.js",
+  "/page": "app/page.js"
 }
