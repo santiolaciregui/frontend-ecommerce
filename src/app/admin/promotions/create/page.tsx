@@ -208,8 +208,8 @@ const CreatePromotion = () => {
                   className="mr-2"
                 />
                 <div className="flex items-center space-x-4">
-                  {product.images ? (
-                    <Image src={product.images[0].url} alt={product.name} width={50} height={50} className="rounded" />
+                  {product.Images ? (
+                    <Image src={product.Images[0].url} alt={product.name} width={50} height={50} className="rounded" />
                   ) : (
                     <Image src={'/logo-verde-manzana.png'} alt={product.name} width={50} height={50} className="rounded" />
                   )}

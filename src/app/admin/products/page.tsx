@@ -18,9 +18,10 @@ const AdminList = () => {
     stock: 0,
     weight: 0,
     Categories: [],
-    discountId: undefined,
+    Discounts: [],
     Options: [],
-    images: [],
+    Images: [],
+    getFinalPrice: async () => 0
   });
   const [editMode, setEditMode] = useState<boolean>(false);
 

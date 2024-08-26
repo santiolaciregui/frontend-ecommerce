@@ -1,6 +1,5 @@
 import { createContext } from "react";
-import { Product, Variant } from "./types";
-import { noop } from "@/helpers/utils";
+import { Product } from "./types";
 
 export type CartItem = {
   product: Product;
@@ -26,10 +25,10 @@ type ShoppingCartContextType = {
 
 const ShoppingCartContext = createContext<ShoppingCartContextType>({
   cartItems: [],
-  addToCart: noop,
-  removeFromCart: noop,
-  updateCartItemQuantity: noop,
-  clearCart: noop,
+  addToCart: () => {},
+  removeFromCart: () => {},
+  updateCartItemQuantity: () => {},
+  clearCart: () => {},
 });
 
 export default ShoppingCartContext;
