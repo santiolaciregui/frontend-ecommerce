@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend-ecommerce-aecr.onrender.com/'; 
+const API_BASE_URL = 'https://backend-ecommerce-aecr.onrender.com'; 
 
 // Obtener todas las categorías
 export const fetchCategories = async () => {

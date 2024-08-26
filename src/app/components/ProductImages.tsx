@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const ProductImages = ({ items }: { items: any }) => {
     const [index, setIndex] = useState(0);
-    const API_URL = 'https://backend-ecommerce-aecr.onrender.com'
+    const API_URL = 'https://backend-ecommerce-aecr.onrender.com';  // Update this URL if your backend is hosted elsewhere
     return (
         <div>
             <div className="h-[500px] relative">
@@ -23,7 +23,7 @@ const ProductImages = ({ items }: { items: any }) => {
                         key={item.id}
                         onClick={() => setIndex(i)}>
                         <Image
-                            src={`http://localhost:8002${item.url}`} // Usa la URL completa con el host del backend
+                            src={`${API_URL}${item.url}`} // Usa la URL completa con el host del backend
                             alt={item.altText || 'Product Thumbnail'}
                             fill
                             sizes='30vw'
