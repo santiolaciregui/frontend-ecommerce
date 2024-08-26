@@ -67,9 +67,9 @@ const OrderDetails: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4">Productos en la Orden</h2>
         <div className="border p-4 rounded-md space-y-4">
           {order.OrderItems.map((item) => (
-            <div key={item.id} className="flex justify-between items-center">
+            <div key={item.OrderItem.id} className="flex justify-between items-center">
               <div>
-                <span>{item.productName}</span>
+                <span>{item.OrderItem.productName}</span>
                 <span className="text-gray-500 ml-2">x {item.quantity}</span>
               </div>
               <span>${item.totalPrice}</span>
