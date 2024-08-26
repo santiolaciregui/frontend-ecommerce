@@ -9,7 +9,7 @@ export interface Product {
   Discounts?: Discount[];
   Categories: Category[];
   Options?: Option[];
-  images: Image[];
+  Images: Image[];
   getFinalPrice: () => Promise<number>;
 }
 

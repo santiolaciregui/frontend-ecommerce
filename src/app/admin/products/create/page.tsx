@@ -101,13 +101,25 @@ const CreateProduct = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(JSON.stringify(formData));
+    setLoading(true);
+  
     try {
-      setLoading(true);
-      await apiServiceProducts.createProduct(formData);
+      console.log(formData);
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('SKU', String(formData.SKU));
+      data.append('description', formData.description);
+      data.append('price', String(formData.price));
+      data.append('stock', String(formData.stock));
+      data.append('weight', String(formData.weight));
+      formData.categoryIds.forEach((id) => data.append('categoryIds', String(id)));
+      formData.optionIds.forEach((id) => data.append('optionIds', String(id)));
+      formData.images.forEach((file) => data.append('images', file));
+  
+      const response = await apiServiceProducts.createProduct(data);
       alert(editMode ? 'Producto actualizado con éxito' : 'Producto creado con éxito');
     } catch (err) {
-      setError('Error al crear la promoción');
+      setError('Error al crear el producto');
       console.error(err);
     } finally {
       setLoading(false);

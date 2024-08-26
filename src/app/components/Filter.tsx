@@ -6,7 +6,7 @@ import { Category } from "../context/types";
 
 const Filter = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { replace } = useRouter();
@@ -24,23 +24,20 @@ const Filter = () => {
     loadCategories();
   }, []);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, checked } = e.target as HTMLInputElement;
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setSelectedCategory(value);
 
-    if (name === 'category') {
-      if (checked) {
-        setSelectedCategories(prev => [...prev, value]);
-      } else {
-        setSelectedCategories(prev => prev.filter(cat => cat !== value));
-      }
-    }
-    
     const params = new URLSearchParams(searchParams);
-    if (name === 'category') {
-      params.set('categories', selectedCategories.join(','));
-    } else {
-      params.set(name, value);
-    }
+    params.set('categoryId', value);
+    replace(`${pathname}?${params.toString()}`);
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    const params = new URLSearchParams(searchParams);
+    params.set(name, value);
     replace(`${pathname}?${params.toString()}`);
   }
 
@@ -48,7 +45,7 @@ const Filter = () => {
     <div className='mt-12 flex flex-col gap-6 p-4 bg-gray-100 rounded-lg'>
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Ordenar por</h2>
-        <select name="sort" className="py-2 px-4 rounded-md text-sm bg-white" onChange={handleFilterChange}>
+        <select name="sort" className="py-2 px-4 rounded-md text-sm bg-white" onChange={handleInputChange}>
           <option>Más relevantes</option>
           <option value="price-asc">Precio: Menor a Mayor</option>
           <option value="price-desc">Precio: Mayor a Menor</option>
@@ -64,26 +61,25 @@ const Filter = () => {
       
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Precio</h2>
-        <input type="number" name="min" placeholder="Min" className="py-2 px-4 rounded-md text-sm bg-white border" onChange={handleFilterChange} />
-        <input type="number" name="max" placeholder="Max" className="py-2 px-4 rounded-md text-sm bg-white border" onChange={handleFilterChange} />
+        <input type="number" name="min" placeholder="Min" className="py-2 px-4 rounded-md text-sm bg-white border" onChange={handleInputChange} />
+        <input type="number" name="max" placeholder="Max" className="py-2 px-4 rounded-md text-sm bg-white border" onChange={handleInputChange} />
       </div>
       
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Categorías</h2>
-        <div className="flex flex-col gap-1">
+        <select
+          name="category"
+          className="py-2 px-4 rounded-md text-sm bg-white border"
+          value={selectedCategory || ""}
+          onChange={handleCategoryChange}
+        >
+          <option value="">Selecciona una categoría</option>
           {categories.map(category => (
-            <label key={category.id} className="text-sm">
-              <input
-                type="checkbox"
-                name="category"
-                value={category.id}
-                className="mr-2"
-                onChange={handleFilterChange}
-              />
+            <option key={category.id} value={category.id}>
               {category.name}
-            </label>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
     </div>
   );

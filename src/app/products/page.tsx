@@ -6,7 +6,7 @@ import apiService from "../pages/api/products";
 import Spinner from '../components/Spinner';
 
 const ListPage = ({ searchParams }: { searchParams: any }) => {
-  const categoryId = 1;//CAMBIAR POR CATEGORIA SELECCIONADA 
+  const categoryId = searchParams.categoryId; 
   const [products, setProducts] = useState([]);
   
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;

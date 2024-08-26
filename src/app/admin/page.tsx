@@ -58,6 +58,15 @@ const AdminMenu = () => {
           </div>
         </div>
 
+          {/* Administración de Ordenes */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+          <h2 className="text-lg font-semibold mb-4">Administración de Ordenes</h2>
+          <div className="space-y-4">
+            <Link href="/admin/orders" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+              Ver Ordenes de Compra
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

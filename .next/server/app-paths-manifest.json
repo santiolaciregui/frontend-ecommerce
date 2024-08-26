@@ -1,7 +1,8 @@
 {
-  "/admin/discount/create/page": "app/admin/discount/create/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/admin/page": "app/admin/page.js",
-  "/admin/products/page": "app/admin/products/page.js",
   "/admin/products/create/page": "app/admin/products/create/page.js",
-  "/products/page": "app/products/page.js"
+  "/products/page": "app/products/page.js",
+  "/products/[id]/page": "app/products/[id]/page.js",
+  "/api/auth/[auth0]/route": "app/api/auth/[auth0]/route.js"
 }

@@ -45,22 +45,46 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [cart, isInitialLoad]);
 
   const addToCart = (item: CartItem) => {
+    // Calcular el precio final del producto
+    const currentPrice = item.product.price;
+  
+    // Filtrar los descuentos activos
+    const activeDiscounts = item.product.Discounts?.filter(discount => discount.active);
+  
+    // Si existen descuentos activos, selecciona el de mayor porcentaje
+    const bestDiscount = activeDiscounts?.reduce((max, discount) => 
+      discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
+  
+    // Calcular el precio final aplicando el descuento si lo hay
+    const finalPrice = bestDiscount
+      ? currentPrice * (1 - bestDiscount.percentage / 100)
+      : currentPrice;
+  
+    // Actualiza el producto con el precio final
+    const updatedItem = {
+      ...item,
+      product: {
+        ...item.product,
+        price: finalPrice,
+      },
+    };
+  
     setCart((prevCart) => {
       const existingItem = prevCart.find(
         (cartItem) =>
-          cartItem.product.id === item.product.id &&
-          JSON.stringify(cartItem.options) === JSON.stringify(item.options)
+          cartItem.product.id === updatedItem.product.id &&
+          JSON.stringify(cartItem.options) === JSON.stringify(updatedItem.options)
       );
   
       if (existingItem) {
         return prevCart.map((cartItem) =>
-          cartItem.product.id === item.product.id &&
-          JSON.stringify(cartItem.options) === JSON.stringify(item.options)
-            ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+          cartItem.product.id === updatedItem.product.id &&
+          JSON.stringify(cartItem.options) === JSON.stringify(updatedItem.options)
+            ? { ...cartItem, quantity: cartItem.quantity + updatedItem.quantity }
             : cartItem
         );
       } else {
-        return [...prevCart, item];
+        return [...prevCart, updatedItem];
       }
     });
   };
