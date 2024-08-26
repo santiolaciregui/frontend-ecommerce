@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend-ecommerce-aecr.onrender.com'; 
+const API_BASE_URL = 'http://localhost:8002'; 
 
 
 export const fetchOptions = async () => {

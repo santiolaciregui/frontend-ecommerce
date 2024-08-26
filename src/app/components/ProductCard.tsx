@@ -27,27 +27,32 @@ const ProductCard = ({ product }: Props) => {
   // Calcular la cuota mensual (ejemplo: 12 meses)
   const monthlyInstallment = (parseFloat(finalPrice) / 12).toFixed(2);
 
+  const API_URL = 'http://localhost:8002'
 
-  const API_URL = "http://localhost:3000"
   return (
     <Link href={'/products/' + product.id} className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[22%]" key={product.id}>
       <div className="relative w-full h-80">
-  {discountPercentage && (
-    <div className="absolute top-2 left-2 bg-green-500 text-white text-sm font-bold py-1 px-2 rounded z-20">
-      {discountPercentage}% OFF 
-    </div>
-  )}
-  
-  {/* Muestra la imagen del producto si existe, de lo contrario muestra el logo */}
-      <Image
-        src={product.Images?.length > 0 ? `${API_URL}${product.Images[0].url}` : '/logo-verde-manzana.svg'}
-        alt={product.Images?.length > 0 ?  'Product Image' : 'Logo'}
-        layout="fill"
-        sizes="25vw"
-        className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity ease duration-500"
-      />
-    </div>
-
+        {discountPercentage && (
+          <div className="absolute top-2 left-2 bg-green-500 text-white text-sm font-bold py-1 px-2 rounded z-20">
+            {discountPercentage}% OFF
+          </div>
+        )}
+        <Image
+          src={'logo-verde-manzana.svg'}
+          alt=""
+          layout="fill"
+          sizes="25vw"
+          className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity ease duration-500"
+        />
+        {product.Images[0] && <Image
+          src={`${API_URL}${product.Images[0].url}`} 
+          alt=""
+          layout="fill"
+          sizes="25vw"
+          className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity ease duration-500"
+          unoptimized
+        />}
+      </div>
       <div className="flex justify-between items-center">
         <span className="font-medium">{product.name}</span>
         <div className="flex items-center space-x-2">
@@ -59,7 +64,7 @@ const ProductCard = ({ product }: Props) => {
       </div>
       
       <div className="text-center text-orange-600 font-semibold text-sm">
-        12 cuotas sin interés de ${monthlyInstallment} 
+        12 cuotas sin interés de ${monthlyInstallment}
       </div>
 
       <Add 
