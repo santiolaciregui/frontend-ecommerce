@@ -36,7 +36,6 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
 
   return (
     <div className="mt-12 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative">
-      <h1>{'All Products'}</h1>
       <div className="flex flex-col md:flex-row gap-4">
         <div className="hidden md:block md:w-1/4">
             <Filter />

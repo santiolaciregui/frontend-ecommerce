@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/products/page": [
+    "/admin/products/create/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/products/page.js"
+      "static/chunks/app/admin/products/create/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",

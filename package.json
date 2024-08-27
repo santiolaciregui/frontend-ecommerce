@@ -19,6 +19,7 @@
     "react-confetti": "^6.1.0",
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
+    "react-multi-select-component": "^4.3.4",
     "react-sortablejs": "^6.1.4",
     "resend": "^4.0.0",
     "sortablejs": "^1.15.2"

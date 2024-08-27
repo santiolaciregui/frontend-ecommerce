@@ -4,26 +4,41 @@ import { useParams, useRouter } from 'next/navigation';
 import orderService from '../../../pages/api/order';
 
 interface OrderDetails {
-    id: number;
-    orderNumber: string;
-    email: string;
-    totalAmount: number;
-    shippingAddress: string | null;
-    paymentFormat: string;
-    createdAt: string;
-    OrderItems: {
-      OrderItem: {
-        id: number;
-        productName: string;
-        price: number;
-      };
+  id: number;
+  orderNumber: string;
+  email: string;
+  totalAmount: number;
+  shippingAddress: string | null;
+  paymentFormat: string;
+  createdAt: string;
+  OrderItems: {
+      id: number;  // This is directly within the OrderItems array based on your JSON
+      productName: string;
       quantity: number;
+      unitPrice: number;
       totalPrice: number;
-    }[];
-  }
+      options: any[];  // Depending on the structure, you can define a more specific type
+      createdAt: string;
+      updatedAt: string;
+      orderId: number;
+      productId: number;
+      Product: {
+          id: number;
+          SKU: number;
+          name: string;
+          description: string;
+          price: number;
+          stock: number;
+          weight: number;
+          createdAt: string;
+          updatedAt: string;
+      };
+  }[];
+}
+
 
 const OrderDetails: React.FC = () => {
-  const [order, setOrder] = useState<OrderDetails>();
+  const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -33,8 +48,7 @@ const OrderDetails: React.FC = () => {
     const fetchOrderDetails = async () => {
       setLoading(true);
       try {
-        const orderDetails = await orderService.fetchOrderById( id );
-        console.log(JSON.stringify(orderDetails));
+        const orderDetails = await orderService.fetchOrderById(id);
         setOrder(orderDetails);
       } catch (err) {
         setError('Error fetching order details');
@@ -67,9 +81,9 @@ const OrderDetails: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4">Productos en la Orden</h2>
         <div className="border p-4 rounded-md space-y-4">
           {order.OrderItems.map((item) => (
-            <div key={item.OrderItem.id} className="flex justify-between items-center">
+            <div key={item.id} className="flex justify-between items-center">
               <div>
-                <span>{item.OrderItem.productName}</span>
+                <span>{item.Product.name}</span>
                 <span className="text-gray-500 ml-2">x {item.quantity}</span>
               </div>
               <span>${item.totalPrice}</span>
@@ -78,7 +92,7 @@ const OrderDetails: React.FC = () => {
         </div>
         <button
           className="mt-8 bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
-          onClick={() => router.push('/orders')}
+          onClick={() => router.push('/admin/orders')}
         >
           Volver al listado de órdenes
         </button>

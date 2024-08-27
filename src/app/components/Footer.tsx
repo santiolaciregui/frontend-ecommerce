@@ -4,7 +4,7 @@ import Link from "next/link"
 
 const Footer = () => {
     return (
-    <div className='py-8 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 bg-gray-100 text-sm'>
+    <div className='py-8 px-4 md:px-8 lg:px-16 mt-10 xl:px-32 2xl:px-64 bg-gray-100 text-sm '>
         {/* TOP */}
         <div className='flex justify-between gap-24'>
           {/* LEFT */}
@@ -22,7 +22,7 @@ const Footer = () => {
 
             </div>
           </div>
-          {/* CENTER */}
+          {/* CENTER
           <div className='hidden lg:flex justify-between w-1/2'>
             <div className="flex flex-col justify-between">
               <h1 className="font-medium text-lg">COMPANY</h1>
@@ -32,7 +32,7 @@ const Footer = () => {
                 <Link href=''>Contactanos</Link>
               </div>
             </div>
-          </div>
+          </div> */}
           {/* RIGTH */}
           <div className='w-full md:w-1/2 lg:w-1/4 flex flex-col gap-8'>
             <h1 className="font-medium text-lg">SEGUINOS</h1>
