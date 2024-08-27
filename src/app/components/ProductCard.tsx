@@ -26,7 +26,7 @@ const ProductCard = ({ product }: Props) => {
 
 
   return (
-    <Link href={'/products/' + product.id} className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[22%]" key={product.id}>
+  <Link href={'/products/' + product.id} className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[30%]" key={product.id}>
       <div className="relative w-full h-80 group">
         {discountPercentage && (
           <div className="absolute top-2 left-2 bg-green-500 text-white text-sm font-bold py-1 px-2 rounded z-20">

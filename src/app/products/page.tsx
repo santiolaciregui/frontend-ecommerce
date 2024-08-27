@@ -35,7 +35,7 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="mt-12 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative">
+    <div className="mt-12 px-2 md:px-4 lg:px-8 xl:px-16 2xl:px-32 relative">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="hidden md:block md:w-1/4">
             <Filter />

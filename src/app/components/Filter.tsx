@@ -55,7 +55,7 @@ const Filter = () => {
       </div>
       
       <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Formas de pago</h2>
+        {/* <h2 className="text-lg font-medium">Formas de pago</h2> */}
         {/* Otros filtros de pago */}
       </div>
       
