@@ -15,12 +15,7 @@ const Footer = () => {
             <p>Manuel Láinez 267, Q8300 Neuquén</p>
             <span className="font-semibold">verdemanzana@gmail.com</span>
             <span className="font-semibold">+54 0291 412-8292</span>
-            <div className='flex gap-6'>
-              <Image src='/facebook.png' alt='' width={16} height={16}/>
-              <Image src='/x.png' alt='' width={16} height={16}/>
-              <Image src='/youtube.png' alt='' width={16} height={16}/>
-
-            </div>
+            
           </div>
           {/* CENTER
           <div className='hidden lg:flex justify-between w-1/2'>
@@ -36,16 +31,17 @@ const Footer = () => {
           {/* RIGTH */}
           <div className='w-full md:w-1/2 lg:w-1/4 flex flex-col gap-8'>
             <h1 className="font-medium text-lg">SEGUINOS</h1>
-            <p>Be the first to get the latest news about our new sillon and baiuts y much more</p>
-            <div className="flex">
-              <input type="text" placeholder="Email Address" className="p-4 w-3/4"/>
-              <button className="w-1/4 bg-green-400 text-white">JOIN</button>
+            
+            <div className='flex gap-6'>
+              <Image src='/facebook.png' alt='' width={16} height={16}/>
+              <Image src='/x.png' alt='' width={16} height={16}/>
+
             </div>
               <span className="font-semibold">Metodos de pago</span>
-              <div className="flex justify-between"> 
+              <div className="flex justify-start"> 
               <Image src="/visa.png" alt="" width={40} height={20}/>
               <Image src="/mastercard.png" alt="" width={40} height={20}/>
-              <Image src="/paypal.png" alt="" width={40} height={20}/>
+    
               </div>
           </div>
         </div>
