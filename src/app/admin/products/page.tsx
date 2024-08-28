@@ -77,43 +77,45 @@ const AdminList = () => {
           </Link>
         </div>
 
-        <table className="min-w-full bg-white border">
-          <thead>
-            <tr>
-              <th className="px-6 py-4 border-b">SKU</th>
-              <th className="px-6 py-4 border-b">Nombre</th>
-              <th className="px-6 py-4 border-b">Categoría</th>
-              <th className="px-6 py-4 border-b">Precio</th>
-              <th className="px-6 py-4 border-b">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(product => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 border-b">{product.SKU}</td>
-                <td className="px-6 py-4 border-b">{product.name}</td>
-                <td className="px-6 py-4 border-b">
-                  {product.Categories.map(category => category.name).join(', ')}
-                </td>
-                <td className="px-6 py-4 border-b">${product.price}</td>
-                <td className="px-6 py-4 border-b">
-                  <button
-                    onClick={() => handleEdit(product)}
-                    className="text-blue-500 hover:underline mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product.id!)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Eliminar
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border">
+            <thead>
+              <tr>
+                <th className="px-6 py-4 border-b">SKU</th>
+                <th className="px-6 py-4 border-b">Nombre</th>
+                <th className="px-6 py-4 border-b">Categoría</th>
+                <th className="px-6 py-4 border-b">Precio</th>
+                <th className="px-6 py-4 border-b">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map(product => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 border-b">{product.SKU}</td>
+                  <td className="px-6 py-4 border-b">{product.name}</td>
+                  <td className="px-6 py-4 border-b">
+                    {product.Categories.map(category => category.name).join(', ')}
+                  </td>
+                  <td className="px-6 py-4 border-b">${product.price}</td>
+                  <td className="px-6 py-4 border-b">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="text-blue-500 hover:underline mr-4"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id!)}
+                      className="text-red-500 hover:underline"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
