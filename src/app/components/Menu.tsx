@@ -1,11 +1,27 @@
 'use client'
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 const Menu = () => {
-
     const [open, setOpen] = useState(false)
+
+    useEffect(() => {
+        const handleRouteChange = () => {
+            setOpen(false)
+        }
+
+        window.addEventListener('popstate', handleRouteChange)
+
+        return () => {
+            window.removeEventListener('popstate', handleRouteChange)
+        }
+    }, [])
+
+    const handleLinkClick = () => {
+        setOpen(false)
+    }
+
     return (
         <div className=''>
             <Image 
@@ -15,16 +31,17 @@ const Menu = () => {
                 height={28}
                 className="cursor-pointer"
                 onClick={() => setOpen((prev) => !prev)} 
-            />{
-                open && 
-                <div className="absolute bg-white text-black left-0 top-20 w-full h-[calc(100vh-80px)] flex flex-col items-center justify-center gap-8 text-xl z-10">
-                    <Link href='/products'>Productos</Link>
-                    <Link href="/company">Contacto</Link>
-                    <Link href="/como-comprar">¿Como comprar?</Link>
-                    <Link href="/admin">Administrar Pagina</Link>
-
-                </div>
-            }
+            />
+            <div 
+                className={`fixed bg-white text-black left-0 top-20 w-full h-[calc(100vh-80px)] flex flex-col items-center justify-center gap-8 text-xl z-10 transition-opacity duration-300 ease-in-out ${
+                    open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+            >
+                <Link href='/products' onClick={handleLinkClick}>Productos</Link>
+                <Link href="/company" onClick={handleLinkClick}>Contacto</Link>
+                <Link href="/como-comprar" onClick={handleLinkClick}>¿Como comprar?</Link>
+                <Link href="/admin" onClick={handleLinkClick}>Administrar Pagina</Link>
+            </div>
         </div>
     )
 }
