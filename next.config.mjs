@@ -21,7 +21,7 @@ const nextConfig = {
           },
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'http://localhost:8002',
+            value: 'https://backend-ecommerce-aecr.onrender.com',
           },
           {
             key: 'Access-Control-Allow-Methods',
