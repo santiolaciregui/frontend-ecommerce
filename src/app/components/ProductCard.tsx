@@ -9,8 +9,10 @@ interface Props {
 }
 
 const ProductCard = ({ product }: Props) => {
-  const currentPrice = product.price;
+  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+
+  const currentPrice = product.price;
   const activeDiscounts = product.Discounts?.filter(discount => discount.active);
   const bestDiscount = activeDiscounts?.reduce((max, discount) => 
     discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
@@ -21,8 +23,6 @@ const ProductCard = ({ product }: Props) => {
 
   const discountPercentage = bestDiscount?.percentage || null;
   const monthlyInstallment = (parseFloat(finalPrice) / 12).toFixed(2);
-
-  const API_URL = 'https://backend-ecommerce-aecr.onrender.com';  // Update this URL if your backend is hosted elsewhere
 
 
   return (

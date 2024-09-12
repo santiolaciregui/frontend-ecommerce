@@ -16,6 +16,9 @@ export interface Product {
 export interface Category {
   id: number;
   name: string;
+  parentId: number | null;
+  subcategories?: Category[]; // Add this line
+
 }
 
 export interface Option {
@@ -55,6 +58,17 @@ export interface Promotion {
 export interface CreditCard {
   id: number;
   name: string;
+}
+
+
+export interface Order {
+  id: number;
+  email: string;
+  totalAmount: number;
+  shippingAddress?: string;
+  paymentFormat: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: string; // Assuming it's returned as a string from the API
 }
 
 

@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import apiServiceProducts from "../../../pages/api/products";
+import apiServiceCategories from "../../../pages/api/category";
 import apiServiceOptions from "../../../pages/api/options";
 import apiServiceDiscount from "../../../pages/api/discount";
 import { Category, Discount, Option, Product } from '@/app/context/types';
@@ -12,7 +13,8 @@ interface ProductForm {
   price: number;
   stock: number;
   weight: number;
-  categoryIds: number[];
+  categoryId: number;
+  subcategoryId: number;
   discountId: number;
   optionIds: number[];
   images: File[];
@@ -20,6 +22,7 @@ interface ProductForm {
 
 const CreateProduct = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
 
@@ -34,7 +37,8 @@ const CreateProduct = () => {
     price: 0,
     stock: 0,
     weight: 0,
-    categoryIds: [],
+    categoryId: 0,
+    subcategoryId: 0,
     discountId: 0,
     optionIds: [],
     images: [],
@@ -43,7 +47,7 @@ const CreateProduct = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const fetchedCategories = await apiServiceProducts.fetchCategories();
+        const fetchedCategories = await apiServiceCategories.fetchParentCategories();
         setCategories(fetchedCategories);
 
         const fetchedOptions = await apiServiceOptions.fetchOptions();
@@ -65,12 +69,16 @@ const CreateProduct = () => {
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const handleCategorySelect = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === 'categoryIds' ? [parseInt(value)] : value,
-    });
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setFormData(prevState => ({ ...prevState, categoryId: parseInt(value), subcategoryId: 0 }));
+
+    const selectedCategory = categories.find(category => category.id === parseInt(value));
+    if (selectedCategory) {
+      setSubcategories(selectedCategory.subcategories || []);
+    } else {
+      setSubcategories([]);
+    }
   };
 
   const handleOptionChange = (optionId: number) => {
@@ -78,7 +86,7 @@ const CreateProduct = () => {
       const selectedOptions = prevState.optionIds.includes(optionId)
         ? prevState.optionIds.filter(id => id !== optionId)
         : [...prevState.optionIds, optionId];
-      return { ...prevState, Options: selectedOptions };
+      return { ...prevState, optionIds: selectedOptions };
     });
   };
 
@@ -112,7 +120,8 @@ const CreateProduct = () => {
       data.append('price', String(formData.price));
       data.append('stock', String(formData.stock));
       data.append('weight', String(formData.weight));
-      formData.categoryIds.forEach((id) => data.append('categoryIds', String(id)));
+      data.append('categoryId', String(formData.categoryId));
+      data.append('subcategoryId', String(formData.subcategoryId));
       formData.optionIds.forEach((id) => data.append('optionIds', String(id)));
       formData.images.forEach((file) => data.append('images', file));
   
@@ -213,12 +222,12 @@ const CreateProduct = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="categoryIds">Categoría *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="categoryId">Categoría *</label>
               <select
-                id="categoryIds"
-                name="categoryIds"
-
-                onChange={handleCategorySelect}
+                id="categoryId"
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleCategoryChange}
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
@@ -230,10 +239,28 @@ const CreateProduct = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="discount_id">Descuento</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="subcategoryId">Subcategoría *</label>
               <select
-                id="discount_id"
-                name="discount_id"
+                id="subcategoryId"
+                name="subcategoryId"
+                value={formData.subcategoryId}
+                onChange={handleInputChange}
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                disabled={!formData.categoryId}
+              >
+                <option value="">Seleccionar subcategoría</option>
+                {subcategories.map(subcategory => (
+                  <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="discountId">Descuento</label>
+              <select
+                id="discountId"
+                name="discountId"
                 value={formData.discountId}
                 onChange={handleInputChange}
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

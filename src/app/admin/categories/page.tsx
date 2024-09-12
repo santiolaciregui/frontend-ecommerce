@@ -6,12 +6,6 @@ import Link from 'next/link';
 
 const CategoryAdminList = () => { 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [formData, setFormData] = useState<Category>({
-    id: 0,
-    name: '',
-  });
-  const [editMode, setEditMode] = useState<boolean>(false);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,7 +13,7 @@ const CategoryAdminList = () => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const fetchedCategories = await apiService.fetchCategories();
+        const fetchedCategories = await apiService.fetchParentCategories();
         setCategories(fetchedCategories);
       } catch (err) {
         setError('Error fetching categories');
@@ -32,17 +26,12 @@ const CategoryAdminList = () => {
     fetchCategories();
   }, []);
 
-  const handleEdit = (category: Category) => {
-    setFormData(category);
-    setEditMode(true);
-  };
-
   const handleDelete = async (categoryId: number) => {
     try {
       setLoading(true);
       await apiService.deleteCategoryByID({id: categoryId});
       alert('Categoría eliminada con éxito');
-      const fetchedCategories = await apiService.fetchCategories();
+      const fetchedCategories = await apiService.fetchParentCategories();
       setCategories(fetchedCategories);
     } catch (err) {
       setError('Error al eliminar la categoría');
@@ -52,10 +41,32 @@ const CategoryAdminList = () => {
     }
   };
 
+  const renderCategories = (categories: Category[], parentId: number | null = null, level: number = 0) => {
+    return categories
+      .filter(category => category.parentId === parentId)
+      .map(category => (
+        <React.Fragment key={category.id}>
+          <tr>
+            <td className="px-6 py-4 border-b" style={{ paddingLeft: `${level * 20}px` }}>
+              {category.name}
+            </td>
+            <td className="px-6 py-4 border-b">
+              <button
+                onClick={() => handleDelete(category.id)}
+                className="text-red-500 hover:underline"
+              >
+                Eliminar 
+              </button>
+            </td>
+          </tr>
+          {renderCategories(categories, category.id, level + 1)}
+        </React.Fragment>
+      ));
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-6xl mx-auto mt-10">
-
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Lista de Categorías</h2>
           <Link 
@@ -73,25 +84,7 @@ const CategoryAdminList = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.map(category => (
-              <tr key={category.id}>
-                <td className="px-6 py-4 border-b">{category.name}</td>
-                <td className="px-6 py-4 border-b">
-                  <button
-                    onClick={() => handleEdit(category)}
-                    className="text-blue-500 hover:underline mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(category.id)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Eliminar 
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {renderCategories(categories)}
           </tbody>
         </table>
       </div>

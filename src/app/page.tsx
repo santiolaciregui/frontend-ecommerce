@@ -1,18 +1,29 @@
-import { Suspense } from "react"
+// HomePage.jsx
+import CategoriesMenu from './components/CategoriesMenu';
+import PromoCarousel from './components/PromoCarousel';
 
+const HomePage = () => {
+  const promoImages = [
+    '/carousel1.png',
+    '/carousel2.png',
+    '/carousel3.png',
+  ];
 
-const HomePage = async () => {
-
+  const categories = [
+    { name: 'Silla', image: '/silla1.ong' },
+    { name: 'Sillones', image: '/sillon.png' },
+    // Add all other categories
+  ];
 
   return (
-    <div className=''>
-      <div className="mt-14 px-4 md:px-8 lg:px-16 xl:32 2xl:px-64 relative">
-        <Suspense fallback={'loading'}>
-          
-        </Suspense>
-      </div>
-    </div>
-  )
-}
+    <div>
+      {/* Promo Carousel */}
+      <PromoCarousel images={promoImages} />
 
-export default HomePage
+      {/* Categories Section */}
+      <CategoriesMenu categories={categories} />
+    </div>
+  );
+};
+
+export default HomePage;

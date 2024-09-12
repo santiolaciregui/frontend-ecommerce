@@ -3,6 +3,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ;    // Update this URL if your backend is hosted elsewhere
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { url } = req.query;
 
@@ -12,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         // Fetch the image from the backend
-        const response = await axios.get(`http://localhost:8002${url}`, {
+        const response = await axios.get(`${API_BASE_URL}${url}`, {
             responseType: 'arraybuffer',
         });
 

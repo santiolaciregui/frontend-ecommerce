@@ -1,85 +1,153 @@
 'use client'
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { fetchCategories } from '../pages/api/category';
-import { Category } from "../context/types";
+import { fetchParentCategories, fetchSubcategoriesByParent } from '../pages/api/category';
+import { fetchProducts } from '../pages/api/products';
+import { Category, Product } from "../context/types";
 
-const Filter = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+interface FilterProps {
+  onProductsFetched: (products: Product[]) => void;
+  setLoading: (loading: boolean) => void;
+}
+
+const Filter: React.FC<FilterProps> = ({ onProductsFetched, setLoading }) => {
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
+  const [selectedParentCategory, setSelectedParentCategory] = useState<number | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { replace } = useRouter();
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const categoriesData = await fetchCategories();
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-
-    loadCategories();
+  const loadParentCategories = useCallback(async () => {
+    try {
+      const parentCategoriesData = await fetchParentCategories();
+      setParentCategories(parentCategoriesData);
+    } catch (error) {
+      console.error('Error fetching parent categories:', error);
+    }
   }, []);
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
-    setSelectedCategory(value);
+  useEffect(() => {
+    loadParentCategories();
+  }, [loadParentCategories]);
 
-    const params = new URLSearchParams(searchParams);
-    params.set('categoryId', value);
-    replace(`${pathname}?${params.toString()}`);
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleParentCategoryClick = useCallback(async (categoryId: number) => {
+    const newSelectedParentCategory = categoryId === selectedParentCategory ? null : categoryId;
+    setSelectedParentCategory(newSelectedParentCategory);
+    setSelectedSubcategory(null);
+    setLoading(true);
+  
+    try {
+      const products = await fetchProducts({
+        categoryId: newSelectedParentCategory,
+        subcategoryId: null
+      });
+      if (newSelectedParentCategory !== null) {
+        const subcategoriesData = await fetchSubcategoriesByParent(newSelectedParentCategory);
+        setSubcategories(subcategoriesData);
+      } else {
+        setSubcategories([]);
+      }
+      onProductsFetched(products);
+    } catch (error) {
+      console.error('Error handling parent category click:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedParentCategory, onProductsFetched, setLoading]);
+  
+  const handleSubcategoryClick = useCallback(async (subcategoryId: number) => {
+    const newSelectedSubcategory = subcategoryId === selectedSubcategory ? null : subcategoryId;
+    setSelectedSubcategory(newSelectedSubcategory);
+    setLoading(true);
+  
+    try {
+      const products = await fetchProducts({
+        categoryId: selectedParentCategory,
+        subcategoryId: newSelectedSubcategory
+      });
+      onProductsFetched(products);
+    } catch (error) {
+      console.error('Error handling subcategory click:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedSubcategory, selectedParentCategory, onProductsFetched, setLoading]);
+  
+  const handlePriceChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    const params = new URLSearchParams(searchParams);
-    params.set(name, value);
-    replace(`${pathname}?${params.toString()}`);
-  }
-
+    if (name === 'min') setMinPrice(value);
+    if (name === 'max') setMaxPrice(value);
+  
+    setLoading(true);
+  
+    try {
+      const products = await fetchProducts({
+        categoryId: selectedParentCategory,
+        subcategoryId: selectedSubcategory,
+        searchParams: { minPrice: minPrice, maxPrice: maxPrice }
+      });
+      onProductsFetched(products);
+    } catch (error) {
+      console.error('Error fetching products with price filter:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchParams, pathname, replace, selectedSubcategory, selectedParentCategory, minPrice, maxPrice, onProductsFetched, setLoading]);
   return (
     <div className='mt-12 flex flex-col gap-6 p-4 bg-gray-100 rounded-lg'>
       <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Ordenar por</h2>
-        <select name="sort" className="py-2 px-4 rounded-md text-sm bg-white" onChange={handleInputChange}>
-          <option>Más relevantes</option>
-          <option value="price-asc">Precio: Menor a Mayor</option>
-          <option value="price-desc">Precio: Mayor a Menor</option>
-          <option value="name-asc">Nombre: A-Z</option>
-          <option value="name-desc">Nombre: Z-A</option>
-        </select>
-      </div>
-      
-      <div className="flex flex-col gap-2">
-        {/* <h2 className="text-lg font-medium">Formas de pago</h2> */}
-        {/* Otros filtros de pago */}
+        <h2 className="text-lg font-medium">Categorías</h2>
+        <div className="flex flex-col gap-2">
+          {parentCategories.map(parent => (
+            <div key={parent.id}>
+              <div
+                className={`cursor-pointer ${selectedParentCategory === parent.id ? 'font-bold' : ''}`}
+                onClick={() => handleParentCategoryClick(parent.id)}
+              >
+                {parent.name}
+              </div>
+              {/* Mostrar subcategorías cuando la categoría padre está seleccionada */}
+              {selectedParentCategory === parent.id && (
+                <div className="ml-4 mt-2 flex flex-col gap-2">
+                  {subcategories.map(subcategory => (
+                    <div
+                      key={subcategory.id}
+                      className={`cursor-pointer ${selectedSubcategory === subcategory.id ? 'font-bold' : ''}`}
+                      onClick={() => handleSubcategoryClick(subcategory.id)}
+                    >
+                      {subcategory.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
       
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Precio</h2>
-        <input type="number" name="min" placeholder="Min" className="py-2 px-4 rounded-md text-sm bg-white border" onChange={handleInputChange} />
-        <input type="number" name="max" placeholder="Max" className="py-2 px-4 rounded-md text-sm bg-white border" onChange={handleInputChange} />
-      </div>
-      
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Categorías</h2>
-        <select
-          name="category"
+        <input
+          type="number"
+          name="min"
+          placeholder="Min"
+          value={minPrice}
           className="py-2 px-4 rounded-md text-sm bg-white border"
-          value={selectedCategory || ""}
-          onChange={handleCategoryChange}
-        >
-          <option value="">Selecciona una categoría</option>
-          {categories.map(category => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          onChange={handlePriceChange}
+        />
+        <input
+          type="number"
+          name="max"
+          placeholder="Max"
+          value={maxPrice}
+          className="py-2 px-4 rounded-md text-sm bg-white border"
+          onChange={handlePriceChange}
+        />
       </div>
     </div>
   );

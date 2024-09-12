@@ -1,8 +1,6 @@
-// services/categoryService.js
-
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend-ecommerce-aecr.onrender.com'; 
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ; 
 
 // Obtener todas las categorías
 export const fetchCategories = async () => {
@@ -11,6 +9,39 @@ export const fetchCategories = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
+    throw error;
+  }
+};
+
+// Obtener todas las categorías padre
+export const fetchParentCategories = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/categories/parents`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching parent categories:', error);
+    throw error;
+  }
+};
+
+// Obtener todas las subcategorías
+export const fetchSubcategories = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/categories/subcategories`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    throw error;
+  }
+};
+
+// Obtener todas las subcategorías de una categoría padre
+export const fetchSubcategoriesByParent = async (parentId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/categories/${parentId}/subcategories`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
     throw error;
   }
 };
@@ -62,6 +93,9 @@ export const deleteCategoryByID = async ({ id } ) => {
 
 export default {
   fetchCategories,
+  fetchParentCategories, // New method for fetching parent categories
+  fetchSubcategories, // New method for fetching subcategories
+  fetchSubcategoriesByParent,
   fetchCategoryById,
   createCategory,
   updateCategory,

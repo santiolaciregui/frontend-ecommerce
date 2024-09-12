@@ -1,17 +1,21 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backend-ecommerce-aecr.onrender.com';  // Update this URL if your backend is hosted elsewhere
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ;   // Update this URL if your backend is hosted elsewhere
 
 export const fetchProducts = async ({
   categoryId,
+  subcategoryId,
   limit = 8,
+  page = 0,
   searchParams = {}
 }) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/products`, {
       params: {
         categoryId,
+        subcategoryId,
         limit,
+        page,
         ...searchParams
       }
     });
@@ -55,6 +59,18 @@ export const fetchProductByID = async ({
     }
   };
 
+  export const fetchProductsByCategory = async ({
+    categoryId,
+   }) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/products/category/${categoryId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
+  };
+
 export const fetchCategories = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/categories`);
@@ -80,6 +96,7 @@ export const deleteProductByID = async ({
 // Add more API calls as needed
 
 export default {
+  fetchProductsByCategory,
   fetchProducts,
   fetchAllProducts,
   fetchCategories,

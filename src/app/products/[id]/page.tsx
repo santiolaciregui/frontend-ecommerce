@@ -75,7 +75,7 @@ const SinglePage = () => {
           />
         ) : (
           <button 
-            className="2-36 text-sm rounded-2xl ring-1 ring-gray-400 text-gray-400 py-2 px-4 cursor-default bg-gray-200 text-gray-500"
+            className="2-36 text-sm rounded-2xl ring-1 ring-gray-400 text-gray-400 py-2 px-4 cursor-default bg-gray-200"
           >
             No disponible
           </button>

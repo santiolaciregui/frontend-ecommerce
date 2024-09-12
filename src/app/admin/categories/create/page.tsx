@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import apiServiceCategories from "../../../pages/api/category";
-import { Category, Product } from '@/app/context/types';
+import { Category } from '@/app/context/types';
 
 interface CategoryForm {
   name: string;
+  parentId?: number;
 }
 
 const CreateCategory = () => {
@@ -19,9 +20,8 @@ const CreateCategory = () => {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const fetchedCategories = await apiServiceCategories.fetchCategories();
+        const fetchedCategories = await apiServiceCategories.fetchParentCategories(); // Use the new method
         setCategories(fetchedCategories);
-
       } catch (err) {
         setError('Error fetching data');
         console.error(err);
@@ -37,7 +37,7 @@ const CreateCategory = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'installments' ? parseInt(value) : value,
+      [name]: name === 'parentId' ? parseInt(value) : value,
     });
   };
 
@@ -47,9 +47,9 @@ const CreateCategory = () => {
     try {
       setLoading(true);
       await apiServiceCategories.createCategory(formData);
-      alert('Promoción creada con éxito');
+      alert('Categoría creada con éxito');
     } catch (err) {
-      setError('Error al crear la promoción');
+      setError('Error al crear la categoría');
       console.error(err);
     } finally {
       setLoading(false);
@@ -58,10 +58,10 @@ const CreateCategory = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-semibold mb-4">Crear Nueva Categoria</h2>
+      <h2 className="text-2xl font-semibold mb-4">Crear Nueva Categoría</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700">Nombre de la Categoria</label>
+          <label className="block text-sm font-medium text-gray-700">Nombre de la Categoría</label>
           <input
             type="text"
             name="name"
@@ -73,11 +73,20 @@ const CreateCategory = () => {
         </div>
 
         <div className="mb-8">
-          <label className="block text-md font-medium text-gray-700">
-            Categorias Actuales:  
-            <br />
-          {categories.map(category => category.name).join(', ')}
-          </label>
+          <label className="block text-sm font-medium text-gray-700">Categoría Padre (opcional)</label>
+          <select
+            name="parentId"
+            value={formData.parentId || ''}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+          >
+            <option value="">Ninguna</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button
@@ -85,7 +94,7 @@ const CreateCategory = () => {
           className="w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
           disabled={loading}
         >
-          {loading ? 'Guardando...' : 'Guardar Categoria'}
+          {loading ? 'Guardando...' : 'Guardar Categoría'}
         </button>
         {error && <p className="mt-4 text-red-500">{error}</p>}
       </form>

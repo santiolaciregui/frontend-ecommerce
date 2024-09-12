@@ -2,8 +2,9 @@ import Image from "next/image";
 import { useState } from "react";
 
 const ProductImages = ({ items }: { items: any }) => {
-    const [index, setIndex] = useState(0);
-    const API_URL = 'https://backend-ecommerce-aecr.onrender.com';  // Update this URL if your backend is hosted elsewhere
+    const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+
+    const [index, setIndex] = useState(0); // Update this URL if your backend is hosted elsewhere
     return (
         <div>
             <div className="h-[500px] relative">
