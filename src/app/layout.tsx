@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <Alert text='OFERTAS -  12 cuotas sin interes - 12 cuotas sin interés | 12% descuento con transferencia | GoCuotas 5% de descuento' />
+        <Alert text='SHOPPING VM - FABRICA DE MUEBLES - GIGANTE DEL AHORRO' />
         <CartProvider>
           <UserProvider>
             <Navbar />
