@@ -1,31 +1,14 @@
-'use client'
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getAdminAuthStatus } from '../utils/auth';
+// pages/admin.tsx
+import React from 'react';
+import ProtectedRoute from '../components/ProtectedRoute';
 import AdminDashboard from '../components/AdminDashboard';
 
-const AdminPage = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isAdmin = await getAdminAuthStatus();
-      if (!isAdmin) {
-        router.push('/login'); // Redirige si no está autenticado
-      } else {
-        setIsAuthenticated(true);
-      }
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
-
-  if (isLoading) return <div>Cargando...</div>;
-
-  return isAuthenticated ? <AdminDashboard /> : null;
+const AdminPage: React.FC = () => {
+  return (
+    <ProtectedRoute>
+      <AdminDashboard />
+    </ProtectedRoute>
+  );
 };
 
 export default AdminPage;

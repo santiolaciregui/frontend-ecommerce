@@ -72,3 +72,14 @@ export interface Order {
 }
 
 
+export interface Store {
+  id?: number;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  phone: string;
+  email: string;
+  isActive: boolean;
+}
