@@ -22,6 +22,9 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+
+
   return (
     <div className='w-max absolute p-4 rounded-md shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white top-12 right-0 flex flex-col gap-6 z-20'>
       {cart.length === 0 ? (
@@ -34,7 +37,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             {cart.map((item) => (
               <div className="flex gap-4" key={generateUniqueKey(item.product.id, item.options)}>
                 <Image
-                  src='/logo-verde-manzana.svg'
+                  src={item.product.Images[0] ? `${API_URL}${item.product.Images[0].url}` : '/logo-verde-manzana.svg'}
                   alt={''}
                   width={62}
                   height={96}

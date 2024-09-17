@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return null; // O puedes mostrar un mensaje o redirigir, pero el hook ya lo hace
+    return null; 
   }
 
   return <>{children}</>;

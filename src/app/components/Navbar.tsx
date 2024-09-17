@@ -72,10 +72,10 @@ const Navbar = () => {
               <Link href="/products">Productos</Link>
             </div>
             <div className="cursor-pointer">
-              <Link href="/company">Contacto</Link>
+              <Link href="/empresa/contacto">Contacto</Link>
             </div>
             <div className="cursor-pointer">
-              <Link href="/como-comprar">¿Como comprar?</Link>
+              <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
             </div>
             <div className="cursor-pointer">
               <Link href="/admin">Administrar Pagina</Link>

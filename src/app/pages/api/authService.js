@@ -27,6 +27,8 @@ export const login = async (username, password) => {
 export const logout = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  console.log('oye tio')
+  console.log(localStorage)
 };
 
 // Renovar el token

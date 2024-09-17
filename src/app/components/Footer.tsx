@@ -13,8 +13,13 @@ const Footer = () => {
               <div className="text-2xl tracking-wide">VERDE MANZANA</div>
             </Link>
             <p>Manuel Láinez 267, Q8300 Neuquén</p>
-            <span className="font-semibold">verdemanzana@gmail.com</span>
-            <span className="font-semibold">+54 0291 412-8292</span>
+            
+            <a href="https://api.whatsapp.com/send?phone=%2B542914128292&context=ARApsBsv0AI30qWG9HpK4JiaNARoXvWnTc-QYeDNdzhUkW9PqMrR9M7Lp19AxDGuBk96BM0DqBU-vBwWANhykEXNX3mMhqJfW45DCxvJzIW8eFjylD2wktvV4AvxYccvgQQG5TreF4OdEzmuBbIvkv4&source=FB_Page&app=facebook&entry_point=page_cta" target="_blank" rel="noopener noreferrer"   className="inline-flex items-center">
+            <Image src="/whatsapp.png" width={16} height={16} alt="WhatsApp"/>
+            <span className="ml-2 font-semibold">+54 0291 412-8292</span>
+            
+            
+          </a>
             
           </div>
           {/* CENTER
@@ -33,8 +38,13 @@ const Footer = () => {
             <h1 className="font-medium text-lg">SEGUINOS</h1>
             
             <div className='flex gap-6'>
-              <Image src='/facebook.png' alt='' width={16} height={16}/>
-              <Image src='/x.png' alt='' width={16} height={16}/>
+            <a href="https://www.facebook.com/VERDEMANZANAMUEBLESARGENTINA" target="_blank" rel="noopener noreferrer">
+            <Image src="/facebook.png" width={16} height={16} alt="Facebook" />
+          </a>
+          <a href="https://www.instagram.com/mueblesverdemanzana/?hl=es-la" target="_blank" rel="noopener noreferrer">
+            <Image src="/instagram.png" width={16} height={16} alt="Instagram" />
+          </a>
+
 
             </div>
               <span className="font-semibold">Metodos de pago</span>

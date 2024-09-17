@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { logout } from '../pages/api/authService';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -9,7 +10,7 @@ const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
+      await logout();
       router.push('/login'); // Redirect to login page after logout
     } catch (error) {
       console.error('Error logging out:', error);

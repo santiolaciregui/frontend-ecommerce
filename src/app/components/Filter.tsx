@@ -130,7 +130,7 @@ const Filter: React.FC<FilterProps> = ({ onProductsFetched, setLoading }) => {
         </div>
       </div>
       
-      <div className="flex flex-col gap-2">
+      {/* <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Precio</h2>
         <input
           type="number"
@@ -148,7 +148,7 @@ const Filter: React.FC<FilterProps> = ({ onProductsFetched, setLoading }) => {
           className="py-2 px-4 rounded-md text-sm bg-white border"
           onChange={handlePriceChange}
         />
-      </div>
+      </div> */}
     </div>
   );
 }
