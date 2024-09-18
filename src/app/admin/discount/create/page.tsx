@@ -35,7 +35,7 @@ const DiscountForm = () => {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const fetchedCategories = await apiServiceCategory.fetchCategories();
+        const fetchedCategories = await apiServiceCategory.fetchParentCategories();
         setCategories(fetchedCategories);
 
         const fetchedProducts = await apiServiceProduct.fetchAllProducts();

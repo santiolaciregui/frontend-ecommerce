@@ -94,7 +94,6 @@ export const deleteCategoryByID = async ({ id } ) => {
 };
 
 export default {
-  fetchCategories,
   fetchParentCategories, // New method for fetching parent categories
   fetchSubcategories, // New method for fetching subcategories
   fetchSubcategoriesByParent,
