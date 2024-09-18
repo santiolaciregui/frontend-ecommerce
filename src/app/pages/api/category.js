@@ -2,6 +2,8 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ; 
 
+
+//HACER QUE ESTE METODO TRAIGA [sillon:{name: '', subcats:[{ca,sa}]}]
 // Obtener todas las categorías
 export const fetchCategories = async () => {
   try {

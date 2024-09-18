@@ -71,16 +71,6 @@ export const fetchProductByID = async ({
     }
   };
 
-export const fetchCategories = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/categories`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    throw error;
-  }
-};
-
 export const deleteProductByID = async ({
   id,
  }) => {
@@ -99,7 +89,6 @@ export default {
   fetchProductsByCategory,
   fetchProducts,
   fetchAllProducts,
-  fetchCategories,
   fetchProductByID,
   createProduct,
   deleteProductByID

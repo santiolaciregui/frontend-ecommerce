@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import apiService from "../../../pages/api/products";
+import apiServiceProduct from "../../../pages/api/products";
+import apiServiceCategory from "../../../pages/api/category";
 import Image from 'next/image';
 import { Category, Product } from '@/app/context/types';
 import { createDiscount } from "../../../pages/api/discount";
@@ -34,10 +35,10 @@ const DiscountForm = () => {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const fetchedCategories = await apiService.fetchCategories();
+        const fetchedCategories = await apiServiceCategory.fetchCategories();
         setCategories(fetchedCategories);
 
-        const fetchedProducts = await apiService.fetchAllProducts();
+        const fetchedProducts = await apiServiceProduct.fetchAllProducts();
         setProducts(fetchedProducts);
       } catch (err) {
         setError('Error fetching data');

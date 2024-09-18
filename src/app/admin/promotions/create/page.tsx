@@ -5,6 +5,7 @@ import axios from 'axios';
 import Image from 'next/image';
 import apiServiceProducts from "../../../pages/api/products";
 import apiServicePromotions from "../../../pages/api/promotions";
+import apiServiceCategories from "../../../pages/api/category";
 import { Category, Product } from '@/app/context/types';
 
 interface PromotionForm {
@@ -38,7 +39,7 @@ const CreatePromotion = () => {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const fetchedCategories = await apiServiceProducts.fetchCategories();
+        const fetchedCategories = await apiServiceCategories.fetchParentCategories();
         setCategories(fetchedCategories);
 
         const fetchedProducts = await apiServiceProducts.fetchAllProducts();
