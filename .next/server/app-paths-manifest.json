@@ -1,26 +1,5 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin/categories/create/page": "app/admin/categories/create/page.js",
-  "/admin/discount/create/page": "app/admin/discount/create/page.js",
-  "/admin/categories/page": "app/admin/categories/page.js",
-  "/admin/discount/page": "app/admin/discount/page.js",
-  "/admin/orders/page": "app/admin/orders/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/orders/[id]/page": "app/admin/orders/[id]/page.js",
-  "/admin/promotions/page": "app/admin/promotions/page.js",
-  "/admin/products/create/page": "app/admin/products/create/page.js",
-  "/admin/promotions/create/page": "app/admin/promotions/create/page.js",
-  "/checkout/page": "app/checkout/page.js",
-  "/admin/products/page": "app/admin/products/page.js",
-  "/admin/stores/page": "app/admin/stores/page.js",
-  "/empresa/sobre-nosotros/page": "app/empresa/sobre-nosotros/page.js",
-  "/admin/stores/create/page": "app/admin/stores/create/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/login/page": "app/login/page.js",
-  "/empresa/contacto/page": "app/empresa/contacto/page.js",
   "/products/page": "app/products/page.js",
-  "/page": "app/page.js",
-  "/test/page": "app/test/page.js",
-  "/products/[id]/page": "app/products/[id]/page.js",
-  "/success/page": "app/success/page.js"
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js"
 }

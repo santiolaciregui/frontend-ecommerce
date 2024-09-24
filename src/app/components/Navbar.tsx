@@ -25,9 +25,10 @@ const Navbar = () => {
   return (
     <div className="relative">
       {/* Navbar */}
-      <div className="h-20 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64">
+      <div className="h-20 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 z-20">
         {/* MOBILE */}
         <div className="h-full flex items-center justify-between md:hidden">
+          {/* Asegúrate de que el Menu esté correctamente z-indexed y cubra todo */}
           <Menu />
           <Link href="/">
             <div className="flex items-center justify-center cursor-pointer">
@@ -62,28 +63,28 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      {/* Menu Links */}
+      {/* Menu Links para pantallas grandes */}
       {isLargeScreen && (
-          <div className="flex mt-4 mb-4 gap-12 justify-center">
-            <div >
-              <Link href="/">Inicio</Link>
-            </div>
-            <div className="cursor-pointer">
-              <Link href="/products">Productos</Link>
-            </div>
-            <div className="cursor-pointer">
-              <Link href="/empresa/contacto">Contacto</Link>
-            </div>
-            <div className="cursor-pointer">
-              <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
-            </div>
-            <div className="cursor-pointer">
-              <Link href="/admin">Administrar Pagina</Link>
-            </div>
+        <div className="flex mt-4 mb-4 gap-12 justify-center">
+          <div>
+            <Link href="/">Inicio</Link>
           </div>
+          <div className="cursor-pointer">
+            <Link href="/products">Productos</Link>
+          </div>
+          <div className="cursor-pointer">
+            <Link href="/empresa/contacto">Contacto</Link>
+          </div>
+          <div className="cursor-pointer">
+            <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
+          </div>
+          <div className="cursor-pointer">
+            <Link href="/admin">Administrar Pagina</Link>
+          </div>
+        </div>
       )}
     </div>
-  );
+  );  
 };
 
 

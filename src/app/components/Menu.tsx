@@ -33,7 +33,7 @@ const Menu = () => {
                 onClick={() => setOpen((prev) => !prev)} 
             />
             <div 
-                className={`fixed bg-white text-black left-0 top-20 w-full h-[calc(100vh-80px)] flex flex-col items-center justify-center gap-8 text-xl z-10 transition-opacity duration-300 ease-in-out ${
+                className={`fixed bg-white text-black left-0 top-39 w-full h-screen flex flex-col items-center justify-center gap-8 text-xl z-10 transition-opacity duration-300 ease-in-out ${
                     open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                 }`}
             >
