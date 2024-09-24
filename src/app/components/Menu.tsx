@@ -39,7 +39,8 @@ const Menu = () => {
             >
                 <Link href='/products' onClick={handleLinkClick}>Productos</Link>
                 <Link href="/company" onClick={handleLinkClick}>Contacto</Link>
-                <Link href="/como-comprar" onClick={handleLinkClick}>¿Como comprar?</Link>
+                <Link href="/empresa/contacto" onClick={handleLinkClick}>Contacto</Link>
+                <Link href="/empresa/sobre-nosotros" onClick={handleLinkClick}>Sobre Nosotros</Link>
                 <Link href="/admin" onClick={handleLinkClick}>Administrar Pagina</Link>
             </div>
         </div>
