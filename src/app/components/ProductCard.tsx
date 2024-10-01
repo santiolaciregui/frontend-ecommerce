@@ -12,18 +12,34 @@ const ProductCard = ({ product }: Props) => {
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 
+  
   const currentPrice = product.price;
+
+  // Handle discounts
   const activeDiscounts = product.Discounts?.filter(discount => discount.active);
   const bestDiscount = activeDiscounts?.reduce((max, discount) => 
     discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
 
-  const finalPrice = bestDiscount
+  const discountPercentage = bestDiscount?.percentage || null;
+  const discountedPrice = bestDiscount
     ? (currentPrice * (1 - bestDiscount.percentage / 100)).toFixed(2)
     : currentPrice.toFixed(2);
 
-  const discountPercentage = bestDiscount?.percentage || null;
-  const monthlyInstallment = (parseFloat(finalPrice) / 12).toFixed(2);
+  // Handle promotions
+  const activePromotions = product.Promotions?.filter(promotion => {
+    const now = new Date();
+    const start = new Date(promotion.start_date);
+    const end = new Date(promotion.end_date);
+    return now >= start && now <= end;
+  });
+  
+  const bestPromotion = activePromotions?.[0]; // Assuming one active promotion per product
+  const promotionInstallments = bestPromotion?.installments || 0;
 
+  const finalPrice = bestDiscount ? discountedPrice : currentPrice.toFixed(2);
+  const monthlyInstallment = promotionInstallments > 0 
+    ? (parseFloat(finalPrice) / promotionInstallments).toFixed(2)
+    : null;
 
   return (
   <Link href={'/products/' + product.id} className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[30%]" key={product.id}>
@@ -69,9 +85,11 @@ const ProductCard = ({ product }: Props) => {
         </div>
       </div>
       
-      <div className="text-center text-orange-600 font-semibold text-sm">
-        12 cuotas sin interés de ${monthlyInstallment}
-      </div>
+      {promotionInstallments > 0 && (
+        <div className="text-center text-blue-600 font-semibold text-sm">
+          {promotionInstallments}x de ${monthlyInstallment} sin interés
+        </div>
+      )}
 
       <Add 
         product={product} 

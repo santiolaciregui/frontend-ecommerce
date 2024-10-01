@@ -302,22 +302,53 @@ const CreateProduct = () => {
             </div>
 
             <div className="col-span-2">
-              <h2 className="text-xl font-semibold mb-4">Opciones</h2>
-              {options.map(option => (
-                <div key={option.id} className="flex items-center space-x-4 mb-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      value={option.id}
-                      checked={formData.optionIds?.includes(option.id)}
-                      onChange={() => handleOptionChange(option.id)}
-                      className="form-checkbox"
-                    />
-                    <span className="ml-2">{option.name}</span>
-                  </label>
-                </div>
-              ))}
-            </div>
+  <h2 className="text-xl font-semibold mb-4">Opciones</h2>
+
+  {/* Color Options */}
+  <div className="mb-4">
+    <h3 className="text-lg font-medium mb-2">Colores:</h3>
+    {options.filter(option => option.type === 0).map(option => (
+      <div key={option.id} className="flex items-center space-x-4 mb-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            value={option.id}
+            checked={formData.optionIds?.includes(option.id)}
+            onChange={() => handleOptionChange(option.id)}
+            className="form-checkbox"
+          />
+          <span className="ml-2 flex items-center">
+            <span
+              className="w-4 h-4 rounded-full mr-2"
+              style={{ backgroundColor: option.name }} // Display color as background
+            />
+            {option.name}
+          </span>
+        </label>
+      </div>
+    ))}
+  </div>
+
+  {/* Size Options */}
+  <div>
+    <h3 className="text-lg font-medium mb-2">Tamaños:</h3>
+    {options.filter(option => option.type === 1).map(option => (
+      <div key={option.id} className="flex items-center space-x-4 mb-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            value={option.id}
+            checked={formData.optionIds?.includes(option.id)}
+            onChange={() => handleOptionChange(option.id)}
+            className="form-checkbox"
+          />
+          <span className="ml-2">{option.name}</span>
+        </label>
+      </div>
+    ))}
+  </div>
+</div>
+
           </div>
 
           <button

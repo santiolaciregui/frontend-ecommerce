@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import AddressAutocomplete, { AddressDetails } from './AddressAutocomplete';
-import { CreditCard } from '../context/types';
+import { CreditCard, Store } from '../context/types';
 import apiServiceCards from '../pages/api/promotions';
 import { createOrder } from '../pages/api/order';
+import { fetchStores } from '../pages/api/stores';
+
 
 const DELIVERY_OPTIONS = {
   DELIVERY: 'delivery',
@@ -15,6 +17,7 @@ const DELIVERY_OPTIONS = {
 const PAYMENT_FORMATS = {
   CREDIT_CARD: 'credit_card',
   CASH: 'cash',
+  TRANSFER: 'transfer',
 };
 
 const Checkout: React.FC = () => {
@@ -36,11 +39,15 @@ const Checkout: React.FC = () => {
       zip: '',
     },
     paymentFormat: PAYMENT_FORMATS.CREDIT_CARD,
+    storeSelection: {
+      store1: 'LAINEZ 123',
+    },
   });
   const [shippingCost, setShippingCost] = useState(5000); // Default shipping cost
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [stores, setStores] = useState<Store[]>([]); // Example stores
 
   useEffect(() => {
     if (formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP) {
@@ -49,6 +56,20 @@ const Checkout: React.FC = () => {
       setShippingCost(5000);
     }
   }, [formData.deliveryOption.option]);
+
+  useEffect(() => {
+    const loadStores = async () => {
+      try {
+        const storesData = await fetchStores();
+        setStores(storesData);
+      } catch (err) {
+        setError('Error fetching stores');
+        console.error(err);
+      }
+    };
+    loadStores();
+  }, []);
+
 
   useEffect(() => {
     const fetchCreditCards = async () => {
@@ -67,6 +88,8 @@ const Checkout: React.FC = () => {
     fetchCreditCards();
   }, []);
 
+  
+
   const handleAddressSelect = (addressDetails: AddressDetails) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -79,6 +102,19 @@ const Checkout: React.FC = () => {
       },
     }));
   };
+
+
+  const handleStoreSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      storeSelection: {
+        ...prevData.storeSelection,
+        [name]: value,
+      },
+    }));
+  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -252,7 +288,7 @@ const Checkout: React.FC = () => {
                       }
                       className="mr-2"
                     />
-                    Retiro en tienda (Manuel Láinez 267, Q8300 Neuquén)
+                    Retiro en tienda 
                   </label>
                 </div>
 
@@ -300,6 +336,28 @@ const Checkout: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                {formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP && (
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                    <label className="block text-sm font-medium mb-1">Selecciona las tiendas</label>
+                  <select
+                    name="store1"
+                    value={formData.storeSelection.store1}
+                    onChange={handleStoreSelect}
+                    className="w-full border p-2 rounded-md"
+                  >
+                    <option value="">Selecciona una tienda</option>
+                    {stores.map((store) => (
+                      <option key={store.id} value={store.id}>
+                        {store.name}
+                      </option>
+                    ))}
+                  </select>
+                  </div>
+                  </div>
+                )}
               </div>
 
               {/* Payment Details */}
@@ -327,6 +385,17 @@ const Checkout: React.FC = () => {
                       className="mr-2"
                     />
                     Efectivo
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="paymentFormat"
+                      value={PAYMENT_FORMATS.TRANSFER}
+                      checked={formData.paymentFormat === PAYMENT_FORMATS.TRANSFER}
+                      onChange={handleOptionChange}
+                      className="mr-2"
+                    />
+                    Transferencia
                   </label>
                 </div>
 

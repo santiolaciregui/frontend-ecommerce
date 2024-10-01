@@ -13,7 +13,19 @@ export const fetchOptions = async () => {
   }
 };
 
+// Crear una nueva opcion
+export const createOption = async (optionData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/options`, optionData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating category:', error);
+    throw error;
+  }
+};
+
 
 export default {
-    fetchOptions
+    fetchOptions,
+    createOption
 }

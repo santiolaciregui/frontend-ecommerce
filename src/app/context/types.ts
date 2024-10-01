@@ -7,6 +7,7 @@ export interface Product {
   stock: number;
   weight: number;
   Discounts?: Discount[];
+  Promotions?: Promotion[];
   Categories: Category[];
   Options?: Option[];
   Images: Image[];
@@ -25,6 +26,7 @@ export interface Option {
   id: number;
   type: number;
   name: string;
+  colorCode: string;
 }
 
 export interface Image {
