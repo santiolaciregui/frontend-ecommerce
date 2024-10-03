@@ -5,8 +5,12 @@ import { useCart } from '../context/CartContext';
 import AddressAutocomplete, { AddressDetails } from './AddressAutocomplete';
 import { CreditCard, Store } from '../context/types';
 import apiServiceCards from '../pages/api/promotions';
-import { createOrder } from '../pages/api/order';
+import { createOrder, createPreference } from '../pages/api/order';
 import { fetchStores } from '../pages/api/stores';
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
+
+initMercadoPago('APP_USR-c327a30f-bbdf-4864-8f87-a2134da521d5');
+
 
 
 const DELIVERY_OPTIONS = {
@@ -145,6 +149,14 @@ const Checkout: React.FC = () => {
     }));
   };
 
+
+
+  const [preferenceId, setPreferenceId] = useState<string | null>(null);
+
+
+
+
+
   const handleCheckout = async () => {
     setLoading(true);
     setError(null);
@@ -170,10 +182,18 @@ const Checkout: React.FC = () => {
     };
 
     try {
-      await createOrder(orderData);
+      // Crear la orden en el backend
+      const orderResponse = await createOrder(orderData);
+
+      // Crear la preferencia de pago en Mercado Pago
+      const { preferenceId } = await createPreference(orderData.cartItems, orderData.totalAmount);
+
       setSuccess('Order placed successfully!');
       clearCart();
-      router.push('/success');
+//      router.push('/success');
+
+      // Usar el preferenceId para el componente Wallet
+      setPreferenceId(preferenceId);
     } catch (err) {
       setError('There was an error processing your order. Please try again.');
     } finally {
@@ -341,7 +361,7 @@ const Checkout: React.FC = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                    <label className="block text-sm font-medium mb-1">Selecciona las tiendas</label>
+                    <label className="block text-sm font-medium mb-1">Selecciona la tienda donde retirará sus productos</label>
                   <select
                     name="store1"
                     value={formData.storeSelection.store1}
@@ -401,20 +421,19 @@ const Checkout: React.FC = () => {
 
                 {formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Selecciona tu tarjeta *</label>
-                    <select
-                      id="creditCard"
-                      name="creditCard"
-                      className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="">Selecciona una tarjeta</option>
-                      {creditCards.map((card) => (
-                        <option key={card.id} value={card.id}>
-                          {card.name}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Al finalizar la compra, se realizará el pago a través de Mercado Pago</label>
+                  </div>
+                )}
+
+                {formData.paymentFormat === PAYMENT_FORMATS.CASH && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="cash">Se coordinará el pago con el vendedor</label>
+                  </div>
+                )}
+
+                {formData.paymentFormat === PAYMENT_FORMATS.TRANSFER && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="transfer">CBU: 4554676911100027723062 - Nro Cuenta: 1110003967000 - BPN</label>
                   </div>
                 )}
               </div>
@@ -452,6 +471,9 @@ const Checkout: React.FC = () => {
             <button onClick={handleCheckout} className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600">
               Finalizar compra
             </button>
+            {preferenceId && (
+              <Wallet initialization={{ preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
+            )}
           </div>
         </div>
       </div>

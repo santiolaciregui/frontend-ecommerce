@@ -55,16 +55,18 @@ const SinglePage = () => {
       {/* Texts */}
       <div className="w-full lg:w-1/2 flex flex-col gap-6">
         <h1 className="text-4xl font-medium">{product.name}</h1>
-        <p className="text-gray-500">
-          {product.description}
-        </p>
-        <div className="h-[2px] bg-gray-100" />
         
         <div className="flex items-center gap-4">
           {discountPercentage && (
             <h3 className="text-xl text-gray-500 line-through">${currentPrice.toFixed(2)}</h3>
           )}
           <h2 className="font-medium text-2xl">${finalPrice}</h2>
+        </div>
+        
+        {/* Nuevo: Información de descuento y cuotas */}
+        <div className="discount-info">
+          <p>12% de descuento pagando con Transferencia Bancaria</p>
+          <p>HASTA 3 CUOTAS SIN INTERÉS CON TARJETA DE DÉBITO</p>
         </div>
         
         <div className="h-[2px] bg-gray-100" />
@@ -80,6 +82,20 @@ const SinglePage = () => {
             No disponible
           </button>
         )}
+        
+        {/* Nuevo: Medios de envío */}
+        <div className="shipping-options">
+          <h3>Medios de envío</h3>
+          <input type="text" placeholder="Tu código postal" />
+          <button>CALCULAR</button>
+          <a href="#">No sé mi código postal</a>
+        </div>
+        
+        {/* Nuevo: Nuestros locales */}
+        <div className="local-stores">
+          <h3>Nuestros locales</h3>
+          <a href="#">VER OPCIONES</a>
+        </div>
         
         <div className="h-[2px] bg-gray-100"/>
         { product.description ?  (

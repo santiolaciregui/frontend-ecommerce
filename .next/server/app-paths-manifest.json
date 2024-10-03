@@ -1,9 +1,7 @@
 {
-  "/admin/products/page": "app/admin/products/page.js",
-  "/admin/options/create/page": "app/admin/options/create/page.js",
-  "/admin/options/page": "app/admin/options/page.js",
-  "/login/page": "app/login/page.js",
-  "/admin/products/create/page": "app/admin/products/create/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/products/page": "app/products/page.js"
+  "/products/[id]/page": "app/products/[id]/page.js",
+  "/products/page": "app/products/page.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js"
 }

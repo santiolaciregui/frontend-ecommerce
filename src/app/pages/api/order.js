@@ -2,6 +2,17 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ; // Update this URL if your backend is hosted elsewhere
 
+
+export const createPreference = async (cartItems, totalAmount) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/mercadopago/create-preference`, { cartItems, totalAmount });
+    return response.data; // Esto retorna el preferenceId
+  } catch (error) {
+    console.error('Error creating Mercado Pago preference:', error);
+    throw error;
+  }
+};
+
 // Obtener todas las órdenes
 export const fetchOrders = async () => {
   try {
