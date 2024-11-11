@@ -68,10 +68,25 @@ export const deleteOrderById = async (id) => {
   }
 };
 
+// Fetch orders by email and order number using POST
+export const fetchOrdersByEmailAndNumber = async (email, orderNumber) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/orders/search`, {
+      email,
+      orderNumber
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching orders by email and order number:', error);
+    throw error;
+  }
+};
+
 export default {
   fetchOrders,
   fetchOrderById,
   createOrder,
   updateOrder,
   deleteOrderById,
+  fetchOrdersByEmailAndNumber,
 };

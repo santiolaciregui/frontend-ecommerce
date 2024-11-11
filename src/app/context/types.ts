@@ -35,6 +35,7 @@ export interface Image {
 }
 
 export interface CartItem {
+  id: number;
   product: Product;
   options: Option[];
   quantity: number;
@@ -65,12 +66,25 @@ export interface CreditCard {
 
 export interface Order {
   id: number;
-  email: string;
+  client: {
+    name: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+  OrderItems: OrderItem[];
   totalAmount: number;
   shippingAddress?: string;
   paymentFormat: string;
   status: 'pending' | 'completed' | 'cancelled';
   createdAt: string; // Assuming it's returned as a string from the API
+}
+
+export interface OrderItem {
+  id: number;
+  Product: Product;
+  quantity: number;
+  totalPrice: number;
 }
 
 

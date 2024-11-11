@@ -47,7 +47,7 @@ const Checkout: React.FC = () => {
       store1: 'LAINEZ 123',
     },
   });
-  const [shippingCost, setShippingCost] = useState(5000); // Default shipping cost
+  const [shippingCost, setShippingCost] = useState(30000); // Default shipping cost
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -57,7 +57,7 @@ const Checkout: React.FC = () => {
     if (formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP) {
       setShippingCost(0);
     } else {
-      setShippingCost(5000);
+      setShippingCost(30000);
     }
   }, [formData.deliveryOption.option]);
 
@@ -149,12 +149,7 @@ const Checkout: React.FC = () => {
     }));
   };
 
-
-
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
-
-
-
 
 
   const handleCheckout = async () => {
@@ -371,7 +366,9 @@ const Checkout: React.FC = () => {
                     <option value="">Selecciona una tienda</option>
                     {stores.map((store) => (
                       <option key={store.id} value={store.id}>
-                        {store.name}
+                        {store.name} -  
+                        <br />
+                        <span className="text-sm text-gray-500">{store.address}</span>
                       </option>
                     ))}
                   </select>
@@ -415,7 +412,9 @@ const Checkout: React.FC = () => {
                       onChange={handleOptionChange}
                       className="mr-2"
                     />
-                    Transferencia
+                    Transferencia Bancaria
+                    <br />
+                    <span className="text-sm text-gray-500">15% de descuento</span>
                   </label>
                 </div>
 

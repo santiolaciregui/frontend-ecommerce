@@ -11,7 +11,7 @@ interface CartModalProps {
 }
 
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
-  const { cart, getTotalCart, removeFromCart } = useCart();
+  const { cart, getTotalCart, removeFromCart, clearCart } = useCart();
 
   const generateUniqueKey = (productId: number, options: Option[]) => {
     if (options && options.length > 0) {
@@ -22,8 +22,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
-
+  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   return (
     <div className='w-max absolute p-4 rounded-md shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white top-12 right-0 flex flex-col gap-6 z-20'>
@@ -80,7 +79,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
               Envio calculado al momento de finalizar la compra
             </p>
             <div className="flex justify-between text-sm">
-              <button className="rounded-md py-3 px-4 ring-1 ring-gray-300" onClick={onClose}>
+              <button className="rounded-md py-3 px-4 ring-1 ring-gray-300" onClick={clearCart}>
                 Ver Carrito
               </button>
               <Link href='/checkout' className="rounded-md py-3 px-4 bg-green-500 text-white" onClick={onClose}>

@@ -12,10 +12,9 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
   const [options, setOptions] = useState<Option[]>([]);
-  const [stockNumber, setStockNumber] = useState(product.stock); // Manejo de stock local
+  const [stockNumber, setStockNumber] = useState(product.stock);
 
   useEffect(() => {
-    // Aquí harías la solicitud para obtener `options` del producto
     const fetchProductOptions = async () => {
       try {
         setOptions(product.Options!);
@@ -27,24 +26,10 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
   }, [product]);
 
   const handleOptionSelect = (optionType: string, choice: string) => {
-    setSelectedOptions((prev) => {
-      // Crear un nuevo objeto para selectedOptions
-      const updatedOptions = { ...prev };
-      
-      // Desmarcar cualquier otra opción del mismo tipo
-      Object.keys(updatedOptions).forEach(key => {
-        if (key === optionType) {
-          delete updatedOptions[key];
-        }
-      });
-
-      // Marcar la nueva opción
-      if (prev[optionType] !== choice) {
-        updatedOptions[optionType] = choice;
-      }
-
-      return updatedOptions;
-    });
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [optionType]: choice
+    }));
   };
 
   const handleQuantity = (type: 'i' | 'd') => {
@@ -78,6 +63,11 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
   const colorOptions = options.filter(option => option.type === 0);
   const sizeOptions = options.filter(option => option.type === 1);
 
+  // Verificar si todas las opciones requeridas están seleccionadas
+  const allOptionsSelected = 
+    (colorOptions.length === 0 || selectedOptions['Color']) &&
+    (sizeOptions.length === 0 || selectedOptions['Size']);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Opciones de Color */}
@@ -90,9 +80,9 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
                 key={option.id}
                 className="w-8 h-8 rounded-full ring-1 ring-gray-300 relative"
                 style={{
-                  backgroundColor: option.name,
+                  backgroundColor: option.colorCode,
                   cursor: 'pointer',
-                  boxShadow: selectedOptions[option.name] === option.name ? '0 0 0 2px #000' : ''
+                  boxShadow: selectedOptions['Color'] === option.name ? '0 0 0 2px #000' : ''
                 }}
                 onClick={() => handleOptionSelect('Color', option.name)}
               >
@@ -147,10 +137,10 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
       {/* Botón para agregar al carrito */}
       <button 
         onClick={handleAddToCart} 
-        className="rounded-md py-3 px-4 bg-green-500 text-white"
-        disabled={quantity > stockNumber || stockNumber === 0} // Deshabilitar si no hay suficiente stock
+        className={`rounded-md py-3 px-4 ${allOptionsSelected ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+        disabled={!allOptionsSelected || quantity > stockNumber || stockNumber === 0}
       >
-        Agregar al carrito
+        {allOptionsSelected ? 'Agregar al carrito' : 'Selecciona todas las opciones'}
       </button>
     </div>
   )

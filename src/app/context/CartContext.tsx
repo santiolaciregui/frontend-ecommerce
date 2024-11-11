@@ -1,23 +1,30 @@
 'use client';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, Option, CartItem } from './types';
+import { addToCart as apiAddToCart, removeFromCart as apiRemoveFromCart, updateCartItemQuantity as apiUpdateCartItemQuantity, clearCart as apiClearCart } from '../pages/api/cart';
+
 
 type CartContextType = {
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (productId: number, options: Option[]) => void;
-  updateCartItemQuantity: (productId: number, options: Option[], quantity: number) => void;
+  addToCart: (item: CartItem) => Promise<void>;
+  removeFromCart: (productId: number, options: Option[]) => Promise<void>;
+  updateCartItemQuantity: (productId: number, options: Option[], quantity: number) => Promise<void>;
   getTotalCart: () => number;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'my_cart';
+const SESSION_ID_KEY = 'session_id';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Generate or retrieve session ID
+  const sessionId = localStorage.getItem(SESSION_ID_KEY) || '' ;
+  localStorage.setItem(SESSION_ID_KEY, sessionId);
 
   useEffect(() => {
     const storedCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -44,70 +51,60 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cart, isInitialLoad]);
 
-  const addToCart = (item: CartItem) => {
-    // Calcular el precio final del producto
-    const currentPrice = item.product.price;
-  
-    // Filtrar los descuentos activos
-    const activeDiscounts = item.product.Discounts?.filter(discount => discount.active);
-  
-    // Si existen descuentos activos, selecciona el de mayor porcentaje
-    const bestDiscount = activeDiscounts?.reduce((max, discount) => 
-      discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
-  
-    // Calcular el precio final aplicando el descuento si lo hay
-    const finalPrice = bestDiscount
-      ? currentPrice * (1 - bestDiscount.percentage / 100)
-      : currentPrice;
-  
-    // Actualiza el producto con el precio final
-    const updatedItem = {
-      ...item,
-      product: {
-        ...item.product,
-        price: finalPrice,
-      },
-    };
-  
-    setCart((prevCart) => {
-      const existingItem = prevCart.find(
-        (cartItem) =>
-          cartItem.product.id === updatedItem.product.id &&
-          JSON.stringify(cartItem.options) === JSON.stringify(updatedItem.options)
-      );
-  
-      if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.product.id === updatedItem.product.id &&
-          JSON.stringify(cartItem.options) === JSON.stringify(updatedItem.options)
-            ? { ...cartItem, quantity: cartItem.quantity + updatedItem.quantity }
-            : cartItem
+  const addToCart = async (item: CartItem) => {
+    try {
+      const optionIds = item.options.map(option => option.id);
+      await apiAddToCart(sessionId, item.product.id, item.quantity, optionIds);
+      setCart((prevCart) => {
+        const existingItemIndex = prevCart.findIndex(
+          (cartItem) =>
+            cartItem.product.id === item.product.id &&
+            JSON.stringify(cartItem.options.map(o => o.id).sort()) === JSON.stringify(optionIds.sort())
         );
-      } else {
-        return [...prevCart, updatedItem];
-      }
-    });
+
+        if (existingItemIndex !== -1) {
+          const updatedCart = [...prevCart];
+          updatedCart[existingItemIndex].quantity += item.quantity;
+          return updatedCart;
+        } else {
+          return [...prevCart, item];
+        }
+      });
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
   };
 
-
-  const removeFromCart = (productId: number, options: Option[]) => {
-    setCart((prevCart) =>
-      prevCart.filter(
-        (item) =>
-          item.product.id !== productId ||
-          JSON.stringify(item.options) !== JSON.stringify(options)
-      )
-    );
+  const removeFromCart = async (cartItemId: number) => {
+    try {
+      await apiRemoveFromCart(sessionId, cartItemId);
+      setCart((prevCart) => prevCart.filter((item) => item.id !== cartItemId));
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
   };
 
-  const updateCartItemQuantity = (productId: number, options: Option[], quantity: number) => {
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.product.id === productId && JSON.stringify(item.options) === JSON.stringify(options)
-          ? { ...item, quantity }
-          : item
-      )
-    );
+  const updateCartItemQuantity = async (cartItemId: number, quantity: number) => {
+    try {
+      await apiUpdateCartItemQuantity(sessionId, cartItemId, quantity);
+      setCart((prevCart) =>
+        prevCart.map((item) =>
+          item.id === cartItemId ? { ...item, quantity } : item
+        )
+      );
+    } catch (error) {
+      console.error('Error updating cart item quantity:', error);
+    }
+  };
+
+  const clearCart = async () => {
+    try {
+      await apiClearCart(sessionId);
+      setCart([]);
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+    }
   };
 
   const getTotalCart = () => {
@@ -116,13 +113,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }, 0);
   };
 
-  const clearCart = () => {
-    setCart([]);
-    localStorage.removeItem(CART_STORAGE_KEY);
-  };
-
   return (
-    <CartContext.Provider value={{ cart, getTotalCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ 
+      cart, 
+      getTotalCart, 
+      addToCart, 
+      updateCartItemQuantity: (productId: number, options: Option[], quantity: number) => 
+        updateCartItemQuantity(productId, quantity),
+      removeFromCart, 
+      clearCart 
+    }}>
       {children}
     </CartContext.Provider>
   );
