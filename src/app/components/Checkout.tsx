@@ -7,10 +7,8 @@ import { CreditCard, Store } from '../context/types';
 import apiServiceCards from '../pages/api/promotions';
 import { createOrder, createPreference } from '../pages/api/order';
 import { fetchStores } from '../pages/api/stores';
-import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
-
-initMercadoPago('APP_USR-c327a30f-bbdf-4864-8f87-a2134da521d5');
-
+//import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
+//initMercadoPago('APP_USR-c327a30f-bbdf-4864-8f87-a2134da521d5');
 
 
 const DELIVERY_OPTIONS = {
@@ -158,6 +156,7 @@ const Checkout: React.FC = () => {
     setSuccess(null);
 
     const orderData = {
+      sessionId: localStorage.getItem("session_id"),
       contactInfo: formData.contactInfo,
       deliveryOption: {
         ...formData.deliveryOption,
@@ -181,14 +180,16 @@ const Checkout: React.FC = () => {
       const orderResponse = await createOrder(orderData);
 
       // Crear la preferencia de pago en Mercado Pago
-      const { preferenceId } = await createPreference(orderData.cartItems, orderData.totalAmount);
+      //const { preferenceId } = await createPreference(orderData.cartItems, orderData.totalAmount);
 
-      setSuccess('Order placed successfully!');
-      clearCart();
+      if (orderResponse) {
+        setSuccess('Order placed successfully!');
+        clearCart();
+      }
 //      router.push('/success');
 
       // Usar el preferenceId para el componente Wallet
-      setPreferenceId(preferenceId);
+      // setPreferenceId(preferenceId);
     } catch (err) {
       setError('There was an error processing your order. Please try again.');
     } finally {
@@ -470,9 +471,9 @@ const Checkout: React.FC = () => {
             <button onClick={handleCheckout} className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600">
               Finalizar compra
             </button>
-            {preferenceId && (
+            {/*{preferenceId && (
               <Wallet initialization={{ preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
-            )}
+            )}*/}
           </div>
         </div>
       </div>

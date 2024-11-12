@@ -21,30 +21,34 @@ const SESSION_ID_KEY = 'session_id';
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Generate or retrieve session ID
-  const sessionId = localStorage.getItem(SESSION_ID_KEY) || '' ;
-  localStorage.setItem(SESSION_ID_KEY, sessionId);
+  const [sessionId, setSessionId] = useState<string>('');
 
   useEffect(() => {
-    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (storedCart) {
-      const parsedCart = JSON.parse(storedCart);
-      const { cart: loadedCart, timestamp } = parsedCart;
-      const now = new Date().getTime();
-      const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+    if (typeof window !== 'undefined') {
+      // Generate or retrieve session ID
+      const storedSessionId = localStorage.getItem(SESSION_ID_KEY) || '';
+      setSessionId(storedSessionId);
+      localStorage.setItem(SESSION_ID_KEY, storedSessionId);
 
-      if (now - timestamp < oneDayInMilliseconds) {
-        setCart(loadedCart);
-      } else {
-        localStorage.removeItem(CART_STORAGE_KEY);
+      const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (storedCart) {
+        const parsedCart = JSON.parse(storedCart);
+        const { cart: loadedCart, timestamp } = parsedCart;
+        const now = new Date().getTime();
+        const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+
+        if (now - timestamp < oneDayInMilliseconds) {
+          setCart(loadedCart);
+        } else {
+          localStorage.removeItem(CART_STORAGE_KEY);
+        }
       }
+      setIsInitialLoad(false);
     }
-    setIsInitialLoad(false);
   }, []);
 
   useEffect(() => {
-    if (!isInitialLoad) {
+    if (!isInitialLoad && typeof window !== 'undefined') {
       const timestamp = new Date().getTime();
       const dataToStore = JSON.stringify({ cart, timestamp });
       localStorage.setItem(CART_STORAGE_KEY, dataToStore);
@@ -101,7 +105,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     try {
       await apiClearCart(sessionId);
       setCart([]);
-      localStorage.removeItem(CART_STORAGE_KEY);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(CART_STORAGE_KEY);
+      }
     } catch (error) {
       console.error('Error clearing cart:', error);
     }
