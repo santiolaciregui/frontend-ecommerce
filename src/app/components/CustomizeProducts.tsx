@@ -48,12 +48,12 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
     });
 
     const cartItem = {
-      product,
+      productId: product.id,
       options: selectedOptionsArray,
       quantity
     };
 
-    addToCart(cartItem);
+    addToCart(cartItem.productId, cartItem.quantity, cartItem.options.map(option => option.id));
 
     setStockNumber((prevStock) => prevStock - quantity);
     setQuantity(1);

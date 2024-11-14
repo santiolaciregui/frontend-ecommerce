@@ -28,7 +28,8 @@
     "react-multi-select-component": "^4.3.4",
     "react-sortablejs": "^6.1.4",
     "resend": "^4.0.0",
-    "sortablejs": "^1.15.2"
+    "sortablejs": "^1.15.2",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",

@@ -4,6 +4,9 @@ import Image from "next/image";
 import { useCart } from '../context/CartContext';
 import Link from "next/link";
 import { Option } from "../context/types";
+import { useEffect, useState } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface CartModalProps {
   isOpen: boolean;
@@ -11,22 +14,24 @@ interface CartModalProps {
 }
 
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
-  const { cart, getTotalCart, removeFromCart, clearCart } = useCart();
+  const { cart, removeFromCart, clearCart } = useCart();
 
-  const generateUniqueKey = (productId: number, options: Option[]) => {
+  useEffect(() => {
+    console.log('carting:', JSON.stringify(cart));
+  }, [cart]);
+
+  const generateUniqueKey = (itemId: number, productId: number, options: Option[]) => {
     if (options && options.length > 0) {
-      return `${productId}-${options.map(option => option.id).join('-')}`;
+      return `${itemId}-${productId}-${options.map(option => option.id).join('-')}`;
     }
-    return `${productId}`;
+    return `${itemId}-${productId}`;
   };
 
   if (!isOpen) return null;
 
-  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
   return (
     <div className='w-max absolute p-4 rounded-md shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white top-12 right-0 flex flex-col gap-6 z-20'>
-      {cart.length === 0 ? (
+      {cart === null ? (
         <div>El carrito está vacío</div>
       ) : (
         <div>
@@ -34,9 +39,9 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
           <br />
           <div className="flex flex-col gap-8">
             {cart.map((item) => (
-              <div className="flex gap-4" key={generateUniqueKey(item.product.id, item.options)}>
+              <div className="flex gap-4" key={generateUniqueKey(item.id, item.Product.id, item.Options || [])}>
                 <Image
-                  src={item.product.Images[0] ? `${API_URL}${item.product.Images[0].url}` : '/logo-verde-manzana.svg'}
+                  src={item.Product.Images[0].url || '/logo-verde-manzana.svg'}
                   alt={''}
                   width={62}
                   height={96}
@@ -45,11 +50,11 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                 <div className="flex flex-col justify-between w-full">
                   <div>
                     <div className="flex justify-between items-center gap-8">
-                      <h3 className="font-semibold">{item.product.name}</h3>
+                      <h3 className="font-semibold">{item.Product.name}</h3>
                     </div>
                     <div className="text-sm text-gray-500">
-                      {item.options?.map((option) => (
-                        <span key={option.name}>{option.name}</span>
+                      {item.Options?.map((option) => (
+                        <span key={option.id}>{option.name}</span>
                       ))}
                     </div>
                   </div>
@@ -60,7 +65,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                     </div>
                     <span
                       className="text-blue-500 cursor-pointer"
-                      onClick={() => removeFromCart(item.product.id, item.options)}
+                      onClick={() => removeFromCart(item.id)}
                     >
                       Eliminar
                     </span>
@@ -73,7 +78,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             <br />
             <div className="flex items-center justify-between font-semibold">
               <span>Subtotal</span>
-              <span>${getTotalCart()}</span>
+              <span>${cart.reduce((acc, item) => acc + item.Product.price * item.quantity, 0)}</span>
             </div>
             <p className="text-gray-500 text-sm mt--2 mb-4">
               Envio calculado al momento de finalizar la compra

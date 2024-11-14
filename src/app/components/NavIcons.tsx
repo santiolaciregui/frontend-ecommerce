@@ -29,14 +29,14 @@ const NavIcons = () => {
   };
 
   useEffect(() => {
-    if (cart.length === 0 && isCartOpen) {
+    if (cart === null && isCartOpen) {
       const timer = setTimeout(() => {
         setCartOpen(false);
       }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [cart.length, isCartOpen]);
+  }, [cart, isCartOpen]);
 
   if (isLoading) {
     return <div>Loading...</div>; // Render a loading state while checking authentication
@@ -70,7 +70,7 @@ const NavIcons = () => {
           onClick={handleCartClick}
         />
         <div className='absolute -top-4 -right-4 w-6 h-6 bg-green-500 rounded-full text-white text-sm flex items-center justify-center'>
-          {cart.length}
+          {cart?.length || 0}
         </div>
       </div>
       <CartModal isOpen={isCartOpen} onClose={() => setCartOpen(false)} />

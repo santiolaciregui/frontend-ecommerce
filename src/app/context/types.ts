@@ -33,12 +33,17 @@ export interface Image {
   id: number;
   url: string;
 }
-
+export interface Cart {
+  id: number;
+  totalAmount: number;
+  CartItems: CartItem[];
+}
 export interface CartItem {
   id: number;
-  product: Product;
-  options: Option[];
+  Product: Product;
+  Options: Option[];
   quantity: number;
+  image: string;
 }
 
 export interface Discount {

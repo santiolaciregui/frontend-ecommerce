@@ -22,11 +22,7 @@ const Add = ({
       return;
     }
 
-    addToCart({
-      product,
-      options: selectedOptions, // Pass the selected options instead of variantId
-      quantity,
-    });
+    addToCart(product.id, quantity, selectedOptions.map(option => option.id));
   };
 
   return (

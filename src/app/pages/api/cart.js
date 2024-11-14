@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Update this URL if 
 // Add an item to the cart
 export const addToCart = async (sessionId, productId, quantity, optionIds) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/cart/add`, { sessionId, productId, quantity, optionIds });
+    const response = await axios.post(`${API_BASE_URL}/cart/add`, { sessionId: localStorage.getItem('session_id'), productId, quantity, optionIds });
     return response.data;
   } catch (error) {
     console.error('Error adding item to cart:', error);
@@ -16,7 +16,7 @@ export const addToCart = async (sessionId, productId, quantity, optionIds) => {
 // Remove an item from the cart
 export const removeFromCart = async (sessionId, cartItemId) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/cart/remove`, { sessionId, cartItemId });
+    const response = await axios.post(`${API_BASE_URL}/cart/remove`, { sessionId: localStorage.getItem('session_id'), cartItemId });
     return response.data;
   } catch (error) {
     console.error('Error removing item from cart:', error);
@@ -31,6 +31,16 @@ export const updateCartItemQuantity = async (sessionId, cartItemId, quantity) =>
     return response.data;
   } catch (error) {
     console.error('Error updating cart item quantity:', error);
+    throw error;
+  }
+};
+
+export const getCart = async (sessionId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/cart/get/${sessionId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting cart:', error);
     throw error;
   }
 };
@@ -50,5 +60,6 @@ export default {
   addToCart,
   removeFromCart,
   updateCartItemQuantity,
+  getCart,
   clearCart,
 };
