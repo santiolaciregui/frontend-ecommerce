@@ -7,7 +7,7 @@ import * as cartService from '../pages/api/cart';
 type CartContextType = {
   cart: CartItem[] | null;
   addToCart: (productId: number, quantity: number, optionIds: number[]) => Promise<void>;
-   nremoveFromCart: (cartItemId: number) => Promise<void>;
+  removeFromCart: (cartItemId: number) => Promise<void>;
   updateCartItemQuantity: (cartItemId: number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   isLoading: boolean;
