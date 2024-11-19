@@ -11,8 +11,6 @@ interface Props {
 const ProductCard = ({ product }: Props) => {
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-
-  
   const currentPrice = product.price;
 
   // Handle discounts
