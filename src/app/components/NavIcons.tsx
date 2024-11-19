@@ -56,7 +56,7 @@ const NavIcons = () => {
         <div className='absolute p-4 rounded-md top-12 w-32 text-sm shadow-[0_3px_10px_rgb(0,0,0,0.2)] z-20'>
           <Link href='/profile'>Perfil</Link>
           <div className='mt-2 cursor-pointer' onClick={handleLogout}>
-            Cerrar Sesion
+            Cerrar Sesión
           </div>
         </div>
       )}

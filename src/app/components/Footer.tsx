@@ -47,7 +47,7 @@ const Footer = () => {
 
 
             </div>
-              <span className="font-semibold">Metodos de pago</span>
+              <span className="font-semibold">Métodos de pago</span>
               <div className="flex justify-start"> 
               <Image src="/visa.png" alt="" width={40} height={20}/>
               <Image src="/mastercard.png" alt="" width={40} height={20}/>
