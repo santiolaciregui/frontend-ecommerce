@@ -87,14 +87,13 @@ const ProductCard = ({ product }: Props) => {
         <div className="text-center text-blue-600 font-semibold text-sm">
           {promotionInstallments}x de ${monthlyInstallment} sin interés
         </div>
-      )}
-
-      <Add 
-        product={product} 
-        selectedOptions={[]}
-        stockNumber={product.stock || 0}
-        quantity={1}
-      />
+            )}
+      {/* Botón de redirección */}
+      <Link href={'/products/' + product.id}>
+        <button         className="2-36 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200">
+          Seleccionar opciones
+        </button>
+      </Link>
     </Link>
   );
 };
