@@ -1,5 +1,5 @@
 node_modules
 *.gz
 *.old
-.next/
+.next
 .env
