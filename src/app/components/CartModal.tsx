@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useCart } from '../context/CartContext';
 import Link from "next/link";
 import { Option } from "../context/types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -14,7 +14,7 @@ interface CartModalProps {
 }
 
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
-  const { cart, removeFromCart, clearCart } = useCart();
+  const { cart, removeFromCart } = useCart();
 
   useEffect(() => {
     console.log('carting:', JSON.stringify(cart));
@@ -84,9 +84,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
               Envio calculado al momento de finalizar la compra
             </p>
             <div className="flex justify-between text-sm">
-              <button className="rounded-md py-3 px-4 ring-1 ring-gray-300" onClick={clearCart}>
-                Ver Carrito
-              </button>
               <Link href='/checkout' className="rounded-md py-3 px-4 bg-green-500 text-white" onClick={onClose}>
                 Finalizar compra
               </Link>
