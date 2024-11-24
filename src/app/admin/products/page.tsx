@@ -6,27 +6,9 @@ import Link from 'next/link';
 
 const AdminList = () => { 
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [discounts, setDiscounts] = useState<Discount[]>([]);
-  const [options, setOptions] = useState<Option[]>([]);
-  const [formData, setFormData] = useState<Product>({
-    id: 0,
-    name: '',
-    SKU: '',
-    description: '',
-    price: 0,
-    stock: 0,
-    weight: 0,
-    Categories: [],
-    Discounts: [],
-    Options: [],
-    Images: [],
-    getFinalPrice: async () => 0
-  });
-  const [editMode, setEditMode] = useState<boolean>(false);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState<string | null>(null); // Para el mensaje flotante
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -45,20 +27,23 @@ const AdminList = () => {
     fetchProducts();
   }, []);
 
-  const handleEdit = (product: Product) => {
-    setFormData(product);
-    setEditMode(true);
-  };
-
-  const handleDelete =  async (product_id : number) => {
+  const handleDelete = async (product_id: number) => {
     try {
       setLoading(true);
-      await apiService.deleteProductByID({id: product_id});
-      alert('Producto eliminado con éxito');
-      fetchAllProducts();
+      await apiService.deleteProductByID({ id: product_id });
+      
+      // Actualiza la lista eliminando el producto
+      setProducts(prevProducts => prevProducts.filter(product => product.id !== product_id));
+      
+      // Muestra el mensaje flotante
+      setNotification('Producto eliminado con éxito');
+      
+      // Oculta el mensaje después de 3 segundos
+      setTimeout(() => setNotification(null), 3000);
     } catch (err) {
-      setError('Error al crear la promoción');
       console.error(err);
+      setNotification('Error al eliminar el producto');
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoading(false);
     }
@@ -67,7 +52,6 @@ const AdminList = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-6xl mx-auto mt-10">
-
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Lista de Productos</h2>
           <Link 
@@ -99,12 +83,6 @@ const AdminList = () => {
                   <td className="px-6 py-4 border-b">${product.price}</td>
                   <td className="px-6 py-4 border-b">
                     <button
-                      onClick={() => handleEdit(product)}
-                      className="text-blue-500 hover:underline mr-4"
-                    >
-                      Editar
-                    </button>
-                    <button
                       onClick={() => handleDelete(product.id!)}
                       className="text-red-500 hover:underline"
                     >
@@ -117,6 +95,13 @@ const AdminList = () => {
           </table>
         </div>
       </div>
+      
+      {/* Contenedor para el mensaje flotante */}
+      {notification && (
+        <div className="fixed top-4 right-4 bg-blue-500 text-white py-2 px-4 rounded shadow-md">
+          {notification}
+        </div>
+      )}
     </div>
   );
 };
