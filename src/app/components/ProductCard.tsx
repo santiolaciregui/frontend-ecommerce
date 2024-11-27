@@ -11,17 +11,7 @@ interface Props {
 const ProductCard = ({ product }: Props) => {
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  const currentPrice = product.price;
-
-  // Handle discounts
-  const activeDiscounts = product.Discounts?.filter(discount => discount.active);
-  const bestDiscount = activeDiscounts?.reduce((max, discount) => 
-    discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
-
-  const discountPercentage = bestDiscount?.percentage || null;
-  const discountedPrice = bestDiscount
-    ? (currentPrice * (1 - bestDiscount.percentage / 100)).toFixed(2)
-    : currentPrice.toFixed(2);
+  const finalPrice = product.finalPrice.toFixed(2);
 
   // Handle promotions
   const activePromotions = product.Promotions?.filter(promotion => {
@@ -34,7 +24,6 @@ const ProductCard = ({ product }: Props) => {
   const bestPromotion = activePromotions?.[0]; // Assuming one active promotion per product
   const promotionInstallments = bestPromotion?.installments || 0;
 
-  const finalPrice = bestDiscount ? discountedPrice : currentPrice.toFixed(2);
   const monthlyInstallment = promotionInstallments > 0 
     ? (parseFloat(finalPrice) / promotionInstallments).toFixed(2)
     : null;
@@ -42,9 +31,9 @@ const ProductCard = ({ product }: Props) => {
   return (
   <Link href={'/products/' + product.id} className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[30%]" key={product.id}>
       <div className="relative w-full h-80 group">
-        {discountPercentage && (
+        {product.price !== product.finalPrice && (
           <div className="absolute top-2 left-2 bg-green-500 text-white text-sm font-bold py-1 px-2 rounded z-20">
-            {discountPercentage}% OFF
+            {product.Discounts && product.Discounts.length > 0 && product.Discounts[0].percentage}% OFF
           </div>
         )}
 
@@ -76,8 +65,8 @@ const ProductCard = ({ product }: Props) => {
       <div className="flex justify-between items-center">
         <span className="font-medium">{product.name}</span>
         <div className="flex items-center space-x-2">
-          {discountPercentage && (
-            <span className="text-gray-500 line-through text-sm">${currentPrice.toFixed(2)}</span>
+          {product.Discounts && product.Discounts.length > 0 && (
+            <span className="text-gray-500 line-through text-sm">${product.price.toFixed(2)}</span>
           )}
           <span className="font-semibold text-lg">${finalPrice}</span>
         </div>

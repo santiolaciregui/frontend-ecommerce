@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import ProductImages from "@/app/components/ProductImages";
 import CustomizeProducts from "@/app/components/CustomizeProducts";
-import Add from "@/app/components/Add";
 import { fetchProductByID } from "../../pages/api/products";
 import { fetchStores } from "../../pages/api/stores"; // Asumiendo que este es tu endpoint
 import { useParams } from "next/navigation";
@@ -64,7 +63,7 @@ const SinglePage = () => {
   const discountPercentage = bestDiscount?.percentage || null;
 
   return (
-    <div className='px-4 mt-12 md:px-8 lg:px-16 xl:32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
+    <div className='px-4 mt-12 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
       {/* Image */}
       <div className="w-full lg:w-1/2 lg:sticky top-20 h-max">
         <ProductImages items={product.Images} />
@@ -72,20 +71,20 @@ const SinglePage = () => {
       
       {/* Texts */}
       <div className="w-full lg:w-1/2 flex flex-col gap-6">
-        <h1 className="text-4xl font-medium">{product.name}</h1>
+        <h1 className="text-4xl font-medium text-gray-800">{product.name}</h1>
         
         <div className="flex items-center gap-4">
           {discountPercentage && (
             <h3 className="text-xl text-gray-500 line-through">${currentPrice.toFixed(2)}</h3>
           )}
-          <h2 className="font-medium text-2xl">${finalPrice}</h2>
+          <h2 className="font-medium text-2xl text-gray-800">${finalPrice}</h2>
         </div>
         
-        <div className="discount-info">
-          <p>15% de descuento pagando con Transferencia Bancaria</p>
+        <div className="discount-info bg-yellow-100 p-2 rounded-md">
+          <p className="text-yellow-800">15% de descuento pagando con Transferencia Bancaria</p>
         </div>
         
-        <div className="h-[2px] bg-gray-100" />
+        <div className="h-[2px] bg-gray-200 my-4" />
         
         {product.stock ? (
           <CustomizeProducts product={product} />
@@ -95,48 +94,28 @@ const SinglePage = () => {
           </button>
         )}
         
-        {/* Medios de envío */}
-        <div className="border-t border-gray-200 mt-4 pt-4">
-          <button 
-            className="flex justify-between items-center w-full py-2 text-left" 
-            onClick={() => setIsShippingOpen(!isShippingOpen)}
-          >
-            <h3 className="font-medium text-lg">Medios de envío</h3>
-            <span>{isShippingOpen ? '-' : '+'}</span>
-          </button>
-          
-          {isShippingOpen && (
-            <div className="shipping-options mt-2">
-              <input 
-                type="text" 
-                className="border border-gray-300 p-2 rounded w-full" 
-                placeholder="Tu código postal" 
-              />
-              <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded mt-2">
-                CALCULAR
-              </button>
-              <a href="#" className="text-sm text-blue-500 mt-2 block">No sé mi código postal</a>
-            </div>
-          )}
-        </div>
-        
         {/* Nuestros locales */}
-        <div className="border-t border-gray-200 mt-4 pt-4">
+        <div className="border-t border-gray-300 mt-4 pt-4">
           <button 
-            className="flex justify-between items-center w-full py-2 text-left" 
+            className="flex justify-between items-center w-full py-2 text-left hover:bg-gray-100 transition-colors duration-200" 
             onClick={() => setIsStoresOpen(!isStoresOpen)}
           >
-            <h3 className="font-medium text-lg">Nuestros locales</h3>
-            <span>{isStoresOpen ? '-' : '+'}</span>
+            <h3 className="font-medium text-lg flex items-center text-gray-800">
+              <i className="fas fa-store mr-2"></i> Nuestros locales
+            </h3>
+            <span>
+              <i className={`fas ${isStoresOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+            </span>
           </button>
           
           {isStoresOpen && (
             <div className="local-stores mt-2">
               {stores.length > 0 ? (
                 stores.map(store => (
-                  <div key={store.id} className="bg-gray-100 p-4 rounded mt-2">
-                    <p>{store.name}</p>
-                    <p>{store.address}</p>
+                  <div key={store.id} className="bg-gray-100 p-4 rounded mt-2 shadow-md">
+                    <p className="font-semibold text-lg text-gray-800"><i className="fas fa-map-marker-alt mr-2"></i>{store.name}</p>
+                    <p className="text-gray-700"><i className="fas fa-map-pin mr-2"></i>{store.address} - {store.city}, {store.state}</p>
+                    <p className="text-gray-700"><i className="fas fa-phone mr-2"></i>{store.phone}</p>
                   </div>
                 ))
               ) : (
@@ -146,14 +125,18 @@ const SinglePage = () => {
           )}
         </div>
 
-        <div className="h-[2px] bg-gray-100"/>
-        {product.description ?  (
+        <div className="h-[2px] bg-gray-200 my-4"/>
+        {product.description ? (
           <div className="text-sm" key={product.id}>
-            <h4 className="font-medium mb-4">Descripción del Producto</h4>
-            <p>{product.description}</p>
+            <h4 className="font-medium mb-4 flex items-center text-gray-800">
+              <i className="fas fa-info-circle mr-2"></i> Descripción del Producto
+            </h4>
+            <p className="text-gray-700">{product.description}</p>
           </div>
         ) : (
-          <h4 className="font-medium mb-4">Sin Información Adicional</h4>
+          <h4 className="font-medium mb-4 flex items-center text-gray-800">
+            <i className="fas fa-exclamation-circle mr-2"></i> Sin Información Adicional
+          </h4>
         )}
       </div>
     </div>

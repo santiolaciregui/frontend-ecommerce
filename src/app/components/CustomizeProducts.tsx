@@ -105,7 +105,7 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
                 key={option.id}
                 className="ring-1 ring-green-400 rounded-md py-1 px-4 text-sm cursor-pointer"
                 style={{
-                  cursor: 'pointer',
+                  cursor: 'pointer',  
                   backgroundColor: selectedOptions['Size'] === option.name ? '#4ade80' : 'white',
                   color: selectedOptions['Size'] === option.name ? 'white' : '#4ade80',
                 }}
@@ -118,19 +118,16 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
         </div>
       )}
 
-      <h4 className="font-medium">Cantidad:</h4>
-      <div className="flex justify-between">
-        <div className="flex items-center gap-4">
-          <div className="bg-gray-100 py-2 px-4 rounded-3xl flex items-center justify-between w-32">
-            <button className="cursor-pointer text-xl" onClick={() => handleQuantity('d')}>
-              -
-            </button>
-            {quantity}
-            <button className="cursor-pointer text-xl" onClick={() => handleQuantity('i')}>
-              +
-            </button>
-          </div>
-          <div className="">Últimos {stockNumber} productos</div>
+      <div className="flex items-center gap-4">
+        <h4 className="font-medium">Cantidad:</h4>
+        <div className="bg-gray-100 py-2 px-4 rounded-3xl flex items-center justify-between w-32">
+          <button className="cursor-pointer text-xl" onClick={() => handleQuantity('d')}>
+            -
+          </button>
+          {quantity}
+          <button className="cursor-pointer text-xl" onClick={() => handleQuantity('i')}>
+            +
+          </button>
         </div>
       </div>
 
