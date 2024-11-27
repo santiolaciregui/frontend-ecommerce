@@ -31,76 +31,78 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        {/* Administración de Productos */}
-        <div className="border rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Administración de Productos</h2>
-          <div className="space-y-4">
-            <Link href="/admin/products" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Ver Productos
-            </Link>
-            <Link href="/admin/products/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Añadir Producto
-            </Link>
+        {/* Show 3 per row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Administración de Productos */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Productos</h2>
+            <div className="space-y-4">
+              <Link href="/admin/products" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Productos
+              </Link>
+              <Link href="/admin/products/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Añadir Producto
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Administración de Categorías */}
-        <div className="border rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Administración de Categorías</h2>
-          <div className="space-y-4">
-            <Link href="/admin/categories" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Ver Categorías
-            </Link>
-            <Link href="/admin/categories/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Añadir Categoría
-            </Link>
+          {/* Administración de Categorías */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Categorías</h2>
+            <div className="space-y-4">
+              <Link href="/admin/categories" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Categorías
+              </Link>
+              <Link href="/admin/categories/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Añadir Categoría
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Administración de Opciones */}
-        <div className="border rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Administración de Opciones de Productos</h2>
-          <div className="space-y-4">
-            <Link href="/admin/options" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Ver Opciones
-            </Link>
-            
+          {/* Administración de Opciones */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Opciones de Productos</h2>
+            <div className="space-y-4">
+              <Link href="/admin/options" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Opciones
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Administración de Descuentos */}
-        <div className="border rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Administración de Descuentos</h2>
-          <div className="space-y-4">
-            <Link href="/admin/discount" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Ver Descuentos
-            </Link>
-            <Link href="/admin/discount/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Añadir Descuento
-            </Link>
+          {/* Administración de Descuentos */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Descuentos</h2>
+            <div className="space-y-4">
+              <Link href="/admin/discount" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Descuentos
+              </Link>
+              <Link href="/admin/discount/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Añadir Descuento
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Administración de Promociones */}
-        <div className="border rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Administración de Promociones</h2>
-          <div className="space-y-4">
-            <Link href="/admin/promotions" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Ver Promociones
-            </Link>
-            <Link href="/admin/promotions/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Añadir Promoción
-            </Link>
+          {/* Administración de Promociones */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Promociones</h2>
+            <div className="space-y-4">
+              <Link href="/admin/promotions" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Promociones
+              </Link>
+              <Link href="/admin/promotions/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Añadir Promoción
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Administración de Ordenes */}
-        <div className="border rounded-lg bg-white p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Administración de Órdenes</h2>
-          <div className="space-y-4">
-            <Link href="/admin/orders" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Ver Órdenes de Compra
-            </Link>
+          {/* Administración de Órdenes */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Órdenes</h2>
+            <div className="space-y-4">
+              <Link href="/admin/orders" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Órdenes de Compra
+              </Link>
+            </div>
           </div>
         </div>
       </div>
