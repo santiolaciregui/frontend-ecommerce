@@ -19,7 +19,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6 mx-4">
 
         {/* Logout Button */}
         <div className="flex justify-end mb-6">
