@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ;   // Update this URL if your backend is hosted elsewhere
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;   // Update this URL if your backend is hosted elsewhere
 
 export const fetchProducts = async ({
   categoryId,
@@ -83,7 +83,21 @@ export const deleteProductByID = async ({
    }
  };
 
-// Add more API calls as needed
+ export const updateProduct = async (id, productData) => {
+  try {
+    // Inspeccionar FormData
+    console.log("Contenido de productData:");
+    for (const pair of productData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axios.put(`${API_BASE_URL}/products/${id}`, productData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    throw error;
+  }
+};
 
 export default {
   fetchProductsByCategory,
@@ -91,5 +105,6 @@ export default {
   fetchAllProducts,
   fetchProductByID,
   createProduct,
-  deleteProductByID
+  deleteProductByID,
+  updateProduct
 };
