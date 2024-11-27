@@ -24,7 +24,7 @@ const PAYMENT_FORMATS = {
 
 const Checkout: React.FC = () => {
   const router = useRouter();
-  const { cart, getTotalCart, clearCart } = useCart();
+  const { cart, clearCart } = useCart();
   const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
   const [formData, setFormData] = useState({
     contactInfo: {
@@ -163,16 +163,16 @@ const Checkout: React.FC = () => {
         shippingCost,
       },
       paymentFormat: formData.paymentFormat,
-      totalAmount: getTotalCart() + shippingCost,
-      cartItems: cart.map((item) => ({
+      totalAmount: cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) : '0.00',
+      cartItems: cart ? cart.map((item) => ({
         product: {
-          id: item.product.id,
-          name: item.product.name,
-          price: item.product.price,
+          id: item.Product.id,
+          name: item.Product.name,
+          price: item.Product.price,
         },
         quantity: item.quantity,
-        options: item.options,
-      })),
+        options: item.Options,
+      })) : [],
     };
 
     try {
@@ -444,19 +444,19 @@ const Checkout: React.FC = () => {
           <div className="lg:col-span-1">
             <h2 className="text-xl font-semibold mb-4">Resumen del pedido</h2>
             <div className="border p-4 rounded-md space-y-4">
-              {cart.map((cartItem) => (
-                <div key={cartItem.product.id} className="flex justify-between items-center">
-                  <div>
-                    <span>{cartItem.product.name}</span>
+              {cart?.map((cartItem) => (  
+                <div key={cartItem.Product.id} className="flex justify-between items-center">
+                  <div> 
+                    <span>{cartItem.Product.name}</span>
                     <span className="text-gray-500 ml-2">x {cartItem.quantity}</span>
                   </div>
-                  <span>${cartItem.product.price! * cartItem.quantity}</span>
+                  <span>${cartItem.Product.finalPrice * cartItem.quantity}</span>
                 </div>
               ))}
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
                   <span>Subtotal</span>
-                  <span>${getTotalCart()}</span>
+                  <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) : '0.00'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Envío</span>
@@ -464,7 +464,7 @@ const Checkout: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total</span>
-                  <span>${getTotalCart() + shippingCost}</span>
+                  <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) + shippingCost : '0.00'}</span>
                 </div>
               </div>
             </div>

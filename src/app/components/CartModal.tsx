@@ -20,11 +20,12 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
     console.log('carting:', JSON.stringify(cart));
   }, [cart]);
 
-  const generateUniqueKey = (itemId: number, productId: number, options: Option[]) => {
-    if (options && options.length > 0) {
-      return `${itemId}-${productId}-${options.map(option => option.id).join('-')}`;
-    }
-    return `${itemId}-${productId}`;
+  
+  const generateUniqueKey = (item: any) => {
+    const optionsKey = item.Options && item.Options.length > 0
+      ? `-${item.Options.map((opt: Option) => opt.id).sort().join('-')}`
+      : '';
+    return `${item.Product.id}${optionsKey}`;
   };
 
   if (!isOpen) return null;
@@ -39,9 +40,9 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
           <br />
           <div className="flex flex-col gap-8">
             {cart.map((item) => (
-              <div className="flex gap-4" key={generateUniqueKey(item.id, item.Product.id, item.Options || [])}>
+              <div className="flex gap-4" key={generateUniqueKey(item)}>
                 <Image
-                  src={item.Product.Images[0].url || '/logo-verde-manzana.svg'}
+                  src={item.Product.Images[0] ? `${API_URL}${item.Product.Images[0].url}` : '/logo-verde-manzana.svg'}
                   alt={''}
                   width={62}
                   height={96}
@@ -67,7 +68,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                       className="text-blue-500 cursor-pointer"
                       onClick={() => removeFromCart(item.id)}
                     >
-                      Eliminar
+                      <i className="fas fa-trash text-gray-500"></i>
                     </span>
                   </div>
                 </div>
@@ -78,7 +79,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             <br />
             <div className="flex items-center justify-between font-semibold">
               <span>Subtotal</span>
-              <span>${cart.reduce((acc, item) => acc + item.Product.price * item.quantity, 0)}</span>
+              <span>${cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2)}</span>
             </div>
             <p className="text-gray-500 text-sm mt--2 mb-4">
               Envio calculado al momento de finalizar la compra
