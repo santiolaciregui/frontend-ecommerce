@@ -6,7 +6,7 @@ import apiServiceProducts from "../../../../pages/api/products";
 import apiServiceCategories from "../../../../pages/api/category";
 import apiServiceOptions from "../../../../pages/api/options";
 import apiServiceDiscount from "../../../../pages/api/discount";
-import { Category, Discount, Option, Product } from '@/app/context/types';
+import { Category, Discount, Option } from '@/app/context/types';
 
 interface ProductForm {
   name: string;
@@ -23,7 +23,7 @@ interface ProductForm {
 }
 
 const UpdateProduct = () => {
-  const { id } = useParams(); // Usamos useParams para obtener el 'id'
+  const { id } = useParams();
   const router = useRouter();
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -43,7 +43,7 @@ const UpdateProduct = () => {
     subcategoryId: 0,
     discountId: 0,
     optionIds: [],
-    images: [],
+    images: []
   });
 
   useEffect(() => {
@@ -57,13 +57,13 @@ const UpdateProduct = () => {
           price: product.price,
           stock: product.stock,
           weight: product.weight,
-          categoryId: 13, // Usamos productCategory
-          subcategoryId: 1,
+          categoryId: product.Categories[0].parentId,
+          subcategoryId: product.Categories[0].id,
           discountId: product.discountId,
           optionIds: product.Options.map(option => option.id),
           images: [], // Las imágenes deben ser cargadas de otra manera
         });
-        console.log("categoryID:"+product.categoryId);
+        console.log("categoryID:" + product.Categories[0].parentId);
         console.log(JSON.stringify(product, null, 2));
         const fetchedCategories = await apiServiceCategories.fetchParentCategories();
         setCategories(fetchedCategories);
@@ -81,6 +81,31 @@ const UpdateProduct = () => {
 
     if (id) fetchProductData();
   }, [id]);
+
+  useEffect(() => {
+    const fetchCategoriesAndSubcategories = async () => {
+      try {
+        const parentCategories = await apiServiceCategories.fetchParentCategories();
+        setCategories(parentCategories);
+
+        const subcategoriesPromises = parentCategories.map(async (category) => {
+          const subcategoriesForCategory = await apiServiceCategories.fetchSubcategoriesByParent(category.id);
+          return { parentId: category.id, subcategories: subcategoriesForCategory };
+        });
+
+        const subcategoriesResult = await Promise.all(subcategoriesPromises);
+
+        // Aplanar el array de subcategorías y almacenarlas en el estado
+        const allSubcategories = subcategoriesResult.flatMap(item => item.subcategories);
+        setSubcategories(allSubcategories);
+
+      } catch (error) {
+        console.error('Error fetching categories or subcategories:', error);
+      }
+    };
+
+    fetchCategoriesAndSubcategories();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -105,20 +130,6 @@ const UpdateProduct = () => {
         ? prevState.optionIds.filter(id => id !== optionId)
         : [...prevState.optionIds, optionId];
       return { ...prevState, optionIds: selectedOptions };
-    });
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFormData(prevState => ({ ...prevState, images: [...e.target.files] }));
-    }
-  };
-
-  const handleImageRemove = (index: number) => {
-    setFormData(prevState => {
-      const newImages = [...prevState.images];
-      newImages.splice(index, 1);
-      return { ...prevState, images: newImages };
     });
   };
 
@@ -284,51 +295,29 @@ const UpdateProduct = () => {
             </div>
 
             <div className="col-span-2">
-            <label className="block text-sm font-medium mb-1" htmlFor="options">Opciones *</label>
-            <div className="space-y-2">
-              {options.map(option => (
-                <div key={option.id}>
-                  <input
-                    type="checkbox"
-                    id={`option-${option.id}`}
-                    name="options"
-                    value={option.id}
-                    checked={formData.optionIds.includes(option.id)}
-                    onChange={() => handleOptionChange(option.id)}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`option-${option.id}`} className="text-sm">{option.name}</label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Imágenes</label>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="mt-2">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="flex items-center">
-                    <span className="text-sm">{image.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleImageRemove(index)}
-                      className="ml-2 text-red-500"
-                    >
-                      Eliminar
-                    </button>
+              <label className="block text-sm font-medium mb-2" htmlFor="options">
+                Opciones *
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                {options.map(option => (
+                  <div key={option.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`option-${option.id}`}
+                      name="options"
+                      value={option.id}
+                      checked={formData.optionIds.includes(option.id)}
+                      onChange={() => handleOptionChange(option.id)}
+                      className="form-checkbox"
+                    />
+                    <label htmlFor={`option-${option.id}`} className="text-sm">
+                      {option.name}
+                    </label>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600"
