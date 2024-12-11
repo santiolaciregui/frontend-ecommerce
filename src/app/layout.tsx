@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { Poppins as FontSans } from 'next/font/google'
 import Alert from "./components/Alert";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
+import { UserProvider } from './context/UserContext';
 import { CartProvider } from './context/CartContext';
 
 

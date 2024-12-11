@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { logout, setAuthHeader } from '../pages/api/authService';
+import { logout } from '../pages/api/authService';
 import { useEffect } from 'react';
 
 const AdminDashboard = () => {
@@ -10,7 +10,6 @@ const AdminDashboard = () => {
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
-    setAuthHeader();
   }, []);
 
   const handleLogout = async () => {

@@ -13,7 +13,7 @@ const isTokenExpired = (token: string) => {
 };
 
 // Lista de rutas privadas que requieren autenticación
-const privateRoutes = ['/admin', '/profile', '/settings'];
+const privateRoutes = [/^\/admin/]; // Usar una expresión regular para capturar cualquier ruta que comience con '/admin'
 
 const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -25,8 +25,8 @@ const useAuth = () => {
       const accessToken = localStorage.getItem('accessToken');
       const currentPath = window.location.pathname;
 
-      // Si la ruta actual es privada, verificar autenticación
-      if (privateRoutes.includes(currentPath)) {
+      // Verificamos si la ruta actual es privada (comienza con '/admin')
+      if (privateRoutes.some(route => route.test(currentPath))) {
         if (!accessToken) {
           // Si no hay token, redirigir al login
           router.push('/login');
