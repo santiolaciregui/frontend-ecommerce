@@ -2,11 +2,16 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { logout } from '../pages/api/authService';
+import { logout, setAuthHeader } from '../pages/api/authService';
+import { useEffect } from 'react';
 
 const AdminDashboard = () => {
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    setAuthHeader();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -104,6 +109,20 @@ const AdminDashboard = () => {
               </Link>
             </div>
           </div>
+
+          {/* Administración de Locales */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Locales</h2>
+            <div className="space-y-4">
+              <Link href="/admin/stores" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Ver Locales
+              </Link>
+              <Link href="/admin/stores/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Añadir Local
+              </Link>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

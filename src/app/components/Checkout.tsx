@@ -3,13 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import AddressAutocomplete, { AddressDetails } from './AddressAutocomplete';
-import { CreditCard, Store } from '../context/types';
+import { CreditCard, Option, Store } from '../context/types';
 import apiServiceCards from '../pages/api/promotions';
-import { createOrder, createPreference } from '../pages/api/order';
+import { createOrder } from '../pages/api/order';
 import { fetchStores } from '../pages/api/stores';
+import Image from 'next/image';
 //import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
 //initMercadoPago('APP_USR-c327a30f-bbdf-4864-8f87-a2134da521d5');
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const DELIVERY_OPTIONS = {
   DELIVERY: 'delivery',
@@ -20,6 +22,7 @@ const PAYMENT_FORMATS = {
   CREDIT_CARD: 'credit_card',
   CASH: 'cash',
   TRANSFER: 'transfer',
+  PERSONAL_CREDIT: 'personal_credit',
 };
 
 const Checkout: React.FC = () => {
@@ -90,7 +93,7 @@ const Checkout: React.FC = () => {
     fetchCreditCards();
   }, []);
 
-  
+
 
   const handleAddressSelect = (addressDetails: AddressDetails) => {
     setFormData((prevData) => ({
@@ -106,13 +109,12 @@ const Checkout: React.FC = () => {
   };
 
 
-  const handleStoreSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+  const handleStoreSelect = (storeId: string) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       storeSelection: {
-        ...prevData.storeSelection,
-        [name]: value,
+        ...prevFormData.storeSelection,
+        store1: storeId, // Update the selected store
       },
     }));
   };
@@ -144,6 +146,14 @@ const Checkout: React.FC = () => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFormData((prevData) => ({
+      ...prevData,
+      personalCreditFile: file,
     }));
   };
 
@@ -184,10 +194,12 @@ const Checkout: React.FC = () => {
 
       if (orderResponse) {
         setSuccess('Order placed successfully!');
-        clearCart();
+        router.push('/success');
+        setTimeout(() => {
+          router.push(`/order-summary/${orderResponse.id}`);
+        }, 5000);
       }
-//      router.push('/success');
-
+      
       // Usar el preferenceId para el componente Wallet
       // setPreferenceId(preferenceId);
     } catch (err) {
@@ -196,6 +208,20 @@ const Checkout: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const generateUniqueKey = (item: any) => {
+    const optionsKey = item.Options && item.Options.length > 0
+      ? `-${item.Options.map((opt: Option) => opt.id).sort().join('-')}`
+      : '';
+    return `${item.Product.id}${optionsKey}`;
+  };
+
+  // Redirect to another page if the cart is empty
+  useEffect(() => {
+    if (!cart || cart.length === 0) {
+      router.push('/products'); // Redirect to products page or any other page
+    }
+  }, [cart, router]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -263,12 +289,12 @@ const Checkout: React.FC = () => {
                   />
                 </div>
               </div>
-
+              <hr />
               {/* Delivery Details */}
               <h2 className="text-xl font-semibold mb-4">Detalles de la entrega</h2>
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <label>
+                  <label className="flex items-center">
                     <input
                       type="radio"
                       name="option"
@@ -285,9 +311,9 @@ const Checkout: React.FC = () => {
                       }
                       className="mr-2"
                     />
-                    Envio a domicilio
+                    <i className="fas fa-truck mr-2"></i>Envio a domicilio
                   </label>
-                  <label>
+                  <label className="flex items-center">
                     <input
                       type="radio"
                       name="option"
@@ -304,7 +330,7 @@ const Checkout: React.FC = () => {
                       }
                       className="mr-2"
                     />
-                    Retiro en tienda 
+                    <i className="fas fa-store mr-2"></i>Retiro en tienda
                   </label>
                 </div>
 
@@ -354,35 +380,45 @@ const Checkout: React.FC = () => {
                 )}
 
                 {formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP && (
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                    <label className="block text-sm font-medium mb-1">Selecciona la tienda donde retirará sus productos</label>
-                  <select
-                    name="store1"
-                    value={formData.storeSelection.store1}
-                    onChange={handleStoreSelect}
-                    className="w-full border p-2 rounded-md"
-                  >
-                    <option value="">Selecciona una tienda</option>
-                    {stores.map((store) => (
-                      <option key={store.id} value={store.id}>
-                        {store.name} -  
-                        <br />
-                        <span className="text-sm text-gray-500">{store.address}</span>
-                      </option>
-                    ))}
-                  </select>
-                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Selecciona la tienda donde retirará sus productos
+                    </label>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
+                      {stores.map((store) => (
+                        <div
+                          key={store.id}
+                          className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${formData.storeSelection.store1 === store.id?.toString() ? 'bg-blue-100 border-blue-500' : 'bg-white'
+                            }`}
+                          onClick={() => handleStoreSelect(store.id?.toString() || '')}
+                        >
+                          {/* Font Awesome Icon */}
+                          <div className="text-2xl">
+                            {formData.storeSelection.store1 === store.id?.toString() ? (
+                              <i className="fas fa-check-circle text-blue-500"></i>
+                            ) : (
+                              <i className="far fa-circle text-gray-500"></i>
+                            )}
+                          </div>
+                          {/* Store Details */}
+                          <div>
+                            <h4 className="text-sm font-medium">{store.name}</h4>
+                            <p className="text-xs text-gray-500">{store.address} - {store.city}, {store.state}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
 
+              </div>
+              <hr />
               {/* Payment Details */}
               <h2 className="text-xl font-semibold mb-4">Forma de pago</h2>
+              <p className="text-sm text-gray-500">Seleccione la opción deseada y un vendedor se pondrá en contacto con usted para coordinar el pago</p>
               <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <label>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
+                  <label className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
                     <input
                       type="radio"
                       name="paymentFormat"
@@ -391,34 +427,51 @@ const Checkout: React.FC = () => {
                       onChange={handleOptionChange}
                       className="mr-2"
                     />
-                    Tarjeta de crédito
+                    <i className="fas fa-credit-card mr-2"></i>  Tarjeta de crédito
                   </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="paymentFormat"
-                      value={PAYMENT_FORMATS.CASH}
-                      checked={formData.paymentFormat === PAYMENT_FORMATS.CASH}
-                      onChange={handleOptionChange}
-                      className="mr-2"
-                    />
-                    Efectivo
+                  <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="radio"
+                        name="paymentFormat"
+                        value={PAYMENT_FORMATS.CASH}
+                        checked={formData.paymentFormat === PAYMENT_FORMATS.CASH}
+                        onChange={handleOptionChange}
+                        className="mr-2"
+                      />
+                      <i className="fas fa-money-bill-wave mr-2"></i>Efectivo
+                    </div>
                   </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="paymentFormat"
-                      value={PAYMENT_FORMATS.TRANSFER}
-                      checked={formData.paymentFormat === PAYMENT_FORMATS.TRANSFER}
-                      onChange={handleOptionChange}
-                      className="mr-2"
-                    />
-                    Transferencia Bancaria
-                    <br />
+                  <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="radio"
+                        name="paymentFormat"
+                        value={PAYMENT_FORMATS.TRANSFER}
+                        checked={formData.paymentFormat === PAYMENT_FORMATS.TRANSFER}
+                        onChange={handleOptionChange}
+                        className="mr-2"
+                      />
+                      <i className="fas fa-university mr-2"></i>Transferencia Bancaria
+                    </div>
                     <span className="text-sm text-gray-500">15% de descuento</span>
                   </label>
+                  <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="radio"
+                        name="paymentFormat"
+                        value={PAYMENT_FORMATS.PERSONAL_CREDIT}
+                        checked={formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT}
+                        onChange={handleOptionChange}
+                        className="mr-2"
+                      />
+                      <i className="fas fa-file-upload mr-2"></i>Crédito Personal
+                    </div>
+                    <span className="text-sm text-gray-500">Requiere cargar un archivo</span>
+                  </label>
                 </div>
-
+              
                 {formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && (
                   <div>
                     <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Al finalizar la compra, se realizará el pago a través de Mercado Pago</label>
@@ -436,6 +489,19 @@ const Checkout: React.FC = () => {
                     <label className="block text-sm font-medium mb-1" htmlFor="transfer">CBU: 4554676911100027723062 - Nro Cuenta: 1110003967000 - BPN</label>
                   </div>
                 )}
+
+                {formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="personalCredit">Por favor, cargue el archivo necesario para el crédito personal</label>
+                    <input
+                      type="file"
+                      id="personalCreditFile"
+                      name="personalCreditFile"
+                      className="mt-2"
+                      onChange={handleFileUpload}
+                    />
+                  </div>
+                )}
               </div>
             </form>
           </div>
@@ -444,13 +510,34 @@ const Checkout: React.FC = () => {
           <div className="lg:col-span-1">
             <h2 className="text-xl font-semibold mb-4">Resumen del pedido</h2>
             <div className="border p-4 rounded-md space-y-4">
-              {cart?.map((cartItem) => (  
-                <div key={cartItem.Product.id} className="flex justify-between items-center">
-                  <div> 
-                    <span>{cartItem.Product.name}</span>
-                    <span className="text-gray-500 ml-2">x {cartItem.quantity}</span>
+              {cart?.map((item) => (
+                <div className="flex gap-4" key={generateUniqueKey(item)}>
+                  <Image
+                    src={item.Product.Images[0] ? `${API_URL}${item.Product.Images[0].url}` : '/logo-verde-manzana.svg'}
+                    alt={item.Product.name}
+                    width={62}
+                    height={96}
+                    className="object-cover rounded-md"
+                  />
+                  <div className="flex flex-col justify-between w-full">
+                    <div>
+                      <div className="flex justify-between items-center gap-8">
+                        <h3 className="font-semibold">{item.Product.name}</h3>
+                        <span className="text-sm text-gray-500">${item.Product.finalPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {item.Options?.map((option) => (
+                          <span key={option.id}>{option.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Cantidad:</span>
+                        <span className="text-black">{item.quantity}</span>
+                      </div>
+                    </div>
                   </div>
-                  <span>${cartItem.Product.finalPrice * cartItem.quantity}</span>
                 </div>
               ))}
               <div className="border-t pt-4">
@@ -464,7 +551,7 @@ const Checkout: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total</span>
-                  <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) + shippingCost : '0.00'}</span>
+                  <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(1) + shippingCost : '0.00'}</span>
                 </div>
               </div>
             </div>
