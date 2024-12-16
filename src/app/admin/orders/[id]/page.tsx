@@ -72,7 +72,8 @@ const OrderDetails: React.FC = () => {
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md">
         <h1 className="text-3xl font-semibold mb-8">Detalles de la Orden</h1>
         <p className="mb-4"><strong>Número de Orden:</strong> {order.orderNumber}</p>
-        <p className="mb-4"><strong>Email:</strong> {order.email}</p>
+        <p className="mb-4"><strong>Email:</strong> {order.client.email}</p>        
+        <p className="mb-4"><strong>Contacto:</strong> {order.client.phone}</p>
         <p className="mb-4"><strong>Monto Total:</strong> ${order.totalAmount}</p>
         <p className="mb-4"><strong>Dirección de Envío:</strong> {order.shippingAddress || 'Retiro en tienda'}</p>
         <p className="mb-4"><strong>Forma de Pago:</strong> {order.paymentFormat}</p>

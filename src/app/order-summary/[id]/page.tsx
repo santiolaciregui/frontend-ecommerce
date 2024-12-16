@@ -12,6 +12,7 @@ interface OrderDetails {
     email: string
     firstName: string
     lastName: string
+    phone: number
   }
   totalAmount: number;
   shippingAddress: string | null;
