@@ -555,7 +555,7 @@ const Checkout: React.FC = () => {
                     <div>
                       <div className="flex justify-between items-center gap-8">
                         <h3 className="font-semibold">{item.Product.name}</h3>
-                        <span className="text-sm text-gray-500">${item.Product.finalPrice.toFixed(2)}</span>
+                        <span className="text-sm text-gray-500">${item.Product.finalPrice}</span>
                       </div>
                       <div className="text-sm text-gray-500">
                         {item.Options?.map((option) => (
