@@ -32,9 +32,18 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className='w-max absolute p-4 rounded-md shadow-[0_3px_10px_rgb(0,0,0,0.2)] bg-white top-12 right-0 flex flex-col gap-6 z-20'>
-      {cart === null ? (
-        <div>El carrito está vacío</div>
-      ) : (
+     {cart === null || cart.length === 0 ? (
+    <div className="flex flex-col items-center justify-center text-center">
+      <p className="text-xl font-semibold text-gray-700">El carrito está vacío</p>
+      <p className="text-sm text-gray-500 mt-2">Parece que no tienes productos en tu carrito.</p>
+      <Link
+        href="/products" 
+        className="mt-4 py-3 px-6 bg-green-500 text-white rounded-md shadow-md hover:bg-green-600 transition-colors"
+      >
+        Ir a comprar
+      </Link>
+    </div>
+  ) : (
         <div>
           <h2 className="text-xl">Carrito</h2>
           <br />

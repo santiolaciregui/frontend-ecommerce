@@ -7,6 +7,7 @@ import { fetchProductByID } from "../../pages/api/products";
 import { fetchStores } from "../../pages/api/stores"; // Asumiendo que este es tu endpoint
 import { useParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
+import Loading from '@/app/components/Loading';
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -47,7 +48,7 @@ const SinglePage = () => {
     loadStores();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p><Loading/></p>;
   if (error) return <p>Error: {error}</p>;
   if (!product) return <p>No product found</p>;
 

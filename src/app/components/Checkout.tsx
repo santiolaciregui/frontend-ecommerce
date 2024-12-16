@@ -29,6 +29,10 @@ const Checkout: React.FC = () => {
   const router = useRouter();
   const { cart, clearCart } = useCart();
   const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
+  const [totalPrice, setTotalPrice] = useState(() =>
+    cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0
+  );
+  
   const [formData, setFormData] = useState({
     contactInfo: {
       email: '',
@@ -53,6 +57,7 @@ const Checkout: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [stores, setStores] = useState<Store[]>([]); // Example stores
+  const [personalCreditFile, setPersonalCreditFile] = useState<File | null>(null); // Add state for the file
 
   useEffect(() => {
     if (formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP) {
@@ -147,13 +152,30 @@ const Checkout: React.FC = () => {
       ...prevData,
       [name]: value,
     }));
+  
+    // Update total price based on payment method
+    if (value === PAYMENT_FORMATS.TRANSFER) {
+      setTotalPrice(
+        cart
+          ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0) * 1.10 // Add 10% increase
+          : 0
+      );
+    } else {
+      setTotalPrice(
+        cart
+          ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0)
+          : 0
+      );
+    }
   };
+  
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0] ?? null; // Ensure file is either File or null
+    setPersonalCreditFile(file); // Update the personal credit file state
     setFormData((prevData) => ({
       ...prevData,
-      personalCreditFile: file,
+      personalCreditFile: file, // Attach the file to formData
     }));
   };
 
@@ -442,7 +464,13 @@ const Checkout: React.FC = () => {
                       <i className="fas fa-money-bill-wave mr-2"></i>Efectivo
                     </div>
                   </label>
-                  <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
+                  <label
+                    className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${
+                      formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
+                        ? "bg-blue-100 border-blue-500"
+                        : "bg-white"
+                    }`}
+                  >
                     <div className="flex items-center space-x-4">
                       <input
                         type="radio"
@@ -452,10 +480,14 @@ const Checkout: React.FC = () => {
                         onChange={handleOptionChange}
                         className="mr-2"
                       />
-                      <i className="fas fa-university mr-2"></i>Transferencia Bancaria
+                      <i className="fas fa-university mr-2"></i>
+                      Transferencia Bancaria
                     </div>
-                    <span className="text-sm text-gray-500">15% de descuento</span>
+                    <span className="text-sm text-gray-500">
+                      10% adicional en el precio total
+                    </span>
                   </label>
+
                   <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
                     <div className="flex items-center space-x-4">
                       <input
@@ -474,25 +506,25 @@ const Checkout: React.FC = () => {
               
                 {formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Al finalizar la compra, se realizará el pago a través de Mercado Pago</label>
+                    <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Al finalizar la compra, un vendedor enviará el link de pago</label>
                   </div>
                 )}
 
                 {formData.paymentFormat === PAYMENT_FORMATS.CASH && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="cash">Se coordinará el pago con el vendedor</label>
+                    <label className="block text-sm font-medium mb-1" htmlFor="cash">Al finalizar la compra, se coordinará el pago con el vendedor en sucursal</label>
                   </div>
                 )}
 
                 {formData.paymentFormat === PAYMENT_FORMATS.TRANSFER && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="transfer">CBU: 4554676911100027723062 - Nro Cuenta: 1110003967000 - BPN</label>
+                    <label className="block text-sm font-medium mb-1" htmlFor="transfer">Al finalizar la compra, se contactarán con los datos de la cuenta</label>
                   </div>
                 )}
 
                 {formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="personalCredit">Por favor, cargue el archivo necesario para el crédito personal</label>
+                    <label className="block text-sm font-medium mb-1" htmlFor="personalCredit">Por favor, cargue su último recibo de sueldo, esto es necesario para crédito personal</label>
                     <input
                       type="file"
                       id="personalCreditFile"
@@ -551,16 +583,24 @@ const Checkout: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total</span>
-                  <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(1) + shippingCost : '0.00'}</span>
+                  <span>${totalPrice.toFixed(2)}</span>
                 </div>
+                {formData.paymentFormat === PAYMENT_FORMATS.TRANSFER && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Incluye un 10% adicional por transferencia bancaria.
+                  </p>
+                )}
               </div>
             </div>
-            <button onClick={handleCheckout} className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600">
+            <button
+              onClick={handleCheckout}
+              className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600"
+            >
               Finalizar compra
             </button>
-            {/*{preferenceId && (
+            {/* {preferenceId && (
               <Wallet initialization={{ preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
-            )}*/}
+            )} */}
           </div>
         </div>
       </div>
