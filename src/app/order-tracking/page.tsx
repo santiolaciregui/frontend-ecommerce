@@ -47,7 +47,7 @@ const SeguimientoPedido: React.FC = () => {
               type="text"
               value={numeroPedido}
               onChange={(e) => setNumeroPedido(e.target.value)}
-              className="w-full p-3 border-2 border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full p-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Ingresa tu número de pedido"
               required
             />
