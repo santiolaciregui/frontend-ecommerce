@@ -79,7 +79,7 @@ const Navbar = () => {
             <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
           </div>
           <div className="cursor-pointer">
-            <Link href="/admin">Administrar Página</Link>
+            <Link href="/order-tracking">Seguir mi pedido</Link>
           </div>
         </div>
       )}
