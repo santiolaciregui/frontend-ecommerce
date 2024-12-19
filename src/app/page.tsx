@@ -2,22 +2,22 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PromoCarousel from './components/PromoCarousel';
-import CategoriesMenu from './components/CategoriesMenu';
 import { fetchCategories } from './pages/api/category';
 import ProductImages from './components/ProductImages';
+import { Category } from './context/types';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Ajusta según tu configuración
 
 const HomePage = () => {
   const router = useRouter();
-  const [parentCategories, setParentCategories] = useState([]);
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const loadParentCategories = async () => {
       try {
         const categoriesData = await fetchCategories();
         const enrichedCategories = await Promise.all(
-          categoriesData.map(async (category) => {
+          categoriesData.map(async (category: Category) => {
             const res = await fetch(`${API_URL}/products/category/${category.id}`);
             const products = await res.json();
             const images = products[0]?.Images || []; // Todas las imágenes del primer producto
@@ -33,7 +33,7 @@ const HomePage = () => {
           (category) => category.images.length > 0
         );
   
-        setParentCategories(filteredCategories);
+        setParentCategories(filteredCategories as Category[]);
       } catch (error) {
         console.error('Error fetching categories or products:', error);
       }
@@ -64,7 +64,7 @@ const HomePage = () => {
               className="group relative cursor-pointer rounded-md overflow-hidden"
             >
               {/* Usando el componente ProductImages */}
-              <ProductImages items={category.images} />
+              {/* <ProductImages items={category} /> */}
 
               <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-sm px-2 py-1">
                 {category.name}
