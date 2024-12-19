@@ -35,6 +35,16 @@ export const fetchOrderById = async (id) => {
   }
 };
 
+export const fetchOrderByTrackingId = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/orders/tracking/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order:', error);
+    throw error;
+  }
+};
+
 // Crear una nueva orden
 export const createOrder = async (orderData) => {
   try {
@@ -89,4 +99,5 @@ export default {
   updateOrder,
   deleteOrderById,
   fetchOrdersByEmailAndNumber,
+  fetchOrderByTrackingId
 };
