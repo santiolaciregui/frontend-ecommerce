@@ -67,11 +67,13 @@ export interface Promotion {
 export interface CreditCard {
   id: number;
   name: string;
+  installments: number
 }
 
 
 export interface Order {
   id: number;
+  email?: string;
   client: {
     name: string;
     lastName: string;
@@ -104,4 +106,47 @@ export interface Store {
   phone: string;
   email: string;
   isActive: boolean;
+}
+
+export interface CardProvider {
+  id: number;
+  name: string;
+}
+
+export interface Bank {
+  id: string;
+  name: string;
+  providerId: string;
+}
+
+export interface InstallmentOption {
+  id: string;
+  numberOfInstallments: number;
+  interestRate: number;
+  totalInterestRate: number;
+  bankId: string;
+}
+
+export interface ContactInfo {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface DeliveryOption {
+  option: string; // Restrict the options to 'delivery' or 'pickup'
+  address?: string;              // Address is optional when 'pickup' is selected
+  city?: string;
+  province?: string;
+  zip?: string;
+  storeId?: number;              // Use storeId for pickup
+}
+
+
+export interface FormData {
+  contactInfo: ContactInfo;
+  deliveryOption: DeliveryOption;
+  paymentFormat: string;
+  paymentInstallments: InstallmentOption | null; // Add proper type instead of 'any'
 }

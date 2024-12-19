@@ -60,7 +60,7 @@ const UpdateProduct = () => {
           categoryId: product.Categories[0].parentId,
           subcategoryId: product.Categories[0].id,
           discountId: product.discountId,
-          optionIds: product.Options.map(option => option.id),
+          optionIds: product.Options.map((option: Option) => option.id),
           images: [], // Las imágenes deben ser cargadas de otra manera
         });
         console.log("categoryID:" + product.Categories[0].parentId);
@@ -88,7 +88,7 @@ const UpdateProduct = () => {
         const parentCategories = await apiServiceCategories.fetchParentCategories();
         setCategories(parentCategories);
 
-        const subcategoriesPromises = parentCategories.map(async (category) => {
+        const subcategoriesPromises = parentCategories.map(async (category: Category) => {
           const subcategoriesForCategory = await apiServiceCategories.fetchSubcategoriesByParent(category.id);
           return { parentId: category.id, subcategories: subcategoriesForCategory };
         });
