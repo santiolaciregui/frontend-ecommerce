@@ -2,63 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
-import AddressAutocomplete, { AddressDetails } from './AddressAutocomplete';
-import { CreditCard, Option, Store } from '../context/types';
-import apiServiceCards from '../pages/api/promotions';
-import { createOrder } from '../pages/api/order';
-import { fetchStores } from '../pages/api/stores';
 import Image from 'next/image';
-//import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
-//initMercadoPago('APP_USR-c327a30f-bbdf-4864-8f87-a2134da521d5');
+import ContactForm from './ContactForm';
+import DeliveryForm from './DeliveryForm';
+import { DELIVERY_OPTIONS, PAYMENT_FORMATS } from '../constants/checkoutConstants';
+import { useCheckout } from '../hooks/useCheckout';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-const DELIVERY_OPTIONS = {
-  DELIVERY: 'delivery',
-  PICKUP: 'pickup',
-};
-
-const PAYMENT_FORMATS = {
-  CREDIT_CARD: 'credit_card',
-  CASH: 'cash',
-  TRANSFER: 'transfer',
-  PERSONAL_CREDIT: 'personal_credit',
-};
-
 const Checkout: React.FC = () => {
   const router = useRouter();
-  const { cart, clearCart } = useCart();
-  const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
+  const { cart } = useCart();
+  const { handleCheckout, formData, setFormData, handleProviderSelect, handleBankSelect, handleAddressSelect, handleStoreSelect, handleInputChange, handleOptionChange, handleFileUpload, generateUniqueKey, stores, providers, banks, selectedProvider, selectedBank, installments } = useCheckout();
+
   const [totalPrice, setTotalPrice] = useState(() =>
     cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0
   );
-  
-  const [formData, setFormData] = useState({
-    contactInfo: {
-      email: '',
-      firstName: '',
-      lastName: '',
-      phone: '',
-    },
-    deliveryOption: {
-      option: DELIVERY_OPTIONS.PICKUP,
-      address: '',
-      city: '',
-      province: '',
-      zip: '',
-    },
-    paymentFormat: PAYMENT_FORMATS.CREDIT_CARD,
-    storeSelection: {
-      store1: 'LAINEZ 123',
-    },
-  });
+
   const [shippingCost, setShippingCost] = useState(30000); // Default shipping cost
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [stores, setStores] = useState<Store[]>([]); // Example stores
-  const [personalCreditFile, setPersonalCreditFile] = useState<File | null>(null); // Add state for the file
 
+  // Update shipping cost based on delivery option
   useEffect(() => {
     if (formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP) {
       setShippingCost(0);
@@ -67,176 +33,6 @@ const Checkout: React.FC = () => {
     }
   }, [formData.deliveryOption.option]);
 
-  useEffect(() => {
-    const loadStores = async () => {
-      try {
-        const storesData = await fetchStores();
-        setStores(storesData);
-      } catch (err) {
-        setError('Error fetching stores');
-        console.error(err);
-      }
-    };
-    loadStores();
-  }, []);
-
-
-  useEffect(() => {
-    const fetchCreditCards = async () => {
-      setLoading(true);
-      try {
-        const creditCards = await apiServiceCards.fetchCreditCards();
-        setCreditCards(creditCards);
-      } catch (err) {
-        setError('Error fetching credit cards');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCreditCards();
-  }, []);
-
-
-
-  const handleAddressSelect = (addressDetails: AddressDetails) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      deliveryOption: {
-        ...prevData.deliveryOption,
-        address: addressDetails.address,
-        city: addressDetails.city,
-        province: addressDetails.province,
-        zip: addressDetails.zip,
-      },
-    }));
-  };
-
-
-  const handleStoreSelect = (storeId: string) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      storeSelection: {
-        ...prevFormData.storeSelection,
-        store1: storeId, // Update the selected store
-      },
-    }));
-  };
-
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (['email', 'firstName', 'lastName', 'phone'].includes(name)) {
-      setFormData((prevData) => ({
-        ...prevData,
-        contactInfo: {
-          ...prevData.contactInfo,
-          [name]: value,
-        },
-      }));
-    } else if (['address', 'city', 'province', 'zip'].includes(name)) {
-      setFormData((prevData) => ({
-        ...prevData,
-        deliveryOption: {
-          ...prevData.deliveryOption,
-          [name]: value,
-        },
-      }));
-    }
-  };
-
-  const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  
-    // Update total price based on payment method
-    if (value === PAYMENT_FORMATS.TRANSFER) {
-      setTotalPrice(
-        cart
-          ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0) * 1.10 // Add 10% increase
-          : 0
-      );
-    } else {
-      setTotalPrice(
-        cart
-          ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0)
-          : 0
-      );
-    }
-  };
-  
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null; // Ensure file is either File or null
-    setPersonalCreditFile(file); // Update the personal credit file state
-    setFormData((prevData) => ({
-      ...prevData,
-      personalCreditFile: file, // Attach the file to formData
-    }));
-  };
-
-  const [preferenceId, setPreferenceId] = useState<string | null>(null);
-
-
-  const handleCheckout = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    const orderData = {
-      sessionId: localStorage.getItem("session_id"),
-      contactInfo: formData.contactInfo,
-      deliveryOption: {
-        ...formData.deliveryOption,
-        shippingCost,
-      },
-      paymentFormat: formData.paymentFormat,
-      totalAmount: cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) : '0.00',
-      cartItems: cart ? cart.map((item) => ({
-        product: {
-          id: item.Product.id,
-          name: item.Product.name,
-          price: item.Product.price,
-        },
-        quantity: item.quantity,
-        options: item.Options,
-      })) : [],
-    };
-
-    try {
-      // Crear la orden en el backend
-      const orderResponse = await createOrder(orderData);
-
-      // Crear la preferencia de pago en Mercado Pago
-      //const { preferenceId } = await createPreference(orderData.cartItems, orderData.totalAmount);
-
-      if (orderResponse) {
-        setSuccess('Order placed successfully!');
-        router.push('/success');
-        setTimeout(() => {
-          router.push(`/order-summary/${orderResponse.id}`);
-        }, 5000);
-      }
-      
-      // Usar el preferenceId para el componente Wallet
-      // setPreferenceId(preferenceId);
-    } catch (err) {
-      setError('There was an error processing your order. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateUniqueKey = (item: any) => {
-    const optionsKey = item.Options && item.Options.length > 0
-      ? `-${item.Options.map((opt: Option) => opt.id).sort().join('-')}`
-      : '';
-    return `${item.Product.id}${optionsKey}`;
-  };
 
   // Redirect to another page if the cart is empty
   useEffect(() => {
@@ -261,179 +57,21 @@ const Checkout: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4">Datos de contacto</h2>
             <form className="space-y-4">
               {/* Contact Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1" htmlFor="email">Email *</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.contactInfo.email}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" htmlFor="firstName">Nombre *</label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.contactInfo.firstName}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" htmlFor="lastName">Apellido *</label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.contactInfo.lastName}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1" htmlFor="phone">Teléfono *</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.contactInfo.phone}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              </div>
+              <ContactForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+              />
               <hr />
               {/* Delivery Details */}
-              <h2 className="text-xl font-semibold mb-4">Detalles de la entrega</h2>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="option"
-                      value={DELIVERY_OPTIONS.DELIVERY}
-                      checked={formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY}
-                      onChange={(e) =>
-                        setFormData((prevData) => ({
-                          ...prevData,
-                          deliveryOption: {
-                            ...prevData.deliveryOption,
-                            option: e.target.value,
-                          },
-                        }))
-                      }
-                      className="mr-2"
-                    />
-                    <i className="fas fa-truck mr-2"></i>Envio a domicilio
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="option"
-                      value={DELIVERY_OPTIONS.PICKUP}
-                      checked={formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP}
-                      onChange={(e) =>
-                        setFormData((prevData) => ({
-                          ...prevData,
-                          deliveryOption: {
-                            ...prevData.deliveryOption,
-                            option: e.target.value,
-                          },
-                        }))
-                      }
-                      className="mr-2"
-                    />
-                    <i className="fas fa-store mr-2"></i>Retiro en tienda
-                  </label>
-                </div>
-
-                {formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium mb-1" htmlFor="address">Dirección *</label>
-                      <AddressAutocomplete onSelect={handleAddressSelect} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="city">Ciudad *</label>
-                      <input
-                        type="text"
-                        id="city"
-                        name="city"
-                        value={formData.deliveryOption.city}
-                        onChange={handleInputChange}
-                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="province">Provincia *</label>
-                      <input
-                        type="text"
-                        id="province"
-                        name="province"
-                        value={formData.deliveryOption.province}
-                        onChange={handleInputChange}
-                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="zip">CP *</label>
-                      <input
-                        type="text"
-                        id="zip"
-                        name="zip"
-                        value={formData.deliveryOption.zip}
-                        onChange={handleInputChange}
-                        className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Selecciona la tienda donde retirará sus productos
-                    </label>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                      {stores.map((store) => (
-                        <div
-                          key={store.id}
-                          className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${formData.storeSelection.store1 === store.id?.toString() ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                            }`}
-                          onClick={() => handleStoreSelect(store.id?.toString() || '')}
-                        >
-                          {/* Font Awesome Icon */}
-                          <div className="text-2xl">
-                            {formData.storeSelection.store1 === store.id?.toString() ? (
-                              <i className="fas fa-check-circle text-blue-500"></i>
-                            ) : (
-                              <i className="far fa-circle text-gray-500"></i>
-                            )}
-                          </div>
-                          {/* Store Details */}
-                          <div>
-                            <h4 className="text-sm font-medium">{store.name}</h4>
-                            <p className="text-xs text-gray-500">{store.address} - {store.city}, {store.state}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              </div>
+              <DeliveryForm
+                formData={formData}
+                setFormData={setFormData}
+                DELIVERY_OPTIONS={DELIVERY_OPTIONS}
+                handleAddressSelect={handleAddressSelect}
+                handleStoreSelect={handleStoreSelect}
+                stores={stores}
+                handleInputChange={handleInputChange}
+              />
               <hr />
               {/* Payment Details */}
               <h2 className="text-xl font-semibold mb-4">Forma de pago</h2>
@@ -449,7 +87,7 @@ const Checkout: React.FC = () => {
                       onChange={handleOptionChange}
                       className="mr-2"
                     />
-                    <i className="fas fa-credit-card mr-2"></i>  Tarjeta de crédito
+                    <i className="fas fa-credit-card mr-2"></i>  Débito o Crédito
                   </label>
                   <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
                     <div className="flex items-center space-x-4">
@@ -465,11 +103,10 @@ const Checkout: React.FC = () => {
                     </div>
                   </label>
                   <label
-                    className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${
-                      formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
-                        ? "bg-blue-100 border-blue-500"
-                        : "bg-white"
-                    }`}
+                    className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
+                      ? "bg-blue-100 border-blue-500"
+                      : "bg-white"
+                      }`}
                   >
                     <div className="flex items-center space-x-4">
                       <input
@@ -503,12 +140,111 @@ const Checkout: React.FC = () => {
                     <span className="text-sm text-gray-500">Requiere cargar un archivo</span>
                   </label>
                 </div>
-              
+
                 {formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="creditCard">Al finalizar la compra, un vendedor enviará el link de pago</label>
+                  <div className="space-y-4">
+                    {/* Provider Selection */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Selecciona el proveedor de la tarjeta
+                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {providers.map((provider) => (
+                          <label
+                            key={provider.id}
+                            className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer
+              ${selectedProvider?.id === provider.id ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
+                          >
+                            <input
+                              type="radio"
+                              name="cardProvider"
+                              value={provider.id}
+                              checked={selectedProvider?.id === provider.id}
+                              onChange={() => handleProviderSelect(provider)}
+                              className="mr-2"
+                            />
+                            <span>{provider.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bank Selection - Only show if provider is selected */}
+                    {selectedProvider && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Selecciona el banco
+                        </label>
+                        <div className="grid grid-cols-2 gap-4">
+                          {banks.map((bank) => (
+                            <label
+                              key={bank.id}
+                              className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer
+                ${selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
+                            >
+                              <input
+                                type="radio"
+                                name="bank"
+                                value={bank.id}
+                                checked={selectedBank?.id === bank.id}
+                                onChange={() => handleBankSelect(bank)}
+                                className="mr-2"
+                              />
+                              <span>{bank.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Installments Selection - Only show if a bank is selected */}
+                    {selectedBank && installments.length > 0 && (
+                      <div>
+                        <label htmlFor="installments" className="block text-sm font-medium text-gray-700 mb-2">
+                          Selecciona el número de cuotas
+                        </label>
+                        <div className="grid grid-cols-2 gap-4">
+                          {installments.map((installment) => (
+                            <label
+                              key={installment.id}
+                              htmlFor={`installment-${installment.id}`}
+                              className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer transition 
+            ${formData.paymentInstallments?.id === installment.id ? 'bg-blue-50 border-blue-500' : 'bg-white border-gray-300'}`}
+                            >
+                              <input
+                                id={`installment-${installment.id}`}
+                                type="radio"
+                                name="installments"
+                                value={installment.id}
+                                checked={formData.paymentInstallments?.id === installment.id}
+                                onChange={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    paymentInstallments: installment, // Save the whole object
+                                  }))
+                                }
+                                className="form-radio h-4 w-4 text-blue-600 cursor-pointer"
+                              />
+                              <span className="text-sm text-gray-700">
+                                {installment.numberOfInstallments} cuotas
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Tasa de interés: {installment.interestRate}%
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Interés total: {installment.totalInterestRate}%
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+
                   </div>
                 )}
+
+
 
                 {formData.paymentFormat === PAYMENT_FORMATS.CASH && (
                   <div>
@@ -577,10 +313,14 @@ const Checkout: React.FC = () => {
                   <span>Subtotal</span>
                   <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) : '0.00'}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Envío</span>
-                  <span>${shippingCost}</span>
-                </div>
+                {formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP && (
+                  <div className="flex justify-between items-center gap-8">
+                    <span>Envío</span>
+                    <p className="text-xs  text-gray-400 mt-2">
+                      Se coordinará con el vendedor dependiendo tu zona
+                    </p>
+                  </div>
+                )}
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total</span>
                   <span>${totalPrice.toFixed(2)}</span>
@@ -598,9 +338,7 @@ const Checkout: React.FC = () => {
             >
               Finalizar compra
             </button>
-            {/* {preferenceId && (
-              <Wallet initialization={{ preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
-            )} */}
+
           </div>
         </div>
       </div>
