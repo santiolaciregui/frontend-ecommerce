@@ -82,7 +82,7 @@ const SinglePage = () => {
         </div>
         
         <div className="discount-info bg-yellow-100 p-2 rounded-md">
-          <p className="text-yellow-800">15% de descuento pagando con Transferencia Bancaria</p>
+          <p className="text-yellow-800">10% de descuento pagando con efectivo en sucursal</p>
         </div>
         
         <div className="h-[2px] bg-gray-200 my-4" />
