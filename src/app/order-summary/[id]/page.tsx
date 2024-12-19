@@ -84,7 +84,7 @@ const OrderDetails: React.FC = () => {
         <div className="mb-6">
           <p className="text-sm font-semibold text-gray-500">ORDEN: #{order.id}</p>
         </div>
-  
+
         {/* Payment Status */}
         <div className="border-b pb-6 mb-6">
           <div className="flex items-center space-x-2 mb-2">
@@ -99,7 +99,7 @@ const OrderDetails: React.FC = () => {
             ¡Gracias por tu compra!
           </p>
         </div>
-  
+
         {/* Pickup Information */}
         <div className="flex items-center mb-6">
           <ShoppingCart className="text-2xl" />
@@ -110,7 +110,7 @@ const OrderDetails: React.FC = () => {
             </p>
           </div>
         </div>
-  
+
         {/* 
         <div className="mb-6">
           <div className="flex items-center space-x-2 mb-2">
@@ -132,7 +132,7 @@ const OrderDetails: React.FC = () => {
             </button>
           </div>
         </div> */}
-  
+
         {/* Order Details */}
         <div className="border-t pt-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all">
@@ -140,11 +140,19 @@ const OrderDetails: React.FC = () => {
               <Mail className="text-blue-500" />
               <span>Cómo seguir el pedido</span>
             </h3>
-            <p className="text-gray-600">
-              Te enviamos un email con un link a esta página, para que puedas seguir la entrega de tu compra.
+            <p className="text-gray-600 mb-6">
+              Podes seguir el estado de tu pedido utilizando el número de seguimiento que acabamos de enviarte por correo electrónico.
             </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => window.location.href = '/order-tracking'}
+                className="px-8 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md transform transition-all hover:bg-green-600 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+              >
+                Ir a seguimiento
+              </button>
+            </div>
           </div>
-  
+
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all">
             <h3 className="font-semibold mb-4 text-lg text-gray-800 flex items-center space-x-3">
               <ShoppingCart className="text-green-500" />
@@ -171,13 +179,13 @@ const OrderDetails: React.FC = () => {
             </p>
           </div>
         </div>
-  
+
         {/* Order Summary */}
         <div className="mt-8 bg-white p-6 border rounded-lg shadow-lg transition-all hover:shadow-xl">
           {order.OrderItems.map((item) => (
             <div key={item.id} className="flex justify-between items-center py-3 border-b hover:bg-gray-50 transition duration-300">
               <div className="flex items-center space-x-4">
-              <Image
+                <Image
                   src={item.Product.Images[0] ? `${API_URL}${item.Product.Images[0].url}` : '/logo-verde-manzana.svg'}
                   alt={''}
                   width={62}
@@ -208,7 +216,7 @@ const OrderDetails: React.FC = () => {
             <p className="font-semibold text-xl text-gray-900">${order.totalAmount.toFixed(2)}</p>
           </div>
         </div>
-  
+
         {/* Footer */}
         <div className="mt-6 text-sm text-gray-500">
           <p className="flex items-center space-x-2">
@@ -228,7 +236,7 @@ const OrderDetails: React.FC = () => {
     </div>
   );
 
-  
+
 };
 
 export default OrderDetails;
