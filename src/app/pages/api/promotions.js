@@ -26,6 +26,36 @@ export const fetchCreditCards = async () => {
   }
 };
 
+export const fetchProviders = async () => {
+    const response = await fetch(`${API_BASE_URL}/credit-cards/card-providers`);
+    console.log('response: ',response)
+    if (!response.ok) {
+      throw new Error('Failed to fetch card providers');
+    }
+    return response.json();
+  };
+
+  // Fetch banks available for a specific provider
+  export const fetchBanksByProvider = async (providerId) => {
+    const response = await fetch(`${API_BASE_URL}/credit-cards/banks?providerId=${providerId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch banks');
+    }
+    return response.json();
+  };
+
+  // Fetch available installment options for a specific bank
+// Fetch available installment options for a specific bank and card
+export const fetchInstallmentsByBank = async (bankId, cardId) => {
+  const response = await fetch(`${API_BASE_URL}/credit-cards/installments?bankId=${bankId}&cardId=${cardId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch installments');
+  }
+  return response.json();
+};
+
+
+
 // Crear una nueva promoción
 export const createPromotion = async (promotionData) => {
   try {
@@ -73,6 +103,10 @@ export const deletePromotion = async ({id}) => {
 export default {
   fetchPromotions,
   fetchCreditCards,
+  fetchBanksByProvider,
+  fetchCreditCards,
+  fetchProviders,
+  fetchInstallmentsByBank,
   createPromotion,
   fetchPromotionById,
   updatePromotion,
