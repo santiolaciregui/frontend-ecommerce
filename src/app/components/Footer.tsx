@@ -1,66 +1,102 @@
-'use client'
-import Image from "next/image"
-import Link from "next/link"
+'use client';
+import { Facebook, Instagram, MapPin, Phone } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import useFetchStores from '../hooks/useFetchStores';
 
 const Footer = () => {
-    return (
-    <div className='py-8 px-4 md:px-8 lg:px-16 mt-10 xl:px-32 2xl:px-64 bg-gray-100 text-sm '>
-        {/* TOP */}
-        <div className='flex justify-between gap-24'>
-          {/* LEFT */}
-          <div className='w-full md:w-1/2 lg:w-1/4 flex flex-col gap-8'>
-            <Link href='/'>
-              <div className="text-2xl tracking-wide">VERDE MANZANA</div>
+  const { stores } = useFetchStores();
+
+  return (
+    <footer className="bg-gray-100 text-sm mt-10 py-8 px-6 md:px-12 lg:px-16 xl:px-32">
+      {/* TOP */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16 justify-items-center">
+        {/* LEFT SECTION */}
+        <div className="lg:col-span-1 ">
+          <div className="flex flex-col items-center lg:items-start">
+            <Link href="/" className="text-2xl font-bold tracking-wide text-gray-800 hover:text-gray-600">
+              VERDE MANZANA
             </Link>
-            <p>Manuel Láinez 267, Q8300 Neuquén</p>
-            
-            <a href="https://api.whatsapp.com/send?phone=%2B542914128292&context=ARApsBsv0AI30qWG9HpK4JiaNARoXvWnTc-QYeDNdzhUkW9PqMrR9M7Lp19AxDGuBk96BM0DqBU-vBwWANhykEXNX3mMhqJfW45DCxvJzIW8eFjylD2wktvV4AvxYccvgQQG5TreF4OdEzmuBbIvkv4&source=FB_Page&app=facebook&entry_point=page_cta" target="_blank" rel="noopener noreferrer"   className="inline-flex items-center">
-            <Image src="/whatsapp.png" width={16} height={16} alt="WhatsApp"/>
-            <span className="ml-2 font-semibold">+54 0291 412-8292</span>
-            
-            
-          </a>
-            
-          </div>
-          {/* CENTER
-          <div className='hidden lg:flex justify-between w-1/2'>
-            <div className="flex flex-col justify-between">
-              <h1 className="font-medium text-lg">COMPANY</h1>
-              <div className="flex flex-col gap-6">
-                <Link href=''>Sobre Nosotros</Link>
-                <Link href=''>Formas de Envio</Link>
-                <Link href=''>Contactanos</Link>
-              </div>
+            <div className="mt-4 space-y-2">
+              {stores.map((store) => (
+                <div key={store.id} className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-gray-600" />
+                  <span>{store.address} - {store.city}, {store.state}</span>
+                </div>
+              ))}
             </div>
-          </div> */}
-          {/* RIGTH */}
-          <div className='w-full md:w-1/2 lg:w-1/4 flex flex-col gap-8'>
-            <h1 className="font-medium text-lg">SEGUINOS</h1>
-            
-            <div className='flex gap-6'>
-            <a href="https://www.facebook.com/VERDEMANZANAMUEBLESARGENTINA" target="_blank" rel="noopener noreferrer">
-            <Image src="/facebook.png" width={16} height={16} alt="Facebook" />
-          </a>
-          <a href="https://www.instagram.com/mueblesverdemanzana/?hl=es-la" target="_blank" rel="noopener noreferrer">
-            <Image src="/instagram.png" width={16} height={16} alt="Instagram" />
-          </a>
-
-
+            <div className="mt-6 flex items-center gap-2">
+              <Phone className="w-4 h-4 text-green-600" />
+              <a
+                href="https://api.whatsapp.com/send?phone=%2B542914128292"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-600 font-medium hover:underline"
+              >
+                +54 0291 412-8292
+              </a>
             </div>
-              <span className="font-semibold">Métodos de pago</span>
-              <div className="flex justify-start"> 
-              <Image src="/visa.png" alt="" width={40} height={20}/>
-              <Image src="/mastercard.png" alt="" width={40} height={20}/>
-    
-              </div>
           </div>
         </div>
-        {/* BOTTOM
-        <div className='flex flex-col md:flex-wor items-center justify-between gap-8 mt-16'>
-          <div className="">VerdeManzana Tienda Online™</div>
-        </div> */}
+
+        {/* MIDDLE SECTION */}
+        <div className="lg:col-span-1 ">
+          <div className="flex flex-col items-center lg:items-start">
+            <h2 className="text-lg font-semibold text-gray-800">ENLACES</h2>
+            <nav className="mt-4 flex flex-col items-center lg:items-start space-y-3">
+              <Link href="/about" className="text-gray-600 hover:text-gray-800">
+                Sobre Nosotros
+              </Link>
+              <Link href="/shipping" className="text-gray-600 hover:text-gray-800">
+                Formas de Envío
+              </Link>
+              <Link href="/contact" className="text-gray-600 hover:text-gray-800">
+                Contáctanos
+              </Link>
+            </nav>
+          </div>
+        </div>
+
+        {/* RIGHT SECTION */}
+        <div className="lg:col-span-1 ">
+          <div className="flex flex-col items-center lg:items-start">
+            <h2 className="text-lg font-semibold text-gray-800">SEGUINOS</h2>
+            <div className="flex items-center gap-4 mt-4">
+              <a
+                href="https://www.facebook.com/VERDEMANZANAMUEBLESARGENTINA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Facebook className="w-6 h-6" />
+              </a>
+              <a
+                href="https://www.instagram.com/mueblesverdemanzana/?hl=es-la"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Instagram className="w-6 h-6" />
+              </a>
+            </div>
+
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold text-gray-800">MÉTODOS DE PAGO</h2>
+              <div className="flex items-center gap-4 mt-2">
+                <Image src="/visa.png" alt="Visa" width={40} height={20} />
+                <Image src="/mastercard.png" alt="Mastercard" width={40} height={20} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    )
-  }
-  
-  export default Footer 
+
+      {/* BOTTOM */}
+      <div className="border-t mt-10 pt-4 text-center text-gray-500">
+        <span>© {new Date().getFullYear()} Verde Manzana. Todos los derechos reservados.</span>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
