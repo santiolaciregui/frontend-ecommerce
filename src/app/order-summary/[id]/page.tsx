@@ -16,7 +16,7 @@ interface OrderDetails {
   }
   totalAmount: number;
   shippingAddress: string | null;
-  paymentFormat: string;
+  deliveryOption: { option: string; storeId?: string };  paymentFormat: string;
   createdAt: string;
   OrderItems: {
     id: number;
@@ -43,6 +43,16 @@ interface OrderDetails {
     };
   }[];
 }
+
+interface Store {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  province: string;
+  zip: string;
+}
+
 
 const OrderDetails: React.FC = () => {
   const [order, setOrder] = useState<OrderDetails | null>(null);
