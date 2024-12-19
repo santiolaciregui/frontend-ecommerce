@@ -8,10 +8,6 @@ import Alert from "./components/Alert";
 import { UserProvider } from './context/UserContext';
 import { CartProvider } from './context/CartContext';
 
-
-
-
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
