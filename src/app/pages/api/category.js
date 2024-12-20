@@ -59,10 +59,14 @@ export const fetchCategoryById = async (id) => {
   }
 };
 
-// Crear una nueva categoría
-export const createCategory = async (categoryData) => {
+// Crear una nueva categoría (Admin-only)
+export const createCategory = async (categoryData, token) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/categories`, categoryData);
+    const response = await axios.post(`${API_BASE_URL}/categories`, categoryData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating category:', error);
@@ -70,10 +74,14 @@ export const createCategory = async (categoryData) => {
   }
 };
 
-// Actualizar una categoría
-export const updateCategory = async (id, categoryData) => {
+// Update a category (Admin-only)
+export const updateCategory = async (id, categoryData, token) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/categories/${id}`, categoryData);
+    const response = await axios.put(`${API_BASE_URL}/categories/${id}`, categoryData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating category:', error);
@@ -81,11 +89,14 @@ export const updateCategory = async (id, categoryData) => {
   }
 };
 
-// Eliminar una categoría
-export const deleteCategoryByID = async ({ id } ) => {
+// Delete a category (Admin-only)
+export const deleteCategory = async (id, token) => {
   try {
-    console.log(id);
-    const response = await axios.delete(`${API_BASE_URL}/categories/${id}`);
+    const response = await axios.delete(`${API_BASE_URL}/categories/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error deleting category:', error);
@@ -102,5 +113,5 @@ export default {
   fetchCategoryById,
   createCategory,
   updateCategory,
-  deleteCategoryByID
+  deleteCategory
 };

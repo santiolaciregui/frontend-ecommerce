@@ -1,10 +1,8 @@
-// services/discountService.js
-
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ;    // Update this URL if your backend is hosted elsewhere
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;  // Ensure this URL points to your backend
 
-// Obtener todos los descuentos
+// Get all discounts (public route)
 export const fetchDiscounts = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/discounts`);
@@ -15,7 +13,7 @@ export const fetchDiscounts = async () => {
   }
 };
 
-// Obtener un descuento por ID
+// Get a discount by ID (public route)
 export const fetchDiscountById = async (id) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/discounts/${id}`);
@@ -26,10 +24,14 @@ export const fetchDiscountById = async (id) => {
   }
 };
 
-// Crear un nuevo descuento
-export const createDiscount = async (discountData) => {
+// Create a new discount (admin-only route)
+export const createDiscount = async (discountData, token) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/discounts`, discountData);
+    const response = await axios.post(`${API_BASE_URL}/discounts`, discountData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating discount:', error);
@@ -37,10 +39,14 @@ export const createDiscount = async (discountData) => {
   }
 };
 
-// Actualizar un descuento
-export const updateDiscount = async (id, discountData) => {
+// Update a discount (admin-only route)
+export const updateDiscount = async (id, discountData, token) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/discounts/${id}`, discountData);
+    const response = await axios.put(`${API_BASE_URL}/discounts/${id}`, discountData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating discount:', error);
@@ -48,10 +54,14 @@ export const updateDiscount = async (id, discountData) => {
   }
 };
 
-// Eliminar un descuento
-export const deleteDiscountByID = async ({id}) => {
+// Delete a discount (admin-only route)
+export const deleteDiscountByID = async (id, token) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/discounts/${id}`);
+    const response = await axios.delete(`${API_BASE_URL}/discounts/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error deleting discount:', error);
@@ -64,5 +74,5 @@ export default {
   fetchDiscountById,
   createDiscount,
   updateDiscount,
-  deleteDiscountByID
+  deleteDiscountByID,
 };
