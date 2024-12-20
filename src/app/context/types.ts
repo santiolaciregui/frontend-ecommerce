@@ -148,5 +148,10 @@ export interface FormData {
   contactInfo: ContactInfo;
   deliveryOption: DeliveryOption;
   paymentFormat: string;
+  paymentDetails?: {
+    provider?: CardProvider;
+    bank?: Bank;
+    installments?: InstallmentOption;
+  };
   paymentInstallments: InstallmentOption | null; // Add proper type instead of 'any'
 }

@@ -8,12 +8,12 @@ const ProductImages = ({ items }: { items: any[] }) => {
 
   // Función para construir la URL de forma segura
   const getImageUrl = (path: string) => {
-    if (!path) return '/default-image.png'; // Imagen por defecto
+    if (!path) return '/logo-verde-manzana.svg'; // Imagen por defecto
     try {
       return new URL(path, API_URL).toString(); // Combina la URL base y el path
     } catch (error) {
       console.error('Error constructing URL:', error);
-      return '/default-image.png'; // Imagen por defecto en caso de error
+      return '/logo-verde-manzana.png'; // Imagen por defecto en caso de error
     }
   };
 

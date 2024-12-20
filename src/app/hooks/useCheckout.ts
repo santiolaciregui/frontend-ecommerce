@@ -17,9 +17,14 @@ export const useCheckout = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [shippingCost, setShippingCost] = useState(30000);
   const [stores, setStores] = useState([]);
+  // Payment related states
+  const [providers, setProviders] = useState<CardProvider[]>([]);
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<CardProvider| null>(null);
+  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
+  const [installments, setInstallments] = useState<InstallmentOption[]>([]);
   const [totalPrice, setTotalPrice] = useState(() =>
-    cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0
-  );
+    cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0);
 
   const [formData, setFormData] = useState<FormData>({
     contactInfo: { email: '', firstName: '', lastName: '' , phone: '' },
@@ -33,16 +38,10 @@ export const useCheckout = () => {
     },
     paymentFormat: PAYMENT_FORMATS.CREDIT_CARD,
     paymentInstallments: null,
+    paymentDetails: {},
   });
   
 
-  // Payment related states
-  const [providers, setProviders] = useState<CardProvider[]>([]);
-  const [banks, setBanks] = useState<Bank[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState<CardProvider| null>(null);
-  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
-  const [installments, setInstallments] = useState<InstallmentOption[]>([]);
-  
   useEffect(() => {
     const loadStores = async () => {
       try {
@@ -95,13 +94,18 @@ export const useCheckout = () => {
         sessionId: localStorage.getItem('session_id'),
         contactInfo: formData.contactInfo,
         deliveryOption: isPickup
-          ? { option: 'pickup', storeId: formData.deliveryOption.storeId } // Include storeId for pickup
+          ? { option: 'pickup', storeId: formData.deliveryOption.storeId }
           : {
               ...formData.deliveryOption,
               shippingCost,
             },
         paymentFormat: formData.paymentFormat,
         paymentInstallments: formData.paymentInstallments,
+        paymentDetails: formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? {
+          provider: formData.paymentDetails?.provider,
+          bank: formData.paymentDetails?.bank,
+          installments: formData.paymentDetails?.installments,
+        } : null,
         totalAmount: cart
           ? cart
               .reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0)
@@ -129,6 +133,7 @@ export const useCheckout = () => {
       setLoading(false);
     }
   };
+
   
 
   const handlePaymentSetup = async () => {
@@ -146,7 +151,7 @@ export const useCheckout = () => {
     }
   };
 
-  const handleProviderSelect = async (provider: CardProvider) => {
+const handleProviderSelect = async (provider: CardProvider) => {
     setSelectedProvider(provider);
     setSelectedBank(null);
     setInstallments([]);
@@ -154,6 +159,15 @@ export const useCheckout = () => {
     try {
       const banksData = await apiServiceCards.fetchBanksByProvider(provider.id);
       setBanks(banksData);
+      
+      // Update formData with selected provider
+      setFormData(prev => ({
+        ...prev,
+        paymentDetails: {
+          ...prev.paymentDetails,
+          provider: provider
+        }
+      }));
     } catch (err) {
       setError('Error fetching banks');
     }
@@ -164,6 +178,15 @@ export const useCheckout = () => {
     try {
       const installmentsData = await apiServiceCards.fetchInstallmentsByBank(bank.id, selectedProvider?.id);
       setInstallments(installmentsData);
+      
+      // Update formData with selected bank
+      setFormData(prev => ({
+        ...prev,
+        paymentDetails: {
+          ...prev.paymentDetails,
+          bank: bank
+        }
+      }));
     } catch (err) {
       setError('Error fetching installments');
     }
@@ -192,6 +215,16 @@ export const useCheckout = () => {
     }));
   };
   
+  const handleInstallmentSelect = (installment: InstallmentOption) => {
+    setFormData(prev => ({
+      ...prev,
+      paymentInstallments: installment,
+      paymentDetails: {
+        ...prev.paymentDetails,
+        installments: installment
+      }
+    }));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -291,6 +324,7 @@ export const useCheckout = () => {
     handleStoreSelect,
     handleInputChange,
     handleOptionChange,
+    handleInstallmentSelect,
     handleFileUpload,
     generateUniqueKey,
     setSelectedProvider,

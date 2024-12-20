@@ -13,16 +13,47 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const Checkout: React.FC = () => {
   const router = useRouter();
   const { cart } = useCart();
+  const [shippingCost, setShippingCost] = useState(30000); // Default shipping cost
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { handleCheckout, formData, setFormData, handleProviderSelect, handleBankSelect, handleAddressSelect, handleStoreSelect, handleInputChange, handleOptionChange, handleFileUpload, generateUniqueKey, stores, providers, banks, selectedProvider, selectedBank, installments } = useCheckout();
 
   const [totalPrice, setTotalPrice] = useState(() =>
     cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0
   );
 
-  const [shippingCost, setShippingCost] = useState(30000); // Default shipping cost
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  
+// Function to calculate the adjusted total price
+const calculateTotalPrice = () => {
+  let basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
+
+  if (formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT) {
+    basePrice *= 1.15; // Add 15% for personal credit
+  } else if (formData.paymentFormat === PAYMENT_FORMATS.TRANSFER) {
+    basePrice *= 1.10; // Add 10% for transfer
+  } else if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && formData.paymentInstallments) {
+    // Add interest based on selected installment
+    const interestRate = formData.paymentInstallments.totalInterestRate || 0;
+    basePrice *= 1 + interestRate / 100;
+  }
+  return basePrice;
+};
+useEffect(() => {
+  if (formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && formData.paymentFormat === PAYMENT_FORMATS.CASH) {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      paymentFormat: PAYMENT_FORMATS.CREDIT_CARD, // Default to a different payment method
+    }));
+  }
+}, [formData.deliveryOption.option, formData.paymentFormat, setFormData]);
+
+// Recalculate total price when payment format, installments, or cart changes
+useEffect(() => {
+  const updatedTotal = calculateTotalPrice() + shippingCost;
+  setTotalPrice(updatedTotal);
+}, [cart, formData.paymentFormat, formData.paymentInstallments, shippingCost]);
+  
 
   // Update shipping cost based on delivery option
   useEffect(() => {
@@ -89,7 +120,9 @@ const Checkout: React.FC = () => {
                     />
                     <i className="fas fa-credit-card mr-2"></i>  Débito o Crédito
                   </label>
-                  <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
+                  <label
+                    className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
+                  >
                     <div className="flex items-center space-x-4">
                       <input
                         type="radio"
@@ -97,11 +130,17 @@ const Checkout: React.FC = () => {
                         value={PAYMENT_FORMATS.CASH}
                         checked={formData.paymentFormat === PAYMENT_FORMATS.CASH}
                         onChange={handleOptionChange}
-                        className="mr-2"
+                        disabled={formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY} // Disable if Delivery is selected
+                        className="mr-2 cursor-pointer disabled:cursor-not-allowed"
                       />
-                      <i className="fas fa-money-bill-wave mr-2"></i>Efectivo
+                      {formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && (
+                        <span className="text-xs text-gray-400 ml-2">(No disponible para entrega a domicilio)</span>
+                      )}
+
+                      <i className="fas fa-money-bill-wave mr-2"></i> Efectivo
                     </div>
                   </label>
+
                   <label
                     className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
                       ? "bg-blue-100 border-blue-500"
@@ -152,8 +191,8 @@ const Checkout: React.FC = () => {
                         {providers.map((provider) => (
                           <label
                             key={provider.id}
-                            className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer
-              ${selectedProvider?.id === provider.id ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
+                            className={`p-4 border rounded-md flex justify-between items-center cursor-pointer
+                              ${selectedProvider?.id === provider.id ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
                           >
                             <input
                               type="radio"
@@ -163,10 +202,16 @@ const Checkout: React.FC = () => {
                               onChange={() => handleProviderSelect(provider)}
                               className="mr-2"
                             />
-                            <span>{provider.name}</span>
+                            <img
+                              src={provider.name === 'Visa' ? '/visa.png' : '/mastercard.png'}
+                              alt={provider.name}
+                              className="w-12 h-12"
+                            />
                           </label>
                         ))}
                       </div>
+
+
                     </div>
 
                     {/* Bank Selection - Only show if provider is selected */}
@@ -291,7 +336,7 @@ const Checkout: React.FC = () => {
                     <div>
                       <div className="flex justify-between items-center gap-8">
                         <h3 className="font-semibold">{item.Product.name}</h3>
-                        <span className="text-sm text-gray-500">${item.Product.finalPrice}</span>
+                        <span className="text-sm text-gray-500">${item.Product.finalPrice.toFixed(2)}</span>
                       </div>
                       <div className="text-sm text-gray-500">
                         {item.Options?.map((option) => (
