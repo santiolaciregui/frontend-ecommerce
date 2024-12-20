@@ -48,9 +48,7 @@ const SinglePage = () => {
     loadStores();
   }, []);
 
-  if (loading) return <p><Loading/></p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!product) return <p>No product found</p>;
+  if (!product) return <h1>No product found</h1>;
 
   const currentPrice = product.price;
   const activeDiscounts = product.Discounts?.filter(discount => discount.active);

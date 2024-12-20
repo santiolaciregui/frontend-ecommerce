@@ -56,7 +56,6 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
   }, [loading]);
 
   if (showLoading) return <Loading />;
-  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="mt-12 px-2 md:px-4 lg:px-8 xl:px-16 2xl:px-32 relative">
