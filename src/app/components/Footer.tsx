@@ -44,13 +44,10 @@ const Footer = () => {
           <div className="flex flex-col items-center lg:items-start">
             <h2 className="text-lg font-semibold text-gray-800">ENLACES</h2>
             <nav className="mt-4 flex flex-col items-center lg:items-start space-y-3">
-              <Link href="/about" className="text-gray-600 hover:text-gray-800">
+              <Link href="/empresa/sobre-nosotros" className="text-gray-600 hover:text-gray-800">
                 Sobre Nosotros
               </Link>
-              <Link href="/shipping" className="text-gray-600 hover:text-gray-800">
-                Formas de Envío
-              </Link>
-              <Link href="/contact" className="text-gray-600 hover:text-gray-800">
+              <Link href="/empresa/contacto" className="text-gray-600 hover:text-gray-800">
                 Contáctanos
               </Link>
             </nav>
@@ -85,6 +82,10 @@ const Footer = () => {
               <div className="flex items-center gap-4 mt-2">
                 <Image src="/visa.png" alt="Visa" width={40} height={20} />
                 <Image src="/mastercard.png" alt="Mastercard" width={40} height={20} />
+                <Image src="/cabal.png" alt="Cabal" width={40} height={20} />
+                <Image src="/americanexpress.png" alt="AmericanExpress" width={40} height={20} />
+                <Image src="/Naranja_X.png" alt="NaranjaX" width={40} height={20} />
+
               </div>
             </div>
           </div>
