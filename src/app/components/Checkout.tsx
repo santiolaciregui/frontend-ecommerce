@@ -184,35 +184,30 @@ useEffect(() => {
                   <div className="space-y-4">
                     {/* Provider Selection */}
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Selecciona el proveedor de la tarjeta
-                      </label>
-                      <div className="grid grid-cols-2 gap-4">
-                        {providers.map((provider) => (
-                          <label
-                            key={provider.id}
-                            className={`p-4 border rounded-md flex justify-between items-center cursor-pointer
-                              ${selectedProvider?.id === provider.id ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
-                          >
-                            <input
-                              type="radio"
-                              name="cardProvider"
-                              value={provider.id}
-                              checked={selectedProvider?.id === provider.id}
-                              onChange={() => handleProviderSelect(provider)}
-                              className="mr-2"
+                    <label>
+                      Selecciona el proveedor de la tarjeta
+                    </label>
+                    <div>
+                      {providers.map((provider) => (
+                        <label key={provider.id} style={{ display: 'inline-flex', alignItems: 'center', marginRight: '1rem' }}>
+                          <input
+                            type="radio"
+                            name="cardProvider"
+                            value={provider.id}
+                            checked={selectedProvider?.id === provider.id}
+                            onChange={() => handleProviderSelect(provider)}
+                          />
+                          <img
+                            src={`/${provider.name}.png`}
+                            alt={provider.name}
+                            style={{ marginLeft: '0.1rem', verticalAlign: 'middle', height: '25px' }}
                             />
-                            <img
-                              src={provider.name === 'Visa' ? '/visa.png' : '/mastercard.png'}
-                              alt={provider.name}
-                              className="w-12 h-12"
-                            />
-                          </label>
-                        ))}
-                      </div>
-
-
+                        </label>
+                      ))}
                     </div>
+                  </div>
+
+
 
                     {/* Bank Selection - Only show if provider is selected */}
                     {selectedProvider && (

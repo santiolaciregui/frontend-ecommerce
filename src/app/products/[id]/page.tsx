@@ -8,6 +8,7 @@ import { fetchStores } from "../../pages/api/stores"; // Asumiendo que este es t
 import { useParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
 import Loading from '@/app/components/Loading';
+import PaymentModal from '@/app/components/modalPayments';
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -15,7 +16,7 @@ const SinglePage = () => {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isShippingOpen, setIsShippingOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isStoresOpen, setIsStoresOpen] = useState(false);
 
   useEffect(() => {
@@ -79,10 +80,13 @@ const SinglePage = () => {
           <h2 className="font-medium text-2xl text-gray-800">${finalPrice}</h2>
         </div>
         
-        <div className="discount-info bg-yellow-100 p-2 rounded-md">
-          <p className="text-yellow-800">10% de descuento pagando con efectivo en sucursal</p>
-        </div>
-        
+        <button
+  onClick={() => setIsPaymentModalOpen(true)}
+  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors duration-200"
+>
+  <i className="fas fa-info-circle"></i>
+  Ver formas de pago disponibles
+</button>
         <div className="h-[2px] bg-gray-200 my-4" />
         
         {product.stock ? (
@@ -100,7 +104,7 @@ const SinglePage = () => {
             onClick={() => setIsStoresOpen(!isStoresOpen)}
           >
             <h3 className="font-medium text-lg flex items-center text-gray-800">
-              <i className="fas fa-store mr-2"></i> Nuestros locales
+              <i className="fas fa-store mr-2"></i> Puntos de Retiro
             </h3>
             <span>
               <i className={`fas ${isStoresOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
@@ -138,7 +142,13 @@ const SinglePage = () => {
           </h4>
         )}
       </div>
+      <PaymentModal
+  isOpen={isPaymentModalOpen}
+  onClose={() => setIsPaymentModalOpen(false)}
+/>
     </div>
+
+    
   );
 };
 
