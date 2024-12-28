@@ -12,6 +12,13 @@ interface Order {
   totalAmount: number;
   createdAt: string;
   status: string;
+  client: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
 }
 
 const OrdersList: React.FC = () => {

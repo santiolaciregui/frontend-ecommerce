@@ -155,3 +155,35 @@ export interface FormData {
   };
   paymentInstallments: InstallmentOption | null; // Add proper type instead of 'any'
 }
+
+
+export interface Client {
+  email: string | '';
+  phone: string | '';
+}
+
+export interface OrdersDetails {
+  id: number;
+  orderNumber: string;
+  email: string | null;
+  totalAmount: number;
+  shippingAddress: string | null;
+  paymentFormat: string;
+  createdAt: string;
+  OrderItems: OrderItem[];
+  client?: Client;
+}
+
+export interface OrderItem {
+  id: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  options: any[];
+  createdAt: string;
+  updatedAt: string;
+  orderId: number;
+  productId: number;
+  Product: Product;
+} 

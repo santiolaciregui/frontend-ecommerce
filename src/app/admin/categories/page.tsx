@@ -30,7 +30,7 @@ const CategoryAdminList = () => {
   const handleDelete = async (categoryId: number) => {
     try {
       setLoading(true);
-      await apiService.deleteCategoryByID({ id: categoryId });
+      await apiService.deleteCategory({ id: categoryId });
       alert('Categoría eliminada con éxito');
       const fetchedCategories = await apiService.fetchCategories();
       setCategories(fetchedCategories);
