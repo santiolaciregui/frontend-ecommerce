@@ -30,7 +30,7 @@ const CreateProduct = () => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  
+
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     SKU: 0,
@@ -91,6 +91,7 @@ const CreateProduct = () => {
   const handleRemoveSize = (size: string) => {
     setSizes(sizes.filter(s => s !== size));
   };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
@@ -137,7 +138,7 @@ const CreateProduct = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
       console.log(formData);
       const data = new FormData();
@@ -151,7 +152,7 @@ const CreateProduct = () => {
       data.append('subcategoryId', String(formData.subcategoryId));
       formData.optionIds.forEach((id) => data.append('optionIds', String(id)));
       formData.images.forEach((file) => data.append('images', file));
-  
+
       const response = await apiServiceProducts.createProduct(data);
       alert(editMode ? 'Producto actualizado con éxito' : 'Producto creado con éxito');
     } catch (err) {
@@ -327,9 +328,10 @@ const CreateProduct = () => {
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="col-span-2">
-  <h2 className="text-xl font-semibold mb-4">Opciones</h2>
+          <div className="col-span-2">
+            <h2 className="text-xl font-semibold mb-4">Opciones</h2>
 
   <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700">Colores</label>
@@ -412,6 +414,7 @@ const CreateProduct = () => {
       </div>
     </div>
   );
-};
+  
+}
 
 export default CreateProduct;
