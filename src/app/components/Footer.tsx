@@ -83,8 +83,8 @@ const Footer = () => {
                 <Image src="/visa.png" alt="Visa" width={40} height={20} />
                 <Image src="/mastercard.png" alt="Mastercard" width={40} height={20} />
                 <Image src="/cabal.png" alt="Cabal" width={40} height={20} />
-                <Image src="/americanexpress.png" alt="AmericanExpress" width={40} height={20} />
-                <Image src="/Naranja_X.png" alt="NaranjaX" width={40} height={20} />
+                <Image src="/American Express.png" alt="AmericanExpress" width={40} height={20} />
+                <Image src="/NaranjaX.png" alt="NaranjaX" width={40} height={20} />
 
               </div>
             </div>

@@ -104,16 +104,17 @@ const SearchBar = () => {
                 </div>
                 <div className="flex-grow">
                   <h3 className="font-semibold text-gray-800">{product.name}</h3>
-                  {product.price && (
-                    <p className="text-sm text-gray-600">
-                      ${product.price.toFixed(2)}
-                      {product.price && (
-                        <span className="ml-2 line-through text-gray-400">
-                          ${product.price.toFixed(2)}
-                        </span>
-                      )}
-                    </p>
-                  )}
+                  {product.finalPrice && (
+                  <p className="text-sm text-gray-600">
+                    ${product.finalPrice.toFixed(2)}
+                    {product.finalPrice !== product.price && product.price && (
+                      <span className="ml-2 line-through text-gray-400">
+                        ${product.price.toFixed(2)}
+                      </span>
+                    )}
+                  </p>
+                )}
+
                   {/* {product.discount && (
                     <span className="text-xs font-semibold text-white bg-pink-500 px-2 py-1 rounded-full ml-2">
                       {product.discount}% Off

@@ -174,9 +174,12 @@ const handleProviderSelect = async (provider: CardProvider) => {
   };
 
   const handleBankSelect = async (bank: Bank) => {
+    console.log('Bank selected:', bank);
     setSelectedBank(bank);
     try {
+      console.log('Fetching installments for bank:', bank.id, 'and provider:', selectedProvider?.id);
       const installmentsData = await apiServiceCards.fetchInstallmentsByBank(bank.id, selectedProvider?.id);
+      console.log('Installments received:', installmentsData);
       setInstallments(installmentsData);
       
       // Update formData with selected bank
@@ -188,6 +191,7 @@ const handleProviderSelect = async (provider: CardProvider) => {
         }
       }));
     } catch (err) {
+      console.error('Error fetching installments:', err);
       setError('Error fetching installments');
     }
   };

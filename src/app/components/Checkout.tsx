@@ -34,8 +34,8 @@ const calculateTotalPrice = () => {
     basePrice *= 1.10; // Add 10% for transfer
   } else if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && formData.paymentInstallments) {
     // Add interest based on selected installment
-    const interestRate = formData.paymentInstallments.totalInterestRate || 0;
-    basePrice *= 1 + interestRate / 100;
+    const interestRate = formData.paymentInstallments.interestRate || 0;
+    basePrice *= (1 + interestRate / 100);
   }
   return basePrice;
 };
@@ -176,6 +176,9 @@ useEffect(() => {
                       />
                       <i className="fas fa-file-upload mr-2"></i>Crédito Personal
                     </div>
+                    <span className="text-sm text-gray-500">
+                      15% adicional en el precio total
+                    </span>
                     <span className="text-sm text-gray-500">Requiere cargar un archivo</span>
                   </label>
                 </div>
@@ -185,8 +188,10 @@ useEffect(() => {
                     {/* Provider Selection */}
                     <div>
                     <label>
-                      Selecciona el proveedor de la tarjeta
+                      Selecciona el proveedor de tu tarjeta
                     </label>
+                    <br />
+                    <br />
                     <div>
                       {providers.map((provider) => (
                         <label key={provider.id} style={{ display: 'inline-flex', alignItems: 'center', marginRight: '1rem' }}>
@@ -266,14 +271,12 @@ useEffect(() => {
                                 className="form-radio h-4 w-4 text-blue-600 cursor-pointer"
                               />
                               <span className="text-sm text-gray-700">
-                                {installment.numberOfInstallments} cuotas
+                                {installment.numberOfInstallments} cuotas de ${(calculateTotalPrice()/installment.numberOfInstallments).toFixed(2)}
                               </span>
                               <span className="text-xs text-gray-500">
                                 Tasa de interés: {installment.interestRate}%
                               </span>
-                              <span className="text-xs text-gray-500">
-                                Interés total: {installment.totalInterestRate}%
-                              </span>
+                             
                             </label>
                           ))}
                         </div>
@@ -300,7 +303,7 @@ useEffect(() => {
 
                 {formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="personalCredit">Por favor, cargue su último recibo de sueldo, esto es necesario para crédito personal</label>
+                    <label className="block text-sm font-medium mb-1" htmlFor="personalCredit">Es necesario que suba un archivo de su ultimo recibo de sueldo para validarlo</label>
                     <input
                       type="file"
                       id="personalCreditFile"

@@ -1,8 +1,12 @@
+/* First import Font Awesome */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/* Then Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import '@fortawesome/fontawesome-free/css/all.min.css';
-input:disabled {
-  opacity: 0.5; /* Reduce opacity for disabled inputs */
-}
 
+/* Custom styles */
+input:disabled {
+  opacity: 0.5;
+}

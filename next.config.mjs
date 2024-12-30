@@ -10,6 +10,7 @@ const nextConfig = {
       },
     ],
   },
+  
   async headers() {
     return [
       {
@@ -21,7 +22,7 @@ const nextConfig = {
           },
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'https://backend-ecommerce-aecr.onrender.com',
+            value: '*',
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -35,8 +36,33 @@ const nextConfig = {
       },
     ];
   },
-  
+
+  webpack: (config) => {
+    config.infrastructureLogging = {
+      level: 'error',
+    };
+    
+    // Add Font Awesome loader
+    config.module.rules.push({
+      test: /\.(woff|woff2|eot|ttf|svg)$/,
+      use: {
+        loader: 'url-loader',
+        options: {
+          limit: 100000,
+          publicPath: '/_next/static/fonts/',
+          outputPath: 'static/fonts/',
+          name: '[name].[ext]',
+        },
+      },
+    });
+
+    return config;
+  },
+  // Add this to properly handle CSS files
+  optimizeFonts: false,
+  sassOptions: {
+    includePaths: ['./styles'],
+  },
 };
-  
-  export default nextConfig;
-  
+
+export default nextConfig;

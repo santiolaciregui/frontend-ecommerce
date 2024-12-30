@@ -55,7 +55,7 @@ const AdminList = () => {
             className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
           >
             <i className="fas fa-plus mr-2"></i>
-            Añadr nuevo producto
+            Añadir nuevo producto
           </Link>
         </div>
 

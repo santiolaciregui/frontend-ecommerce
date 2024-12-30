@@ -1,3 +1,4 @@
+// createProduct.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import apiServiceProducts from "../../../pages/api/products";
@@ -29,7 +30,7 @@ const CreateProduct = () => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-
+  
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     SKU: 0,
@@ -44,6 +45,12 @@ const CreateProduct = () => {
     images: [],
   });
 
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+
+  const [newColor, setNewColor] = useState('');
+  const [newSize, setNewSize] = useState('');
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -56,14 +63,34 @@ const CreateProduct = () => {
         const fetchedDiscounts = await apiServiceDiscount.fetchDiscounts();
         setDiscounts(fetchedDiscounts);
       } catch (err) {
-        setError('Error fetching data');
-        console.error(err);
+        console.error('Error fetching data:', err);
       }
     };
 
     fetchInitialData();
   }, []);
 
+  const handleAddColor = () => {
+    if (newColor.trim() && !colors.includes(newColor)) {
+      setColors([...colors, newColor.trim()]);
+      setNewColor('');
+    }
+  };
+
+  const handleAddSize = () => {
+    if (newSize.trim() && !sizes.includes(newSize)) {
+      setSizes([...sizes, newSize.trim()]);
+      setNewSize('');
+    }
+  };
+
+  const handleRemoveColor = (color: string) => {
+    setColors(colors.filter(c => c !== color));
+  };
+
+  const handleRemoveSize = (size: string) => {
+    setSizes(sizes.filter(s => s !== size));
+  };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
@@ -304,50 +331,74 @@ const CreateProduct = () => {
             <div className="col-span-2">
   <h2 className="text-xl font-semibold mb-4">Opciones</h2>
 
-  {/* Color Options */}
-  <div className="mb-4">
-    <h3 className="text-lg font-medium mb-2">Colores:</h3>
-    {options.filter(option => option.type === 0).map(option => (
-      <div key={option.id} className="flex items-center space-x-4 mb-2">
-        <label className="flex items-center">
+  <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700">Colores</label>
+        <div className="flex items-center space-x-2 mb-2">
           <input
-            type="checkbox"
-            value={option.id}
-            checked={formData.optionIds?.includes(option.id)}
-            onChange={() => handleOptionChange(option.id)}
-            className="form-checkbox"
+            type="text"
+            value={newColor}
+            onChange={(e) => setNewColor(e.target.value)}
+            placeholder="Añadir color"
+            className="border p-2 rounded w-full"
           />
-          <span className="ml-2 flex items-center">
-            <span
-              className="w-4 h-4 rounded-full mr-2"
-              style={{ backgroundColor: option.name }} // Display color as background
-            />
-            {option.name}
-          </span>
-        </label>
+          <button
+            onClick={handleAddColor}
+            type="button"
+            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          >
+            Añadir
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {colors.map((color) => (
+            <div key={color} className="flex items-center space-x-2 bg-gray-200 py-1 px-3 rounded">
+              <span>{color}</span>
+              <button
+                type="button"
+                onClick={() => handleRemoveColor(color)}
+                className="text-red-500 hover:text-red-700"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
 
-  {/* Size Options */}
-  <div>
-    <h3 className="text-lg font-medium mb-2">Tamaños:</h3>
-    {options.filter(option => option.type === 1).map(option => (
-      <div key={option.id} className="flex items-center space-x-4 mb-2">
-        <label className="flex items-center">
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700">Tamaños</label>
+        <div className="flex items-center space-x-2 mb-2">
           <input
-            type="checkbox"
-            value={option.id}
-            checked={formData.optionIds?.includes(option.id)}
-            onChange={() => handleOptionChange(option.id)}
-            className="form-checkbox"
+            type="text"
+            value={newSize}
+            onChange={(e) => setNewSize(e.target.value)}
+            placeholder="Añadir tamaño"
+            className="border p-2 rounded w-full"
           />
-          <span className="ml-2">{option.name}</span>
-        </label>
+          <button
+            onClick={handleAddSize}
+            type="button"
+            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          >
+            Añadir
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {sizes.map((size) => (
+            <div key={size} className="flex items-center space-x-2 bg-gray-200 py-1 px-3 rounded">
+              <span>{size}</span>
+              <button
+                type="button"
+                onClick={() => handleRemoveSize(size)}
+                className="text-red-500 hover:text-red-700"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
-</div>
+
 
           </div>
 
