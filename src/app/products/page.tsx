@@ -61,15 +61,21 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
     <div className="mt-12 px-2 md:px-4 lg:px-8 xl:px-16 2xl:px-32 relative">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="hidden md:block md:w-1/4">
-            <Filter onProductsFetched={handleProductsFetched} setLoading={setLoading} />
+          <Filter onProductsFetched={handleProductsFetched} setLoading={setLoading} />
         </div>
         <div className="w-full md:w-3/4">
-          <ProductList
-            products={products}
-            currentPage={currentPage}
-            hasPrev={currentPage > 0}
-            hasNext={products.length === 8}
-          />
+          {products.length > 0 ? (
+            <ProductList
+              products={products}
+              currentPage={currentPage}
+              hasPrev={currentPage > 0}
+              hasNext={products.length === 8}
+            />
+          ) : (
+            <div className="flex justify-center items-center min-h-[400px] bg-gray-50 rounded-lg">
+              <p className="text-xl text-gray-600">¡Estamos renovando nuestro catalogo de productos!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

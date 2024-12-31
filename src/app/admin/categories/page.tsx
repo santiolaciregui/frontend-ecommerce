@@ -30,7 +30,7 @@ const CategoryAdminList = () => {
   const handleDelete = async (categoryId: number) => {
     try {
       setLoading(true);
-      await apiService.deleteCategory({ id: categoryId });
+      await apiService.deleteCategory(categoryId);
       alert('Categoría eliminada con éxito');
       const fetchedCategories = await apiService.fetchCategories();
       setCategories(fetchedCategories);
@@ -58,14 +58,16 @@ const CategoryAdminList = () => {
             <td className="px-6 py-4 border-b text-gray-700">
               {category.parentId ? `ID: ${category.parentId}` : '—'}
             </td>
-            <td className="px-6 py-4 border-b">
-              <button
-                onClick={() => handleDelete(category.id)}
-                className="text-red-500 hover:text-red-700"
-              >
-                Eliminar
-              </button>
-            </td>
+            <td className="px-6 py-4 flex justify-center space-x-4">
+            <button
+              onClick={() => handleDelete(category.id)}
+              className="text-red-500 hover:text-red-700"
+              title="Eliminar"
+            >
+              <i className="fas fa-trash-alt mr-2"></i>
+              Eliminar
+            </button>
+          </td>
           </tr>
           {renderCategories(categories, category.id, level + 1)}
         </React.Fragment>
@@ -79,23 +81,24 @@ const CategoryAdminList = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Lista de Categorías</h2>
           <Link
             href="/admin/categories/create"
-            className="w-36 text-sm rounded-lg ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200"
+            className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
           >
-            Añadir Categoría
+            <i className="fas fa-plus mr-2"></i>
+            Añadir categoría
           </Link>
         </div>
 
-        <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="px-6 py-4 border-b text-left text-sm font-medium text-gray-700">ID</th>
-                <th className="px-6 py-4 border-b text-left text-sm font-medium text-gray-700">Nombre</th>
-                <th className="px-6 py-4 border-b text-left text-sm font-medium text-gray-700">Subcategoría de</th>
-                <th className="px-6 py-4 border-b text-left text-sm font-medium text-gray-700">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="overflow-x-auto">
+            <table className="min-w-full bg-white shadow-md rounded-lg">
+              <thead className="bg-gray-200 text-gray-600 text-sm uppercase font-semibold">
+                <tr>
+                  <th className="text-left px-6 py-3">ID</th>
+                  <th className="text-left px-6 py-3">Nombre</th>
+                  <th className="text-left px-6 py-3">Subcategoría de</th>
+                  <th className="text-center px-6 py-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-700">
               {loading ? (
                 <tr>
                   <td colSpan={4} className="text-center py-4 text-gray-500">

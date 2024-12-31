@@ -103,48 +103,59 @@ const OrdersList: React.FC = () => {
                   <th className="px-6 py-3 text-center">Acciones</th>
                 </tr>
               </thead>
-              <tbody>
-                {orders.map(order => (
-                  <tr key={order.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4 text-gray-700">{order.id}</td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{order.client.firstName} {order.client.lastName}</td>
-                    <td className="px-6 py-4 text-center">
-                      {order.client.phone ? (
-                        
+              <tbody className="text-gray-700">
+                {orders.length > 0 ? (
+                  orders.map(order => (
+                    <tr key={order.id} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 text-gray-700">{order.id}</td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">{order.client.firstName} {order.client.lastName}</td>
+                      <td className="px-6 py-4 text-center">
+                        {order.client.phone ? (
+                          
+                          <button
+                            className="text-green-500 hover:text-green-700 mx-2"
+                            onClick={() => handleWhatsApp(order.client.phone)}
+                            title="Enviar mensaje por WhatsApp"
+                          >{order.client.phone}
+                            <i className="fab fa-whatsapp text-2xl ml-2"></i>
+                          </button>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">${(Math.round(order.totalAmount * 100) / 100).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-gray-700 font-medium capitalize">
+                        {statusTranslations[order.status] || order.status}
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <button
-                          className="text-green-500 hover:text-green-700 mx-2"
-                          onClick={() => handleWhatsApp(order.client.phone)}
-                          title="Enviar mensaje por WhatsApp"
-                        >{order.client.phone}
-                          <i className="fab fa-whatsapp text-2xl ml-2"></i>
+                          className="text-blue-500 hover:text-blue-700 mx-2"
+                          onClick={() => handleViewDetails(order.id)}
+                        >
+                          <FaEye className="inline-block" />
                         </button>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">${(Math.round(order.totalAmount * 100) / 100).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-gray-700 font-medium capitalize">
-                      {statusTranslations[order.status] || order.status}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        className="text-blue-500 hover:text-blue-700 mx-2"
-                        onClick={() => handleViewDetails(order.id)}
-                      >
-                        <FaEye className="inline-block" />
-                      </button>
-                      <button
-                        className="text-red-500 hover:text-red-700 mx-2"
-                        onClick={() => handleDelete(order.id)}
-                      >
-                        <FaTrashAlt className="inline-block" />
-                      </button>
+                        <button
+                          className="text-red-500 hover:text-red-700 mx-2"
+                          onClick={() => handleDelete(order.id)}
+                        >
+                          <FaTrashAlt className="inline-block" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td 
+                      colSpan={7} 
+                      className="px-6 py-8 text-center text-gray-500 text-lg"
+                    >
+                      Aún no hay elementos
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

@@ -19,6 +19,7 @@ interface PromotionForm {
 }
 
 const CreatePromotion = () => {
+  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [creditCards, setCreditCards] = useState<{ id: number, name: string }[]>([]);
@@ -209,10 +210,10 @@ const CreatePromotion = () => {
                   className="mr-2"
                 />
                 <div className="flex items-center space-x-4">
-                  {product.Images ? (
-                    <Image src={product.Images[0].url} alt={product.name} width={50} height={50} className="rounded" />
-                  ) : (
-                    <Image src={'/logo-verde-manzana.png'} alt={product.name} width={50} height={50} className="rounded" />
+                  {product.Images.length > 0  ? (
+                    <Image src={product.Images[0] ? `${API_URL}${product.Images[0].url}` : '/logo-verde-manzana.svg'} alt=''/>
+                ) : (
+                    <Image src={'/logo-verde-manzana.svg'} alt={product.name} width={50} height={50} className="rounded" />
                   )}
                   <div>
                     <h4 className="text-sm font-medium">{product.name}</h4>

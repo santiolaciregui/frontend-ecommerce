@@ -70,41 +70,54 @@ const AdminList = () => {
                 <th className="text-center px-6 py-3">Acciones</th>
               </tr>
             </thead>
-            <tbody className="text-gray-700">
-              {products.map((product) => (
-                <tr
-                  key={product.id}
-                  className="border-b hover:bg-gray-50 transition duration-300"
-                >
-                  <td className="px-6 py-4">{product.SKU}</td>
-                  <td className="px-6 py-4">{product.name}</td>
-                  <td className="px-6 py-4">
-                    {product.Categories.map((category) => category.name).join(
-                      ', '
-                    )}
-                  </td>
-                  <td className="px-6 py-4">${product.price}</td>
-                  <td className="px-6 py-4 flex justify-center space-x-4">
-                    <Link
-                      href={`/admin/products/update/${product.id}`}
-                      className="text-blue-500 hover:text-blue-700"
-                      title="Editar"
-                    >
-                      <i className="fas fa-edit mr-2"></i>
-                      Editar
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(product.id!)}
-                      className="text-red-500 hover:text-red-700"
-                      title="Eliminar"
-                    >
-                      <i className="fas fa-trash-alt mr-2"></i>
-                      Eliminar
-                    </button>
+            {products.length > 0 ? (
+              <tbody className="text-gray-700">
+                {products.map((product) => (
+                  <tr
+                    key={product.id}
+                    className="border-b hover:bg-gray-50 transition duration-300"
+                  >
+                    <td className="px-6 py-4">{product.SKU}</td>
+                    <td className="px-6 py-4">{product.name}</td>
+                    <td className="px-6 py-4">
+                      {product.Categories.map((category) => category.name).join(
+                        ', '
+                      )}
+                    </td>
+                    <td className="px-6 py-4">${product.price}</td>
+                    <td className="px-6 py-4 flex justify-center space-x-4">
+                      <Link
+                        href={`/admin/products/update/${product.id}`}
+                        className="text-blue-500 hover:text-blue-700"
+                        title="Editar"
+                      >
+                        <i className="fas fa-edit mr-2"></i>
+                        Editar
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(product.id!)}
+                        className="text-red-500 hover:text-red-700"
+                        title="Eliminar"
+                      >
+                        <i className="fas fa-trash-alt mr-2"></i>
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ) : (
+              <tbody className="text-gray-700">
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-8 text-center text-gray-500 text-lg"
+                  >
+                    Aún no hay elementos
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            )}
           </table>
         </div>
       </div>
