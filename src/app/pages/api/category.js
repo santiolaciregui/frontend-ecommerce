@@ -60,7 +60,8 @@ export const fetchCategoryById = async (id) => {
 };
 
 // Crear una nueva categoría (Admin-only)
-export const createCategory = async (categoryData, token) => {
+export const createCategory = async (categoryData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.post(`${API_BASE_URL}/categories`, categoryData, {
       headers: {
@@ -75,7 +76,8 @@ export const createCategory = async (categoryData, token) => {
 };
 
 // Update a category (Admin-only)
-export const updateCategory = async (id, categoryData, token) => {
+export const updateCategory = async (id, categoryData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.put(`${API_BASE_URL}/categories/${id}`, categoryData, {
       headers: {
@@ -90,7 +92,8 @@ export const updateCategory = async (id, categoryData, token) => {
 };
 
 // Delete a category (Admin-only)
-export const deleteCategory = async (id, token) => {
+export const deleteCategory = async (id) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.delete(`${API_BASE_URL}/categories/${id}`, {
       headers: {

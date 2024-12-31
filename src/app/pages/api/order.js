@@ -3,7 +3,8 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Ensure this URL points to your backend
 
 // Create a new order (requires authentication)
-export const createOrder = async (orderData, token) => {
+export const createOrder = async (orderData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
       headers: {
@@ -18,7 +19,8 @@ export const createOrder = async (orderData, token) => {
 };
 
 // Get all orders (admin-only)
-export const fetchOrders = async (token) => {
+export const fetchOrders = async () => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.get(`${API_BASE_URL}/orders`, {
       headers: {
@@ -59,7 +61,8 @@ export const fetchOrderByTrackingId = async (id) => {
 };
 
 // Update an order (admin-only)
-export const updateOrder = async (id, orderData, token) => {
+export const updateOrder = async (id, orderData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.put(`${API_BASE_URL}/orders/${id}`, orderData, {
       headers: {
@@ -74,7 +77,8 @@ export const updateOrder = async (id, orderData, token) => {
 };
 
 // Delete an order (admin-only)
-export const deleteOrderById = async (id, token) => {
+export const deleteOrderById = async (id) => {
+  const token = localStorage.getItem('accessToken');
   try {
     const response = await axios.delete(`${API_BASE_URL}/orders/${id}`, {
       headers: {

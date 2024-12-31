@@ -25,7 +25,8 @@ export const fetchDiscountById = async (id) => {
 };
 
 // Create a new discount (admin-only route)
-export const createDiscount = async (discountData, token) => {
+export const createDiscount = async (discountData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.post(`${API_BASE_URL}/discounts`, discountData, {
       headers: {
@@ -40,7 +41,8 @@ export const createDiscount = async (discountData, token) => {
 };
 
 // Update a discount (admin-only route)
-export const updateDiscount = async (id, discountData, token) => {
+export const updateDiscount = async (id, discountData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.put(`${API_BASE_URL}/discounts/${id}`, discountData, {
       headers: {
@@ -55,7 +57,8 @@ export const updateDiscount = async (id, discountData, token) => {
 };
 
 // Delete a discount (admin-only route)
-export const deleteDiscountByID = async (id, token) => {
+export const deleteDiscountByID = async (id) => {
+  const token = localStorage.getItem('accessToken');  
   try {
     const response = await axios.delete(`${API_BASE_URL}/discounts/${id}`, {
       headers: {
