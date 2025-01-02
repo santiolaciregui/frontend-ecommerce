@@ -69,7 +69,6 @@ export const useCheckout = () => {
     const fetchProviders = async () => {
       try {
         const providersData = await apiServiceCards.fetchProviders();
-        console.log('providers: ',providersData)
         setProviders(providersData);
       } catch (err) {
         setError(JSON.stringify(err))

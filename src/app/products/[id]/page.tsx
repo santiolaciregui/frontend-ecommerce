@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
 import Loading from '@/app/components/Loading';
 import PaymentModal from '@/app/components/modalPayments';
-import { emptyProduct } from '@/app/mooks/types';
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -25,7 +24,8 @@ const SinglePage = () => {
         try {
           const fetchedProduct = await fetchProductByID({ id });
           if (!fetchedProduct || !fetchedProduct.id) {
-            throw new Error('Product not found');
+            setError('Product not found');
+            return;
           }
           setProduct(fetchedProduct);
         } catch (err) {
@@ -52,7 +52,7 @@ const SinglePage = () => {
 
   if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
-  if (!product) return <h1>Product not found</h1>;
+  if (!product) return <div>Product not found</div>;
 
   const currentPrice = product.price;
   const activeDiscounts = product.Discounts?.filter(discount => discount.active);
@@ -145,10 +145,7 @@ const SinglePage = () => {
           </h4>
         )}
       </div>
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-      />
+      
     </div>
 
 

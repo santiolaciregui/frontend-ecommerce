@@ -17,7 +17,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart } = useCart();
 
   useEffect(() => {
-    console.log('carting:', JSON.stringify(cart));
   }, [cart]);
 
   
