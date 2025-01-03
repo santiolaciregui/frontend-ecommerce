@@ -17,6 +17,8 @@ interface DiscountForm {
   end_date: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Ensure the backend URL is set
+
 const DiscountForm = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -220,8 +222,17 @@ const DiscountForm = () => {
                 />
                 <div className="flex items-center space-x-4">
                   {product && product.Images[0] ? ( 
-                    <Image src={product.Images[0].url} alt={product.name} width={50} height={50} className="rounded" />
-                  ) : (
+                  <Image
+                  src={
+                    product.Images[0]
+                      ? `${API_URL}${product.Images[0].url}`
+                      : "/logo-verde-manzana.svg"
+                  }
+                  alt={product.name}
+                  width={50} height={50}
+                  className="rounded"
+                  />         
+                         ) : (
                     <Image src={'/logo-verde-manzana.svg'} alt={product.name} width={50} height={50} className="rounded" />
                   )}
                   <div>

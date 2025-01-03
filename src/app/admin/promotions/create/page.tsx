@@ -211,7 +211,16 @@ const CreatePromotion = () => {
                 />
                 <div className="flex items-center space-x-4">
                   {product.Images.length > 0  ? (
-                    <Image src={product.Images[0] ? `${API_URL}${product.Images[0].url}` : '/logo-verde-manzana.svg'} alt=''/>
+                   <Image
+                   src={
+                     product.Images[0]
+                       ? `${API_URL}${product.Images[0].url}`
+                       : "/logo-verde-manzana.svg"
+                   }
+                   alt={product.name}
+                   width={50} height={50}
+                   className="rounded"
+                   />         
                 ) : (
                     <Image src={'/logo-verde-manzana.svg'} alt={product.name} width={50} height={50} className="rounded" />
                   )}

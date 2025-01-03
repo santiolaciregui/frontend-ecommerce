@@ -64,7 +64,7 @@ const HomePage = () => {
               className="group relative cursor-pointer rounded-md overflow-hidden"
             >
               {/* Usando el componente ProductImages */}
-              {/* <ProductImages items={category} /> */}
+              <ProductImages items={[category]} />
 
               <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-sm px-2 py-1">
                 {category.name}

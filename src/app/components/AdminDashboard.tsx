@@ -123,7 +123,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Administración de Tarjetas */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
+         {/*  <div className="border rounded-lg bg-white p-6 shadow-md">
             <h2 className="text-lg font-semibold mb-4">Administración de Tarjetas</h2>
             <div className="space-y-4">
               <Link href="/admin/cards" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
@@ -133,7 +133,7 @@ const AdminDashboard = () => {
                 Añadir Tarjeta
               </Link>
             </div>
-          </div>
+          </div> */}
 
         </div>
       </div>
