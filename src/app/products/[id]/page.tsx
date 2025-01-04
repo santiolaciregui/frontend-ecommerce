@@ -145,10 +145,10 @@ const SinglePage = () => {
           </h4>
         )}
       </div>
-      {/* <PaymentModal
+       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-      /> */}
+      /> 
     </div>
 
 
