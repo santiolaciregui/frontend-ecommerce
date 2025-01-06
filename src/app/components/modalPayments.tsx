@@ -7,8 +7,9 @@ interface PaymentModalProps {
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
   const {
-    handleOptionChange,
     providers,
     banks,
     selectedBank,
@@ -19,8 +20,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
     formData,
     setFormData,
   } = useCheckout();
-
-  if (!isOpen) return null;
 
   return (
     <>
