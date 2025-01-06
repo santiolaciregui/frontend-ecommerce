@@ -22,6 +22,96 @@ const Filter: React.FC<FilterProps> = ({ onProductsFetched, setLoading }) => {
   const searchParams = useSearchParams();
   const { replace } = useRouter();
 
+  // Create a function to update URL params
+  const updateUrlParams = useCallback((params: { 
+    category?: number | null, 
+    subcategory?: number | null,
+    minPrice?: string,
+    maxPrice?: string 
+  }) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+
+    // Update or remove category
+    if (params.category) {
+      current.set('category', params.category.toString());
+    } else {
+      current.delete('category');
+    }
+
+    // Update or remove subcategory
+    if (params.subcategory) {
+      current.set('subcategory', params.subcategory.toString());
+    } else {
+      current.delete('subcategory');
+    }
+
+    // Update or remove price params
+    /* if (params.minPrice) {
+      current.set('minPrice', params.minPrice);
+    } else {
+      current.delete('minPrice');
+    }
+    
+    if (params.maxPrice) {
+      current.set('maxPrice', params.maxPrice);
+    } else {
+      current.delete('maxPrice');
+    } */
+
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    replace(`${pathname}${query}`);
+  }, [pathname, searchParams, replace]);
+
+  // Load initial state from URL params
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    const subcategoryFromUrl = searchParams.get('subcategory');
+    const minPriceFromUrl = searchParams.get('minPrice');
+    const maxPriceFromUrl = searchParams.get('maxPrice');
+
+    const newCategory = categoryFromUrl ? parseInt(categoryFromUrl) : null;
+    const newSubcategory = subcategoryFromUrl ? parseInt(subcategoryFromUrl) : null;
+
+    // Only update if values are different to avoid loops
+    if (newCategory !== selectedParentCategory) {
+      setSelectedParentCategory(newCategory);
+      if (newCategory) {
+        fetchSubcategoriesByParent(newCategory)
+          .then(setSubcategories)
+          .catch(console.error);
+      }
+    }
+
+    if (newSubcategory !== selectedSubcategory) {
+      setSelectedSubcategory(newSubcategory);
+    }
+
+    if (minPriceFromUrl !== minPrice) {
+      setMinPrice(minPriceFromUrl || '');
+    }
+
+    if (maxPriceFromUrl !== maxPrice) {
+      setMaxPrice(maxPriceFromUrl || '');
+    }
+
+    // Fetch products based on URL params
+    if (categoryFromUrl || subcategoryFromUrl || minPriceFromUrl || maxPriceFromUrl) {
+      setLoading(true);
+      fetchProducts({
+        categoryId: newCategory,
+        subcategoryId: newSubcategory,
+        searchParams: {
+          minPrice: minPriceFromUrl || undefined,
+          maxPrice: maxPriceFromUrl || undefined
+        }
+      })
+        .then(onProductsFetched)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [searchParams]);
+
   const loadParentCategories = useCallback(async () => {
     try {
       const parentCategoriesData = await fetchParentCategories();
@@ -37,67 +127,77 @@ const Filter: React.FC<FilterProps> = ({ onProductsFetched, setLoading }) => {
 
   const handleParentCategoryClick = useCallback(async (categoryId: number) => {
     const newSelectedParentCategory = categoryId === selectedParentCategory ? null : categoryId;
-    setSelectedParentCategory(newSelectedParentCategory);
-    setSelectedSubcategory(null);
     setLoading(true);
-  
+
     try {
+      // Update URL first
+      updateUrlParams({
+        category: newSelectedParentCategory,
+        subcategory: null,
+        minPrice,
+        maxPrice
+      });
+
       const products = await fetchProducts({
         categoryId: newSelectedParentCategory,
         subcategoryId: null
       });
+
       if (newSelectedParentCategory !== null) {
         const subcategoriesData = await fetchSubcategoriesByParent(newSelectedParentCategory);
         setSubcategories(subcategoriesData);
       } else {
         setSubcategories([]);
       }
+
       onProductsFetched(products);
     } catch (error) {
       console.error('Error handling parent category click:', error);
     } finally {
       setLoading(false);
     }
-  }, [selectedParentCategory, onProductsFetched, setLoading]);
-  
+  }, [selectedParentCategory, minPrice, maxPrice, updateUrlParams, onProductsFetched, setLoading]);
+
   const handleSubcategoryClick = useCallback(async (subcategoryId: number) => {
     const newSelectedSubcategory = subcategoryId === selectedSubcategory ? null : subcategoryId;
-    setSelectedSubcategory(newSelectedSubcategory);
     setLoading(true);
-  
+
     try {
+      // Update URL first
+      updateUrlParams({
+        category: selectedParentCategory,
+        subcategory: newSelectedSubcategory,
+        minPrice,
+        maxPrice
+      });
+
       const products = await fetchProducts({
         categoryId: selectedParentCategory,
         subcategoryId: newSelectedSubcategory
       });
+      
       onProductsFetched(products);
     } catch (error) {
       console.error('Error handling subcategory click:', error);
     } finally {
       setLoading(false);
     }
-  }, [selectedSubcategory, selectedParentCategory, onProductsFetched, setLoading]);
-  
+  }, [selectedSubcategory, selectedParentCategory, minPrice, maxPrice, updateUrlParams, onProductsFetched, setLoading]);
+
   const handlePriceChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === 'min') setMinPrice(value);
-    if (name === 'max') setMaxPrice(value);
-  
-    setLoading(true);
-  
-    try {
-      const products = await fetchProducts({
-        categoryId: selectedParentCategory,
-        subcategoryId: selectedSubcategory,
-        searchParams: { minPrice: minPrice, maxPrice: maxPrice }
-      });
-      onProductsFetched(products);
-    } catch (error) {
-      console.error('Error fetching products with price filter:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchParams, pathname, replace, selectedSubcategory, selectedParentCategory, minPrice, maxPrice, onProductsFetched, setLoading]);
+    const newMinPrice = name === 'min' ? value : minPrice;
+    const newMaxPrice = name === 'max' ? value : maxPrice;
+
+    // Update URL with new price values
+    updateUrlParams({
+      category: selectedParentCategory,
+      subcategory: selectedSubcategory,
+      minPrice: newMinPrice,
+      maxPrice: newMaxPrice
+    });
+  }, [selectedParentCategory, selectedSubcategory, minPrice, maxPrice, updateUrlParams]);
+
   return (
     <div className='mt-12 flex flex-col gap-6 p-4 bg-gray-100 rounded-lg'>
       <div className="flex flex-col gap-2">
@@ -111,7 +211,6 @@ const Filter: React.FC<FilterProps> = ({ onProductsFetched, setLoading }) => {
               >
                 {parent.name}
               </div>
-              {/* Mostrar subcategorías cuando la categoría padre está seleccionada */}
               {selectedParentCategory === parent.id && (
                 <div className="ml-4 mt-2 flex flex-col gap-2">
                   {subcategories.map(subcategory => (
