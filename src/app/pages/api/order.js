@@ -18,6 +18,22 @@ export const createOrder = async (orderData) => {
   }
 };
 
+// Update an order by orderId (authenticated users)
+export const updateOrderById = async (id, orderData) => {
+  const token = localStorage.getItem('accessToken');  
+  try {
+    const response = await axios.put(`${API_BASE_URL}/orders/${id}`, orderData, {
+      headers: {
+        Authorization: `Bearer ${token}`,  // Include the token for authentication
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating order:', error);
+    throw error;
+  }
+};
+
 // Get all orders (admin-only)
 export const fetchOrders = async () => {
   const token = localStorage.getItem('accessToken');  
@@ -115,6 +131,7 @@ export default {
   fetchOrderById,
   createOrder,
   updateOrder,
+  updateOrderById,
   deleteOrderById,
   fetchOrdersByEmailAndNumber,
   fetchOrderByTrackingId

@@ -25,6 +25,7 @@ const OrdersList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,6 +60,29 @@ const OrdersList: React.FC = () => {
     }
   };
 
+  const handleStatusChange = async (orderId: number, newStatus: string) => {
+    setUpdatingStatus(orderId);
+    setError(null);
+
+    try {
+      // Match the backend expectation of { id, status }
+      await orderService.updateOrderById(orderId, {
+        id: orderId,
+        status: newStatus
+      });
+      
+      // Update local state after successful backend update
+      setOrders(orders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+    } catch (err) {
+      setError('Error actualizando el estado del pedido');
+      console.error(err);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
   const handleViewDetails = (orderId: number) => {
     router.push(`/admin/orders/${orderId}`);
   };
@@ -69,21 +93,23 @@ const OrdersList: React.FC = () => {
     cancelled: 'Cancelado',
   };
 
-
   const handleWhatsApp = (contactInfo: string) => {
-    const cleanNumber = contactInfo.replace(/\s+/g, ''); // Elimina espacios en blanco
+    const cleanNumber = contactInfo.replace(/\s+/g, '');
     const message = encodeURIComponent("¡Hola! Somos Mueblería Verde Manzana, queríamos comentarte que ya recibimos tu pedido y estamos preparando todo para que llegue a tus manos.");
     const whatsappUrl = `https://wa.me/${cleanNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Listado de Órdenes</h1>
 
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>{error}</p>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -114,7 +140,6 @@ const OrdersList: React.FC = () => {
                       <td className="px-6 py-4 text-gray-700">{order.client.firstName} {order.client.lastName}</td>
                       <td className="px-6 py-4 text-center">
                         {order.client.phone ? (
-                          
                           <button
                             className="text-green-500 hover:text-green-700 mx-2"
                             onClick={() => handleWhatsApp(order.client.phone)}
@@ -127,8 +152,28 @@ const OrdersList: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 text-gray-700">${(Math.round(order.totalAmount * 100) / 100).toFixed(2)}</td>
-                      <td className="px-6 py-4 text-gray-700 font-medium capitalize">
-                        {statusTranslations[order.status] || order.status}
+                      <td className="px-6 py-4">
+                        <div className="relative">
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            className={`block w-full px-4 py-2 text-gray-700 bg-white border rounded-md shadow-sm 
+                              ${updatingStatus === order.id ? 'opacity-50' : 'hover:border-blue-500'}
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                            disabled={updatingStatus === order.id}
+                          >
+                            {Object.entries(statusTranslations).map(([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                          {updatingStatus === order.id && (
+                            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                              <FaSpinner className="animate-spin text-blue-500" />
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
