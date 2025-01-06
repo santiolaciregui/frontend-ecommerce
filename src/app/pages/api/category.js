@@ -3,7 +3,6 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ; 
 
 
-//HACER QUE ESTE METODO TRAIGA [sillon:{name: '', subcats:[{ca,sa}]}]
 // Obtener todas las categorías
 export const fetchCategories = async () => {
   try {
@@ -20,6 +19,18 @@ export const fetchParentCategories = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/categories/parents`);
     return response.data;
+  } catch (error) {
+    console.error('Error fetching parent categories:', error);
+    throw error;
+  }
+};
+
+// Obtener todas las categorías padre
+export const fetchCategoriesDashboard = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/categories/parentsDashboard`);
+    console.log(JSON.stringify(response))
+    return response.data.categoriesWithImages;
   } catch (error) {
     console.error('Error fetching parent categories:', error);
     throw error;
