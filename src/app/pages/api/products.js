@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Ensure your backend
 export const fetchProducts = async ({
   categoryId,
   subcategoryId,
-  limit = 8,
+  limit = 9,
   page = 0,
   searchParams = {}
 }) => {
