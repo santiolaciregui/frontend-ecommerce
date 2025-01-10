@@ -12,6 +12,9 @@ const isTokenExpired = (token: string) => {
     return decodedToken.exp < currentTime;
 };
 
+// Lista de rutas privadas que requieren autenticación
+const privateRoutes = [/^\/admin/]; // Usar una expresión regular para capturar cualquier ruta que comience con '/admin'
+
 const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,34 +23,39 @@ const useAuth = () => {
   useEffect(() => {
     const checkAuth = async () => {
       const accessToken = localStorage.getItem('accessToken');
+      const currentPath = window.location.pathname;
 
-      if (!accessToken) {
-        // Si no hay token, redirigir al login
-        router.push('/login');
-        setIsLoading(false);
-        return;
-      }
-
-      // Verificamos si el token ha expirado
-      if (isTokenExpired(accessToken)) {
-        try {
-          // Intentar renovar el token con el refreshToken
-          const newAccessToken = await refreshToken();
-          if (!newAccessToken) {
-            router.push('/login');
-            setIsLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.error('Error al renovar el token:', error);
+      // Verificamos si la ruta actual es privada (comienza con '/admin')
+      if (privateRoutes.some(route => route.test(currentPath))) {
+        if (!accessToken) {
+          // Si no hay token, redirigir al login
           router.push('/login');
           setIsLoading(false);
           return;
         }
+
+        // Verificamos si el token ha expirado
+        if (isTokenExpired(accessToken)) {
+          try {
+            // Intentar renovar el token con el refreshToken
+            const newAccessToken = await refreshToken();
+            if (!newAccessToken) {
+              router.push('/login');
+              setIsLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error('Error al renovar el token:', error);
+            router.push('/login');
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Si todo está bien, el usuario está autenticado
+        setIsAuthenticated(true);
       }
 
-      // Si todo está bien, el usuario está autenticado
-      setIsAuthenticated(true);
       setIsLoading(false);
     };
 
@@ -56,4 +64,5 @@ const useAuth = () => {
 
   return { isAuthenticated, isLoading };
 };
+
 export default useAuth;

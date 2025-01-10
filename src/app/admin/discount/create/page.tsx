@@ -13,7 +13,11 @@ interface DiscountForm {
   active: string;  // Cambio a string para manejar el select
   category_id?: number;
   selectedProducts: number[];
+  start_date: string;
+  end_date: string;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Ensure the backend URL is set
 
 const DiscountForm = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,6 +29,8 @@ const DiscountForm = () => {
     active: 'true', // Valor por defecto como string
     category_id: undefined,
     selectedProducts: [],
+    start_date: '',
+    end_date: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -81,7 +87,9 @@ const DiscountForm = () => {
         percentage: formData.discount_percent,
         description: formData.description,
         active: formData.active === 'true', // Convertimos el string a booleano
-        selectedProducts: formData.selectedProducts
+        selectedProducts: formData.selectedProducts,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
       };
       await createDiscount(discountData);
       setSuccessMessage('Descuento creado con éxito');
@@ -92,6 +100,8 @@ const DiscountForm = () => {
         active: 'true',
         category_id: undefined,
         selectedProducts: [],
+        start_date: '',
+        end_date: '',
       });
     } catch (err) {
       setError('Error al crear el descuento');
@@ -170,6 +180,30 @@ const DiscountForm = () => {
           </select>
         </div>
 
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
+          <input
+            type="date"
+            name="start_date"
+            value={formData.start_date}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Fecha de Fin</label>
+          <input
+            type="date"
+            name="end_date"
+            value={formData.end_date}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded"
+            required
+          />
+        </div>
+
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Seleccionar Productos Individuales</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -187,10 +221,19 @@ const DiscountForm = () => {
                   className="mr-2"
                 />
                 <div className="flex items-center space-x-4">
-                  {product && product.Images ? ( 
-                    <Image src={product.Images[0].url || '/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
-                  ) : (
-                    <Image src={'/logo-verde-manzana.pvg'} alt={product.name} width={50} height={50} className="rounded" />
+                  {product && product.Images[0] ? ( 
+                  <Image
+                  src={
+                    product.Images[0]
+                      ? `${API_URL}${product.Images[0].url}`
+                      : "/logo-verde-manzana.svg"
+                  }
+                  alt={product.name}
+                  width={50} height={50}
+                  className="rounded"
+                  />         
+                         ) : (
+                    <Image src={'/logo-verde-manzana.svg'} alt={product.name} width={50} height={50} className="rounded" />
                   )}
                   <div>
                     <h4 className="text-sm font-medium">{product.name}</h4>

@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return null; 
+    return null; // Consider showing a message or redirecting here
   }
 
   return <>{children}</>;

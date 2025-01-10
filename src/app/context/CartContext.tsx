@@ -1,128 +1,122 @@
 'use client';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, Option, CartItem } from './types';
+import { Product, Option, CartItem, Cart } from './types';
+import { v4 as uuidv4 } from 'uuid';
+import * as cartService from '../pages/api/cart';
 
 type CartContextType = {
-  cart: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (productId: number, options: Option[]) => void;
-  updateCartItemQuantity: (productId: number, options: Option[], quantity: number) => void;
-  getTotalCart: () => number;
-  clearCart: () => void;
+  cart: CartItem[] | null;
+  addToCart: (productId: number, quantity: number, optionIds: number[]) => Promise<void>;
+  removeFromCart: (cartItemId: number) => Promise<void>;
+  updateCartItemQuantity: (cartItemId: number, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
 };
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const CartContext = createContext<CartContextType | null>(null);
 
-const CART_STORAGE_KEY = 'my_cart';
+const SESSION_ID_KEY = 'session_id';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [cart, setCart] = useState<CartItem[] | null>(null);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Initialize session ID and load cart
   useEffect(() => {
-    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (storedCart) {
-      const parsedCart = JSON.parse(storedCart);
-      const { cart: loadedCart, timestamp } = parsedCart;
-      const now = new Date().getTime();
-      const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-
-      if (now - timestamp < oneDayInMilliseconds) {
-        setCart(loadedCart);
-      } else {
-        localStorage.removeItem(CART_STORAGE_KEY);
-      }
-    }
-    setIsInitialLoad(false);
+    const initializeCart = async () => {
+        let storedSessionId = localStorage.getItem(SESSION_ID_KEY);
+        if (!storedSessionId) {
+          storedSessionId = uuidv4();
+          localStorage.setItem(SESSION_ID_KEY, storedSessionId);
+        }
+        setSessionId(storedSessionId);
+        try {
+          setIsLoading(true);
+          const response = await cartService.getCart(storedSessionId);
+          setCart(response);
+        } catch (err) {
+          setError('Failed to load cart');
+          console.error('Error loading cart:', err);
+        } finally {
+          setIsLoading(false);
+        }
+    };
+    initializeCart();
   }, []);
 
-  useEffect(() => {
-    if (!isInitialLoad) {
-      const timestamp = new Date().getTime();
-      const dataToStore = JSON.stringify({ cart, timestamp });
-      localStorage.setItem(CART_STORAGE_KEY, dataToStore);
+  const addToCart = async (productId: number, quantity: number, optionIds: number[]) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await cartService.addToCart(sessionId, productId, quantity, optionIds);
+      setCart(response);
+    } catch (err) {
+      setError('Failed to add item to cart');
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
-  }, [cart, isInitialLoad]);
-
-  const addToCart = (item: CartItem) => {
-    // Calcular el precio final del producto
-    const currentPrice = item.product.price;
-  
-    // Filtrar los descuentos activos
-    const activeDiscounts = item.product.Discounts?.filter(discount => discount.active);
-  
-    // Si existen descuentos activos, selecciona el de mayor porcentaje
-    const bestDiscount = activeDiscounts?.reduce((max, discount) => 
-      discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
-  
-    // Calcular el precio final aplicando el descuento si lo hay
-    const finalPrice = bestDiscount
-      ? currentPrice * (1 - bestDiscount.percentage / 100)
-      : currentPrice;
-  
-    // Actualiza el producto con el precio final
-    const updatedItem = {
-      ...item,
-      product: {
-        ...item.product,
-        price: finalPrice,
-      },
-    };
-  
-    setCart((prevCart) => {
-      const existingItem = prevCart.find(
-        (cartItem) =>
-          cartItem.product.id === updatedItem.product.id &&
-          JSON.stringify(cartItem.options) === JSON.stringify(updatedItem.options)
-      );
-  
-      if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.product.id === updatedItem.product.id &&
-          JSON.stringify(cartItem.options) === JSON.stringify(updatedItem.options)
-            ? { ...cartItem, quantity: cartItem.quantity + updatedItem.quantity }
-            : cartItem
-        );
-      } else {
-        return [...prevCart, updatedItem];
-      }
-    });
   };
 
-
-  const removeFromCart = (productId: number, options: Option[]) => {
-    setCart((prevCart) =>
-      prevCart.filter(
-        (item) =>
-          item.product.id !== productId ||
-          JSON.stringify(item.options) !== JSON.stringify(options)
-      )
-    );
+  const removeFromCart = async (cartItemId: number) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await cartService.removeFromCart(sessionId, cartItemId);
+      setCart(response);
+    } catch (err) {
+      setError('Failed to remove item from cart');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateCartItemQuantity = (productId: number, options: Option[], quantity: number) => {
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.product.id === productId && JSON.stringify(item.options) === JSON.stringify(options)
-          ? { ...item, quantity }
-          : item
-      )
-    );
+  const updateCartItemQuantity = async (cartItemId: number, quantity: number) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await cartService.updateCartItemQuantity(sessionId, cartItemId, quantity);
+      setCart(response.items);
+    } catch (err) {
+      setError('Failed to update item quantity');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearCart = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await cartService.clearCart(sessionId);
+      setCart(null);
+    } catch (err) {
+      setError('Failed to clear cart');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTotalCart = () => {
-    return cart.reduce((total, cartItem) => {
-      return total + cartItem.product.price * cartItem.quantity;
-    }, 0);
-  };
-
-  const clearCart = () => {
-    setCart([]);
-    localStorage.removeItem(CART_STORAGE_KEY);
+    return cart || 0;
   };
 
   return (
-    <CartContext.Provider value={{ cart, getTotalCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{
+      cart,
+      addToCart,
+      updateCartItemQuantity,
+      removeFromCart,
+      clearCart,
+      isLoading,
+      error
+    }}>
       {children}
     </CartContext.Provider>
   );

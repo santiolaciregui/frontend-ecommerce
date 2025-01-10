@@ -5,6 +5,11 @@ import apiServiceCategories from "../../../pages/api/category";
 import apiServiceOptions from "../../../pages/api/options";
 import apiServiceDiscount from "../../../pages/api/discount";
 import { Category, Discount, Option, Product } from '@/app/context/types';
+import { MultiSelect } from 'primereact/multiselect';
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+
 
 interface ProductForm {
   name: string;
@@ -21,11 +26,19 @@ interface ProductForm {
 }
 
 const CreateProduct = () => {
+  const [isFormValid, setIsFormValid] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
 
+  const [colorOptions, setColorOptions] = useState<Option[]>([]);
+  const [sizeOptions, setSizeOptions] = useState<Option[]>([]);
+  const [newSizeName, setNewSizeName] = useState('');
+  const [creatingSize, setCreatingSize] = useState(false);
+
+
+  
   const [editMode, setEditMode] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -52,6 +65,8 @@ const CreateProduct = () => {
 
         const fetchedOptions = await apiServiceOptions.fetchOptions();
         setOptions(fetchedOptions);
+        setColorOptions(fetchedOptions.filter((option: { type: number; }) => option.type === 0));
+        setSizeOptions(fetchedOptions.filter((option: { type: number; }) => option.type === 1));
 
         const fetchedDiscounts = await apiServiceDiscount.fetchDiscounts();
         setDiscounts(fetchedDiscounts);
@@ -63,6 +78,52 @@ const CreateProduct = () => {
 
     fetchInitialData();
   }, []);
+
+  const updateOptionsByType = (allOptions: Option[]) => {
+    setColorOptions(allOptions.filter(option => option.type === 0));
+    setSizeOptions(allOptions.filter(option => option.type === 1));
+  };
+
+  const handleCreateSize = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSizeName.trim()) return;
+
+    setCreatingSize(true);
+    try {
+      const newOption = {
+        name: newSizeName.trim(),
+        type: 1 // Size type
+      };
+
+      const createdOption = await apiServiceOptions.createOption(newOption);
+      
+      // Fetch all options again to ensure we have the correct data structure
+      const updatedOptions = await apiServiceOptions.fetchOptions();
+      setOptions(updatedOptions);
+      updateOptionsByType(updatedOptions);
+
+      // Update formData with the new option ID
+      setFormData(prev => ({
+        ...prev,
+        optionIds: [...prev.optionIds, createdOption.id]
+      }));
+
+      setNewSizeName(''); // Clear input
+      
+    } catch (err) {
+      setError('Error creating size option');
+      console.error(err);
+    } finally {
+      setCreatingSize(false);
+    }
+  };
+
+  const transformOptionsForSelect = (options: Option[]) => {
+    return options.map(option => ({
+      label: option.name,
+      value: option.id
+    }));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -81,15 +142,6 @@ const CreateProduct = () => {
     }
   };
 
-  const handleOptionChange = (optionId: number) => {
-    setFormData(prevState => {
-      const selectedOptions = prevState.optionIds.includes(optionId)
-        ? prevState.optionIds.filter(id => id !== optionId)
-        : [...prevState.optionIds, optionId];
-      return { ...prevState, optionIds: selectedOptions };
-    });
-  };
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -99,6 +151,32 @@ const CreateProduct = () => {
       }));
     }
   };
+
+   // Handle option selection for both colors and sizes
+   const handleOptionSelect = (selectedIds: number[], type: number) => {
+    setFormData(prevState => {
+      // Get current options of the other type
+      const otherTypeOptions = prevState.optionIds.filter(id => {
+        const option = options.find(opt => opt.id === id);
+        return option && option.type !== type;
+      });
+
+      // Combine with newly selected options
+      return {
+        ...prevState,
+        optionIds: [...otherTypeOptions, ...selectedIds]
+      };
+    });
+  };
+
+  // Get selected values for each MultiSelect
+  const getSelectedValues = (type: number) => {
+    return formData.optionIds.filter(id => {
+      const option = options.find(opt => opt.id === id);
+      return option && option.type === type;
+    });
+  };
+
 
   const handleImageRemove = (index: number) => {
     setFormData(prevState => ({
@@ -124,7 +202,7 @@ const CreateProduct = () => {
       data.append('subcategoryId', String(formData.subcategoryId));
       formData.optionIds.forEach((id) => data.append('optionIds', String(id)));
       formData.images.forEach((file) => data.append('images', file));
-  
+      console.log(formData)
       const response = await apiServiceProducts.createProduct(data);
       alert(editMode ? 'Producto actualizado con éxito' : 'Producto creado con éxito');
     } catch (err) {
@@ -306,47 +384,52 @@ const CreateProduct = () => {
 
   {/* Color Options */}
   <div className="mb-4">
-    <h3 className="text-lg font-medium mb-2">Colores:</h3>
-    {options.filter(option => option.type === 0).map(option => (
-      <div key={option.id} className="flex items-center space-x-4 mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            value={option.id}
-            checked={formData.optionIds?.includes(option.id)}
-            onChange={() => handleOptionChange(option.id)}
-            className="form-checkbox"
-          />
-          <span className="ml-2 flex items-center">
-            <span
-              className="w-4 h-4 rounded-full mr-2"
-              style={{ backgroundColor: option.name }} // Display color as background
-            />
-            {option.name}
-          </span>
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          Colores
         </label>
+        <MultiSelect
+          value={getSelectedValues(0)}
+          options={transformOptionsForSelect(colorOptions)}
+          onChange={(e) => handleOptionSelect(e.value, 0)}
+          placeholder="Seleccionar colores"
+          className="w-full"
+          display="chip"
+        />
       </div>
-    ))}
-  </div>
 
-  {/* Size Options */}
-  <div>
-    <h3 className="text-lg font-medium mb-2">Tamaños:</h3>
-    {options.filter(option => option.type === 1).map(option => (
-      <div key={option.id} className="flex items-center space-x-4 mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            value={option.id}
-            checked={formData.optionIds?.includes(option.id)}
-            onChange={() => handleOptionChange(option.id)}
-            className="form-checkbox"
-          />
-          <span className="ml-2">{option.name}</span>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          Tamaños
         </label>
+        <div className="flex gap-2">
+          <MultiSelect
+            value={getSelectedValues(1)}
+            options={transformOptionsForSelect(sizeOptions)}
+            onChange={(e) => handleOptionSelect(e.value, 1)}
+            placeholder="Seleccionar tamaños"
+            className="w-full"
+            display="chip"
+          />
+          <div className="flex gap-2 min-w-[300px]">
+            <InputText
+              value={newSizeName}
+              onChange={(e) => setNewSizeName(e.target.value)}
+              placeholder="Nuevo tamaño"
+              className="w-full"
+            />
+            <Button
+              type="button"
+              onClick={handleCreateSize}
+              disabled={creatingSize || !newSizeName.trim()}
+              loading={creatingSize}
+              className="bg-green-500 hover:bg-green-600"
+              label="Agregar"
+            />
+          </div>
+        </div>
+        {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
       </div>
-    ))}
-  </div>
+
 </div>
 
           </div>

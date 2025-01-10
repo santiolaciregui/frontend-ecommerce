@@ -3,7 +3,6 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ; 
 
 
-//HACER QUE ESTE METODO TRAIGA [sillon:{name: '', subcats:[{ca,sa}]}]
 // Obtener todas las categorías
 export const fetchCategories = async () => {
   try {
@@ -20,6 +19,18 @@ export const fetchParentCategories = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/categories/parents`);
     return response.data;
+  } catch (error) {
+    console.error('Error fetching parent categories:', error);
+    throw error;
+  }
+};
+
+// Obtener todas las categorías padre
+export const fetchCategoriesDashboard = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/categories/parentsDashboard`);
+    console.log(JSON.stringify(response))
+    return response.data.categoriesWithImages;
   } catch (error) {
     console.error('Error fetching parent categories:', error);
     throw error;
@@ -59,10 +70,15 @@ export const fetchCategoryById = async (id) => {
   }
 };
 
-// Crear una nueva categoría
+// Crear una nueva categoría (Admin-only)
 export const createCategory = async (categoryData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
-    const response = await axios.post(`${API_BASE_URL}/categories`, categoryData);
+    const response = await axios.post(`${API_BASE_URL}/categories`, categoryData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating category:', error);
@@ -70,10 +86,15 @@ export const createCategory = async (categoryData) => {
   }
 };
 
-// Actualizar una categoría
+// Update a category (Admin-only)
 export const updateCategory = async (id, categoryData) => {
+  const token = localStorage.getItem('accessToken');  
   try {
-    const response = await axios.put(`${API_BASE_URL}/categories/${id}`, categoryData);
+    const response = await axios.put(`${API_BASE_URL}/categories/${id}`, categoryData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating category:', error);
@@ -81,11 +102,15 @@ export const updateCategory = async (id, categoryData) => {
   }
 };
 
-// Eliminar una categoría
-export const deleteCategoryByID = async ({ id } ) => {
+// Delete a category (Admin-only)
+export const deleteCategory = async (id) => {
+  const token = localStorage.getItem('accessToken');  
   try {
-    console.log(id);
-    const response = await axios.delete(`${API_BASE_URL}/categories/${id}`);
+    const response = await axios.delete(`${API_BASE_URL}/categories/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error deleting category:', error);
@@ -93,12 +118,14 @@ export const deleteCategoryByID = async ({ id } ) => {
   }
 };
 
+
 export default {
+  fetchCategories,
   fetchParentCategories, // New method for fetching parent categories
   fetchSubcategories, // New method for fetching subcategories
   fetchSubcategoriesByParent,
   fetchCategoryById,
   createCategory,
   updateCategory,
-  deleteCategoryByID
+  deleteCategory
 };

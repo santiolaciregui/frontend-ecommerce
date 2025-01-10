@@ -5,28 +5,17 @@ import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { Poppins as FontSans } from 'next/font/google'
 import Alert from "./components/Alert";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
+import { UserProvider } from './context/UserContext';
 import { CartProvider } from './context/CartContext';
-
-
-
-
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Verde Manzana Store",
-  //description: "A complete e-commerce application with Next.js and Wix",
   icons: {
     icon: '/logo-verde-manzana.svg',
   },
 };
-
-const fontSans = FontSans({
-  subsets: ['latin'],
-  weight: ['400', '600'],
-  variable: '--font-sans',
-})
 
 export default function RootLayout({
   children,
@@ -35,6 +24,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link 
+          rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+        />
+      </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
         <Alert text='SHOPPING VM - FABRICA DE MUEBLES - GIGANTE DEL AHORRO' />
         <CartProvider>
@@ -42,7 +37,6 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-grow">
               {children}
-
             </main>
             <Footer/>
           </UserProvider>

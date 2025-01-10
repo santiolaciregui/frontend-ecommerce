@@ -15,16 +15,16 @@ type Props = {
 const ProductList = ({ products, currentPage, hasPrev, hasNext }: Props) => {
 
   return (
-    <div className='mt-12 flex gap-x-8 gap-y-8 justify-start flex-wrap'>
-      {products.map((product) => (
-        <ProductCard product={product} key={product.id}/>
-      ))}
-      <Pagination 
-        currentPage={currentPage} 
-        hasPrev={hasPrev} 
-        hasNext={hasNext}
-      />
-    </div>
+    <div className='mt-12 flex gap-x-8 gap-y-8 justify-start flex-wrap items-stretch'>
+    {products.map((product) => (
+      <ProductCard product={product} key={product.id}/>
+    ))}
+    <Pagination 
+      currentPage={currentPage} 
+      hasPrev={hasPrev} 
+      hasNext={hasNext}
+    />
+  </div>
   );
 };
 

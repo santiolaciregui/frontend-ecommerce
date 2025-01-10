@@ -65,12 +65,13 @@ const StoreAdminList = () => {
       <div className="max-w-6xl mx-auto mt-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Lista de Sucursales</h2>
-          <Link 
-              href='/admin/stores/create' 
-              className="w-36 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200"
-          >
-              Añadir Sucursal
-          </Link>
+          <Link
+              href="/admin/stores/create"
+              className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
+            >
+              <i className="fas fa-plus mr-2"></i>
+              Añadir sucursal
+            </Link>
         </div>
 
         <table className="min-w-full bg-white border">
@@ -83,29 +84,44 @@ const StoreAdminList = () => {
               <th className="px-6 py-4 border-b">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {stores.map(store => (
-              <tr key={store.id}>
-                <td className="px-6 py-4 border-b">{store.name}</td>
-                <td className="px-6 py-4 border-b">{store.address}</td>
-                <td className="px-6 py-4 border-b">{store.city}</td>
-                <td className="px-6 py-4 border-b">{store.state}</td>
-                <td className="px-6 py-4 border-b">
-                  <button
-                    onClick={() => handleEdit(store)}
-                    className="text-blue-500 hover:underline mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(store.id!)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Eliminar
-                  </button>
+          <tbody className="text-gray-700">
+            {stores.length > 0 ? (
+              stores.map((store) => (
+                <tr key={store.id}>
+                  <td className="px-6 py-4 border-b">{store.name}</td>
+                  <td className="px-6 py-4 border-b">{store.address}</td>
+                  <td className="px-6 py-4 border-b">{store.city}</td>
+                  <td className="px-6 py-4 border-b">{store.state}</td>
+                  <td className="px-6 py-4 flex justify-center space-x-4">
+                    <button
+                      onClick={() => handleEdit(store)}
+                      className="text-blue-500 hover:text-blue-700"
+                      title="Editar"
+                    >
+                      <i className="fas fa-edit mr-2"></i>
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(store.id!)}
+                      className="text-red-500 hover:text-red-700"
+                      title="Eliminar"
+                    >
+                      <i className="fas fa-trash-alt mr-2"></i>
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td 
+                  colSpan={5} 
+                  className="px-6 py-8 text-center text-gray-500 text-lg"
+                >
+                  Aún no hay elementos
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

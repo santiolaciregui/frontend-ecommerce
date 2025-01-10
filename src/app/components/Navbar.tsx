@@ -32,7 +32,7 @@ const Navbar = () => {
           <Menu />
           <Link href="/">
             <div className="flex items-center justify-center cursor-pointer">
-              <Image src="/logo-verde-manzana.svg" alt="Logo" width={80} height={90} />
+              <Image src="/logo-verde-manzana.svg" alt="Logo" width={80} height={90} priority/>
             </div>
           </Link>
           <div className="flex items-center">
@@ -53,7 +53,7 @@ const Navbar = () => {
                   isLargeScreen ? "transform scale-110" : "transform scale-90"
                 }`}
               >
-                <Image src="/logo-verde-manzana.svg" alt="Logo" width={80} height={80} />
+                <Image src="/logo-verde-manzana.svg" alt="Logo" width={80} height={80} priority/>
               </div>
             </Link>
           </div>
@@ -79,7 +79,7 @@ const Navbar = () => {
             <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
           </div>
           <div className="cursor-pointer">
-            <Link href="/admin">Administrar Pagina</Link>
+            <Link href="/order-tracking">Seguir mi pedido</Link>
           </div>
         </div>
       )}

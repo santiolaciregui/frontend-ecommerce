@@ -1,41 +1,54 @@
-import Image from "next/image";
-import { useState } from "react";
+import Image from 'next/image';
+import { useState } from 'react';
 
-const ProductImages = ({ items }: { items: any }) => {
-    const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+const ProductImages = ({ items }: { items: any[] }) => {
+  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
-    const [index, setIndex] = useState(0); // Update this URL if your backend is hosted elsewhere
-    return (
-        <div>
-            <div className="h-[500px] relative">
-                <Image
-                    src={`${API_URL}${items[index]?.url}`} // Usa la URL completa con el host del backend
-                    alt={items[index]?.altText || 'Product Image'}
-                    fill
-                    sizes='50vw'
-                    className="object-cover rounded-sm"
-                    unoptimized // Desactiva la optimización para usar imágenes desde otra fuente
-                />
-            </div>
-            <div className='flex justify-between gap-4 mt-8'>
-                {items && items.map((item: any, i: number) => (
-                    <div 
-                        className="w-1/4 h-32 relative cursor-pointer"
-                        key={item.id}
-                        onClick={() => setIndex(i)}>
-                        <Image
-                            src={`${API_URL}${item.url}`} // Usa la URL completa con el host del backend
-                            alt={item.altText || 'Product Thumbnail'}
-                            fill
-                            sizes='30vw'
-                            className="object-cover rounded-sm"
-                            unoptimized // Desactiva la optimización para usar imágenes desde otra fuente
-                        />
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+  const [index, setIndex] = useState(0);
+
+  // Función para construir la URL de forma segura
+  const getImageUrl = (path: string) => {
+    if (!path) return '/logo-verde-manzana.svg'; // Imagen por defecto
+    try {
+      return new URL(path, API_URL).toString(); // Combina la URL base y el path
+    } catch (error) {
+      console.error('Error constructing URL:', error);
+      return '/logo-verde-manzana.png'; // Imagen por defecto en caso de error
+    }
+  };
+
+  return (
+    <div>
+      <div className="h-[500px] relative">
+        <Image
+          src={getImageUrl(items[index]?.url)}
+          alt={items[index]?.altText || 'Product Image'}
+          fill
+          sizes="50vw"
+          className="object-cover rounded-sm"
+          unoptimized
+        />
+      </div>
+      <div className="flex justify-between gap-4 mt-8">
+        {items.map((item: any, i: number) => (
+          <div
+            className="w-1/4 h-32 relative cursor-pointer"
+            key={item.id}
+            onClick={() => setIndex(i)}
+          >
+            <Image
+              src={getImageUrl(item.url)}
+              alt={item.altText || 'Product Thumbnail'}
+              fill
+              sizes="30vw"
+              className="object-cover rounded-sm"
+              unoptimized
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default ProductImages;
