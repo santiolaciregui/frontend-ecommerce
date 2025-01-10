@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
@@ -7,55 +7,94 @@ import ContactForm from './ContactForm';
 import DeliveryForm from './DeliveryForm';
 import { DELIVERY_OPTIONS, PAYMENT_FORMATS } from '../constants/checkoutConstants';
 import { useCheckout } from '../hooks/useCheckout';
+import { InstallmentOption } from '../context/types';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const Checkout: React.FC = () => {
   const router = useRouter();
   const { cart } = useCart();
+
+  // Pull everything you need from the useCheckout hook
+  const {
+    handleCheckout,
+    formData,
+    setFormData,
+    handleProviderSelect,
+    handleBankSelect,
+    handleAddressSelect,
+    handleStoreSelect,
+    handleInputChange,
+    handleOptionChange,
+    handleFileUpload,
+    handleInstallmentSelect,
+    generateUniqueKey,
+    stores,
+    providers,
+    banks,
+    selectedProvider,
+    selectedBank,
+    installments,
+    calculateTotalPrice,
+  } = useCheckout();
+
+
   const [shippingCost, setShippingCost] = useState(30000); // Default shipping cost
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { handleCheckout, formData, setFormData, handleProviderSelect, handleBankSelect, handleAddressSelect, handleStoreSelect, handleInputChange, handleOptionChange, handleFileUpload, generateUniqueKey, stores, providers, banks, selectedProvider, selectedBank, installments } = useCheckout();
+  const [totalPrice, setTotalPrice] = useState<number>(() => {
+    // Initial total (just sum of products) if cart not empty
+    return cart?.reduce((sum, item) => sum + item.Product.finalPrice * item.quantity, 0) || 0;
+  });
 
-  const [totalPrice, setTotalPrice] = useState(() =>
-    cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0
+  // 1) A helper function so each installment row can show its own monthly price.
+  const getInstallmentDisplayPrice = useCallback(
+    (installment: InstallmentOption): number => {
+      // Start with the base cart amount
+      let basePrice =
+        cart?.reduce((sum, item) => sum + item.Product.finalPrice * item.quantity, 0) || 0;
+
+      // Add shipping if not pickup
+      if (formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP) {
+        basePrice += shippingCost;
+      }
+
+      // Only apply *this installment's* interest (not the user's selected installment)
+      const interestRate = installment.interestRate || 0;
+      basePrice *= 1 + interestRate / 100;
+
+      return basePrice;
+    },
+    [cart, shippingCost, formData.deliveryOption.option]
   );
 
-  
-// Function to calculate the adjusted total price
-const calculateTotalPrice = () => {
-  let basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
+  // If user selects "Delivery" + "Cash", force them to use a different method
+  useEffect(() => {
+    if (
+      formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY &&
+      formData.paymentFormat === PAYMENT_FORMATS.CASH
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        paymentFormat: PAYMENT_FORMATS.CREDIT_CARD, // or any other
+      }));
+    }
+  }, [formData.deliveryOption.option, formData.paymentFormat, setFormData]);
 
-  if (formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT) {
-    basePrice *= 1.15; // Add 15% for personal credit
-  } else if (formData.paymentFormat === PAYMENT_FORMATS.TRANSFER) {
-    basePrice *= 1.10; // Add 10% for transfer
-  } else if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && formData.paymentInstallments) {
-    // Add interest based on selected installment
-    const interestRate = formData.paymentInstallments.interestRate || 0;
-    basePrice *= (1 + interestRate / 100);
-  }
-  return basePrice;
-};
-useEffect(() => {
-  if (formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && formData.paymentFormat === PAYMENT_FORMATS.CASH) {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      paymentFormat: PAYMENT_FORMATS.CREDIT_CARD, // Default to a different payment method
-    }));
-  }
-}, [formData.deliveryOption.option, formData.paymentFormat, setFormData]);
+  // 2) Whenever paymentFormat, installment, or cart changes -> recalc final total
+  useEffect(() => {
+    const updatedTotal = calculateTotalPrice() + shippingCost;
+    setTotalPrice(updatedTotal);
+  }, [
+    cart,
+    formData.paymentFormat,
+    formData.paymentInstallments,
+    shippingCost,
+    calculateTotalPrice,
+  ]);
 
-// Recalculate total price when payment format, installments, or cart changes
-useEffect(() => {
-  const updatedTotal = calculateTotalPrice() + shippingCost;
-  setTotalPrice(updatedTotal);
-}, [cart, formData.paymentFormat, formData.paymentInstallments, shippingCost]);
-  
-
-  // Update shipping cost based on delivery option
+  // 3) Update shipping cost based on delivery option
   useEffect(() => {
     if (formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP) {
       setShippingCost(0);
@@ -64,11 +103,10 @@ useEffect(() => {
     }
   }, [formData.deliveryOption.option]);
 
-
-  // Redirect to another page if the cart is empty
+  // 4) If cart is empty, redirect
   useEffect(() => {
     if (!cart || cart.length === 0) {
-      router.push('/products'); // Redirect to products page or any other page
+      router.push('/products');
     }
   }, [cart, router]);
 
@@ -108,184 +146,213 @@ useEffect(() => {
               <p className="text-sm text-gray-500">Seleccione la opción deseada y un vendedor se pondrá en contacto con usted para coordinar el pago</p>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                  <label className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
+                  <label className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? 'bg-blue-100 border-blue-500' : 'bg-white'
+                    }`}>
                     <input
                       type="radio"
                       name="paymentFormat"
                       value={PAYMENT_FORMATS.CREDIT_CARD}
                       checked={formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD}
                       onChange={handleOptionChange}
-                      className="mr-2"
+                      className="mr-3"
                     />
-                    <i className="fas fa-credit-card mr-2"></i>  Débito o Crédito
-                  </label>
-                  <label
-                    className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <input
-                        type="radio"
-                        name="paymentFormat"
-                        value={PAYMENT_FORMATS.CASH}
-                        checked={formData.paymentFormat === PAYMENT_FORMATS.CASH}
-                        onChange={handleOptionChange}
-                        disabled={formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY} // Disable if Delivery is selected
-                        className="mr-2 cursor-pointer disabled:cursor-not-allowed"
-                      />
-                      {formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && (
-                        <span className="text-xs text-gray-400 ml-2">(No disponible para entrega a domicilio)</span>
-                      )}
-
-                      <i className="fas fa-money-bill-wave mr-2"></i> Efectivo
+                    <div className="flex items-center space-x-3">
+                      <i className="fas fa-credit-card"></i>
+                      <span>Tarjeta de Crédito</span>
                     </div>
                   </label>
 
+                  <label className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD ? 'bg-blue-100 border-blue-500' : 'bg-white'
+                    }`}>
+                    <input
+                      type="radio"
+                      name="paymentFormat"
+                      value={PAYMENT_FORMATS.DEBIT_CARD}
+                      checked={formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD}
+                      onChange={handleOptionChange}
+                      className="mr-3"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <i className="fas fa-credit-card"></i>
+                      <span>Tarjeta de Débito</span>
+                    </div>
+                    <span className="text-sm text-gray-500 ml-2">(+5%)</span>
+                  </label>
                   <label
-                    className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
-                      ? "bg-blue-100 border-blue-500"
-                      : "bg-white"
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'
                       }`}
                   >
-                    <div className="flex items-center space-x-4">
-                      <input
-                        type="radio"
-                        name="paymentFormat"
-                        value={PAYMENT_FORMATS.TRANSFER}
-                        checked={formData.paymentFormat === PAYMENT_FORMATS.TRANSFER}
-                        onChange={handleOptionChange}
-                        className="mr-2"
-                      />
-                      <i className="fas fa-university mr-2"></i>
-                      Transferencia Bancaria
+                    <input
+                      type="radio"
+                      name="paymentFormat"
+                      value={PAYMENT_FORMATS.CASH}
+                      checked={formData.paymentFormat === PAYMENT_FORMATS.CASH}
+                      onChange={handleOptionChange}
+                      disabled={formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY} // Disable if Delivery is selected
+                      className="mr-3 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    <div className="flex items-center space-x-3">
+                      {formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && (
+                        <span className="text-xs text-gray-400">(No disponible para entrega a domicilio)</span>
+                      )}
+                      <i className="fas fa-money-bill-wave"></i>
+                      <span>Efectivo</span>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      10% adicional en el precio total
+                    <span className="text-sm text-gray-500 ml-2">
+                      {formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY
+                        ? ''
+                        : 'Aprovecha nuestro precio promocional'}
                     </span>
                   </label>
 
-                  <label className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}>
-                    <div className="flex items-center space-x-4">
-                      <input
-                        type="radio"
-                        name="paymentFormat"
-                        value={PAYMENT_FORMATS.PERSONAL_CREDIT}
-                        checked={formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT}
-                        onChange={handleOptionChange}
-                        className="mr-2"
-                      />
-                      <i className="fas fa-file-upload mr-2"></i>Crédito Personal
+                  <label
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
+                        ? 'bg-blue-100 border-blue-500'
+                        : 'bg-white'
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentFormat"
+                      value={PAYMENT_FORMATS.TRANSFER}
+                      checked={formData.paymentFormat === PAYMENT_FORMATS.TRANSFER}
+                      onChange={handleOptionChange}
+                      className="mr-3"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <i className="fas fa-university"></i>
+                      <span>Transferencia </span>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      15% adicional en el precio total
-                    </span>
-                    <span className="text-sm text-gray-500">Requiere cargar un archivo</span>
+                    <span className="text-sm text-gray-500 ml-2">(+10%)</span>
                   </label>
+
+
+                  <label
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT ? 'bg-blue-100 border-blue-500' : 'bg-white'
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentFormat"
+                      value={PAYMENT_FORMATS.PERSONAL_CREDIT}
+                      checked={formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT}
+                      onChange={handleOptionChange}
+                      className="mr-3"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <i className="fas fa-file-upload"></i>
+                      <span>Crédito Personal</span>
+                    </div>
+                    <span className="text-sm text-gray-500 ml-2">
+                      (+15%)
+                    </span>
+                  </label>
+
                 </div>
 
-                {formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && (
-                  <div className="space-y-4">
-                    {/* Provider Selection */}
-                    <div>
-                    <label>
-                      Selecciona el proveedor de tu tarjeta
-                    </label>
-                    <br />
-                    <br />
-                    <div>
-                      {providers.map((provider) => (
-                        <label key={provider.id} style={{ display: 'inline-flex', alignItems: 'center', marginRight: '1rem' }}>
-                          <input
-                            type="radio"
-                            name="cardProvider"
-                            value={provider.id}
-                            checked={selectedProvider?.id === provider.id}
-                            onChange={() => handleProviderSelect(provider)}
-                          />
-                          <img
-                            src={`/${provider.name}.png`}
-                            alt={provider.name}
-                            style={{ marginLeft: '0.1rem', verticalAlign: 'middle', height: '25px' }}
-                            />
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-
-
-                    {/* Bank Selection - Only show if provider is selected */}
-                    {selectedProvider && (
+                {/* Payment details section */}
+                {(formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ||
+                  formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD) && (
+                    <div className="space-y-4">
+                      {/* Provider Selection */}
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Selecciona el banco
+                          Selecciona el proveedor de tu tarjeta
                         </label>
-                        <div className="grid grid-cols-2 gap-4">
-                          {banks.map((bank) => (
-                            <label
-                              key={bank.id}
-                              className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer
-                ${selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'}`}
-                            >
+                        <div className="flex flex-wrap gap-4">
+                          {providers.map((provider) => (
+                            <label key={provider.id} className="inline-flex items-center">
                               <input
                                 type="radio"
-                                name="bank"
-                                value={bank.id}
-                                checked={selectedBank?.id === bank.id}
-                                onChange={() => handleBankSelect(bank)}
+                                name="cardProvider"
+                                value={provider.id}
+                                checked={selectedProvider?.id === provider.id}
+                                onChange={() => handleProviderSelect(provider)}
                                 className="mr-2"
                               />
-                              <span>{bank.name}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Installments Selection - Only show if a bank is selected */}
-                    {selectedBank && installments.length > 0 && (
-                      <div>
-                        <label htmlFor="installments" className="block text-sm font-medium text-gray-700 mb-2">
-                          Selecciona el número de cuotas
-                        </label>
-                        <div className="grid grid-cols-2 gap-4">
-                          {installments.map((installment) => (
-                            <label
-                              key={installment.id}
-                              htmlFor={`installment-${installment.id}`}
-                              className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer transition 
-            ${formData.paymentInstallments?.id === installment.id ? 'bg-blue-50 border-blue-500' : 'bg-white border-gray-300'}`}
-                            >
-                              <input
-                                id={`installment-${installment.id}`}
-                                type="radio"
-                                name="installments"
-                                value={installment.id}
-                                checked={formData.paymentInstallments?.id === installment.id}
-                                onChange={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    paymentInstallments: installment, // Save the whole object
-                                  }))
-                                }
-                                className="form-radio h-4 w-4 text-blue-600 cursor-pointer"
+                              <img
+                                src={`/${provider.name}.png`}
+                                alt={provider.name}
+                                className="h-6"
                               />
-                              <span className="text-sm text-gray-700">
-                                {installment.numberOfInstallments} cuotas de ${(calculateTotalPrice()/installment.numberOfInstallments).toFixed(2)}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Tasa de interés: {installment.interestRate}%
-                              </span>
-                             
                             </label>
                           ))}
                         </div>
                       </div>
-                    )}
 
+                      {/* Bank Selection */}
+                      {selectedProvider && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Selecciona el banco
+                          </label>
+                          <div className="grid grid-cols-2 gap-4">
+                            {banks.map((bank) => (
+                              <label
+                                key={bank.id}
+                                className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'
+                                  }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="bank"
+                                  value={bank.id}
+                                  checked={selectedBank?.id === bank.id}
+                                  onChange={() => handleBankSelect(bank)}
+                                  className="mr-2"
+                                />
+                                <span>{bank.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
-                  </div>
-                )}
-
+                      {/* Installments Selection - Only show for credit cards */}
+                      {selectedBank && formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && installments.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Selecciona el número de cuotas
+                          </label>
+                          <div className="grid grid-cols-2 gap-4">
+                          {installments.map((installment) => {
+                            // Instead of using the selected installment’s price,
+                            // compute each installment's monthly amount individually:
+                            const displayTotal = getInstallmentDisplayPrice(installment);
+                            return (
+                              <label
+                                key={installment.id}
+                                className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${
+                                  formData.paymentInstallments?.id === installment.id
+                                    ? 'bg-blue-100 border-blue-500'
+                                    : 'bg-white'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="installments"
+                                  value={installment.id}
+                                  checked={formData.paymentInstallments?.id === installment.id}
+                                  onChange={() => handleInstallmentSelect(installment)}
+                                  className="mr-2"
+                                />
+                                <span className="text-sm">
+                                  {installment.numberOfInstallments} cuotas de $
+                                  {(
+                                    displayTotal / installment.numberOfInstallments
+                                  ).toFixed(2)}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  Tasa de interés: {installment.interestRate}%
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
 
                 {formData.paymentFormat === PAYMENT_FORMATS.CASH && (

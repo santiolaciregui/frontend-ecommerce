@@ -172,6 +172,12 @@ const OrderDetails: React.FC = () => {
               : null
           ].filter(Boolean) // Remove null entries
         };
+
+        case 'debit_card':
+          return {
+            method: 'Débito',
+            details: ['Pago con tarjeta de débito']
+          };
   
       case 'transfer':
         return {
@@ -187,6 +193,7 @@ const OrderDetails: React.FC = () => {
           method: 'Efectivo',
           details: ['Pago en efectivo al retirar']
         };
+        
   
       case 'personal_credit':
         return {
@@ -343,7 +350,7 @@ const OrderDetails: React.FC = () => {
             </div>
             <div className="flex justify-between mt-2">
               <p>Envío</p>
-              <p className="text-green-600 font-medium">Gratis</p>
+              <p className="text-green-600 font-medium">A coordinar</p>
             </div>
           </div>
 

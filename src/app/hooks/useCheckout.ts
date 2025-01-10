@@ -20,11 +20,14 @@ export const useCheckout = () => {
   // Payment related states
   const [providers, setProviders] = useState<CardProvider[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
+  const [selectedCardType, setSelectedCardType] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<CardProvider| null>(null);
-  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
+  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);''
   const [installments, setInstallments] = useState<InstallmentOption[]>([]);
-  const [totalPrice, setTotalPrice] = useState(() =>
-    cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0);
+  const [totalPrice, setTotalPrice] = useState(() => {
+    const basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
+    return basePrice;
+  });
 
   const [formData, setFormData] = useState<FormData>({
     contactInfo: { email: '', firstName: '', lastName: '' , phone: '' },
@@ -81,6 +84,25 @@ export const useCheckout = () => {
     }
   }, [formData.paymentFormat]);
 
+
+  // Function to calculate the adjusted total price
+const calculateTotalPrice = () => {
+  let basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
+
+  if (formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT) {
+    basePrice *= 1.15; // 15% for personal credit
+  } else if (formData.paymentFormat === PAYMENT_FORMATS.TRANSFER) {
+    basePrice *= 1.05; // 5% for transfer
+  } else if (formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD) {
+    basePrice *= 1.10; // 10% for debit card
+  } else if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && formData.paymentInstallments) {
+    // Add interest based on selected installment for credit cards
+    const interestRate = formData.paymentInstallments.interestRate || 0;
+    basePrice *= (1 + interestRate / 100);
+  }
+  return basePrice;
+};
+
   const handleCheckout = async () => {
     setLoading(true);
     setError(null);
@@ -99,17 +121,13 @@ export const useCheckout = () => {
               shippingCost,
             },
         paymentFormat: formData.paymentFormat,
-        paymentInstallments: formData.paymentInstallments,
-        paymentDetails: formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? {
+        paymentInstallments: formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? formData.paymentInstallments : null,
+        paymentDetails: (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD || formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD) ? {
           provider: formData.paymentDetails?.provider,
           bank: formData.paymentDetails?.bank,
-          installments: formData.paymentDetails?.installments,
+          installments: formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? formData.paymentDetails?.installments : null,
         } : null,
-        totalAmount: cart
-          ? cart
-              .reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0)
-              .toFixed(2)
-          : '0.00',
+        totalAmount: calculateTotalPrice().toFixed(2),
         cartItems: cart
           ? cart.map((item) => ({
               product: { id: item.Product.id, name: item.Product.name, price: item.Product.price },
@@ -120,7 +138,6 @@ export const useCheckout = () => {
       };
   
       const orderResponse = await createOrder(orderData);
-  
       setSuccess('Order placed successfully!');
       router.push('/success');
       setTimeout(() => {
@@ -150,7 +167,7 @@ export const useCheckout = () => {
     }
   };
 
-const handleProviderSelect = async (provider: CardProvider) => {
+  const handleProviderSelect = async (provider: CardProvider) => {
     setSelectedProvider(provider);
     setSelectedBank(null);
     setInstallments([]);
@@ -159,7 +176,6 @@ const handleProviderSelect = async (provider: CardProvider) => {
       const banksData = await apiServiceCards.fetchBanksByProvider(provider.id);
       setBanks(banksData);
       
-      // Update formData with selected provider
       setFormData(prev => ({
         ...prev,
         paymentDetails: {
@@ -173,15 +189,15 @@ const handleProviderSelect = async (provider: CardProvider) => {
   };
 
   const handleBankSelect = async (bank: Bank) => {
-    console.log('Bank selected:', bank);
     setSelectedBank(bank);
+    
     try {
-      console.log('Fetching installments for bank:', bank.id, 'and provider:', selectedProvider?.id);
-      const installmentsData = await apiServiceCards.fetchInstallmentsByBank(bank.id, selectedProvider?.id);
-      console.log('Installments received:', installmentsData);
-      setInstallments(installmentsData);
+      // Only fetch installments for credit card payments
+      if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD) {
+        const installmentsData = await apiServiceCards.fetchInstallmentsByBank(bank.id, selectedProvider?.id);
+        setInstallments(installmentsData);
+      }
       
-      // Update formData with selected bank
       setFormData(prev => ({
         ...prev,
         paymentDetails: {
@@ -190,7 +206,6 @@ const handleProviderSelect = async (provider: CardProvider) => {
         }
       }));
     } catch (err) {
-      console.error('Error fetching installments:', err);
       setError('Error fetching installments');
     }
   };
@@ -319,6 +334,7 @@ const handleProviderSelect = async (provider: CardProvider) => {
     selectedProvider,
     selectedBank,
     installments,
+    calculateTotalPrice,
     handleCheckout,
     handlePaymentSetup,
     handleProviderSelect,
