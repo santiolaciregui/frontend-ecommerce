@@ -351,7 +351,7 @@ const CreateProduct = () => {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="image">Imágenes</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="image">Imágenes (hasta 10 archivos)</label>
               <input
                 type="file"
                 id="images"
