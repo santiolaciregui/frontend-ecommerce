@@ -9,6 +9,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
+import { redirect } from 'next/navigation';
 
 
 interface ProductForm {
@@ -205,8 +206,10 @@ const CreateProduct = () => {
       console.log(formData)
       const response = await apiServiceProducts.createProduct(data);
       alert(editMode ? 'Producto actualizado con éxito' : 'Producto creado con éxito');
+      redirect('/admin/products');
     } catch (err) {
       setError('Error al crear el producto');
+      redirect('/admin/products');
       console.error(err);
     } finally {
       setLoading(false);
@@ -351,7 +354,7 @@ const CreateProduct = () => {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="image">Imágenes</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="image">Imágenes (hasta 10 archivos)</label>
               <input
                 type="file"
                 id="images"
