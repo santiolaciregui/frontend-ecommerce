@@ -1,12 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import { logout } from '../pages/api/authService';
-import { useEffect } from 'react';
+import { getWhatsAppQRCode } from '../pages/api/whatsapp'; 
+import { useEffect, useState } from 'react';
+
 
 const AdminDashboard = () => {
   const router = useRouter();
+  const [qrCode, setQrCode] = useState<string | null>(null);
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
@@ -18,6 +20,18 @@ const AdminDashboard = () => {
       router.push('/login'); // Redirect to login page after logout
     } catch (error) {
       console.error('Error logging out:', error);
+    }
+  };
+
+  const handleGenerateQR = async () => {
+    const confirmGenerate = window.confirm('¿Estás seguro de generar el código QR de WhatsApp?');
+    if (!confirmGenerate) return;
+
+    try {
+      const data = await getWhatsAppQRCode();
+      setQrCode(data.qrCode);
+    } catch (error) {
+      alert('No se pudo generar el código QR. Verifica que el cliente de WhatsApp esté listo.');
     }
   };
 
@@ -122,19 +136,24 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Administración de Tarjetas */}
-         {/*  <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Tarjetas</h2>
+           {/* Nuevo: Administración de WhatsApp */}
+           <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de WhatsApp</h2>
             <div className="space-y-4">
-              <Link href="/admin/cards" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                Ver Tarjetas
-              </Link>
-              <Link href="/admin/cards/create" className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                Añadir Tarjeta
-              </Link>
+              <button
+                onClick={handleGenerateQR}
+                className="block w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+              >
+                Generar QR
+              </button>
+              {qrCode && (
+                <div className="mt-4">
+                  <p className="mb-2 font-semibold">Código QR:</p>
+                  <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain border" />
+                </div>
+              )}
             </div>
-          </div> */}
-
+          </div>
         </div>
       </div>
     </div>
