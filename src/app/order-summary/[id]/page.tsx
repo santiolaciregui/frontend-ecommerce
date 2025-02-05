@@ -338,7 +338,7 @@ const OrderDetails: React.FC = () => {
                 </div>
               </div>
               <p className="font-semibold text-lg text-gray-800">
-                ${item.totalPrice.toFixed(2)}
+                ${item.totalPrice}
               </p>
             </div>
           ))}
@@ -346,7 +346,7 @@ const OrderDetails: React.FC = () => {
           <div className="mt-4 text-sm text-gray-600">
             <div className="flex justify-between border-b pb-2">
               <p>Subtotal</p>
-              <p>${order.totalAmount.toFixed(2)}</p>
+              <p>${order.totalAmount}</p>
             </div>
             <div className="flex justify-between mt-2">
               <p>Envío</p>
@@ -357,7 +357,7 @@ const OrderDetails: React.FC = () => {
           <div className="border-t mt-6 pt-4 flex justify-between items-center">
             <p className="font-semibold text-xl text-gray-800">Total</p>
             <p className="font-semibold text-xl text-gray-900">
-              ${order.totalAmount.toFixed(2)}
+              ${order.totalAmount}
             </p>
           </div>
         </div>
