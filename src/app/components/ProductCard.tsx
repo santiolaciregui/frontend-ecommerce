@@ -2,6 +2,7 @@ import React from "react";
 import { Product } from "../context/types";
 import Image from "next/image";
 import Link from "next/link";
+import { getImageUrl } from "../utils/getImageURL";
 
 interface Props {
   product: Product;
@@ -34,7 +35,7 @@ const ProductCard = ({ product }: Props) => {
       <Image
         src={
           product.Images[0]
-            ? `${API_URL}${product.Images[0].url}`
+            ? getImageUrl(product.Images[0].url)
             : "/logo-verde-manzana.svg"
         }
         alt={product.name}
