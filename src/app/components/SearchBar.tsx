@@ -4,6 +4,7 @@ import Image from 'next/image';
 import axios from 'axios';
 import { Search } from 'lucide-react';
 import { Product } from '../context/types';
+import { getImageUrl } from '../utils/getImageURL';
 
 const SearchBar = () => {
   const router = useRouter();
@@ -95,7 +96,7 @@ const SearchBar = () => {
                 >
                 <div className="w-16 h-16 mr-4 relative flex-shrink-0">
                   <Image
-                    src={product.Images[0] ? `${API_URL}${product.Images[0].url}` : '/logo-verde-manzana.svg'}
+                    src={product.Images[0] ? getImageUrl(product.Images[0]?.url) : '/logo-verde-manzana.svg'}
                     alt={product.name}
                     layout="fill"
                     objectFit="cover"

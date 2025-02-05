@@ -8,6 +8,7 @@ import DeliveryForm from './DeliveryForm';
 import { DELIVERY_OPTIONS, PAYMENT_FORMATS } from '../constants/checkoutConstants';
 import { useCheckout } from '../hooks/useCheckout';
 import { InstallmentOption } from '../context/types';
+import { getImageUrl } from '../utils/getImageURL';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -390,7 +391,7 @@ const Checkout: React.FC = () => {
               {cart?.map((item) => (
                 <div className="flex gap-4" key={generateUniqueKey(item)}>
                   <Image
-                    src={item.Product.Images[0] ? `${API_URL}${item.Product.Images[0].url}` : '/logo-verde-manzana.svg'}
+                    src={item.Product.Images[0] ? getImageUrl(item.Product.Images[0]?.url) : '/logo-verde-manzana.svg'}
                     alt={item.Product.name}
                     width={62}
                     height={96}

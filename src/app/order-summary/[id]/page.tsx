@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Clock, ShoppingCart, Mail, User } from 'lucide-react';
 import { fetchStoreById } from '@/app/pages/api/stores';
 import { Store } from '@/app/context/types';
+import { getImageUrl } from '@/app/utils/getImageURL';
 
 interface OrderDetails {
   id: number;
@@ -318,7 +319,7 @@ const OrderDetails: React.FC = () => {
                 <div className="w-16 h-24 relative">
                   <Image
                     src={item.Product.Images[0]?.url 
-                      ? `${API_URL}${item.Product.Images[0].url}`
+                      ? getImageUrl(item.Product.Images[0]?.url)
                       : '/placeholder-product.png'}
                     alt={item.productName}
                     fill

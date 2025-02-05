@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import Link from "next/link";
 import { Option } from "../context/types";
 import { useEffect } from "react";
+import { getImageUrl } from "../utils/getImageURL";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -50,7 +51,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             {cart.map((item) => (
               <div className="flex gap-4" key={generateUniqueKey(item)}>
                 <Image
-                  src={item.Product.Images[0] ? `${API_URL}${item.Product.Images[0].url}` : '/logo-verde-manzana.svg'}
+                  src={item.Product.Images[0] ? getImageUrl(item.Product.Images[0].url) : '/logo-verde-manzana.svg'}
                   alt={''}
                   width={62}
                   height={96}

@@ -5,6 +5,7 @@ import apiServiceCategory from "../../../pages/api/category";
 import Image from 'next/image';
 import { Category, Product } from '@/app/context/types';
 import { createDiscount } from "../../../pages/api/discount";
+import { getImageUrl } from '@/app/utils/getImageURL';
 
 interface DiscountForm {
   name: string;
@@ -225,7 +226,7 @@ const DiscountForm = () => {
                   <Image
                   src={
                     product.Images[0]
-                      ? `${API_URL}${product.Images[0].url}`
+                      ? getImageUrl(product.Images[0].url)
                       : "/logo-verde-manzana.svg"
                   }
                   alt={product.name}
