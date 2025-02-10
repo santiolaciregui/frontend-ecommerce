@@ -82,7 +82,7 @@ const StoreAdminList = () => {
               <th className="px-6 py-4 border-b">Nombre</th>
               <th className="px-6 py-4 border-b">Dirección</th>
               <th className="px-6 py-4 border-b">Ciudad</th>
-              <th className="px-6 py-4 border-b">Estado</th>
+              <th className="px-6 py-4 border-b">Provincia</th>
               <th className="px-6 py-4 border-b">Acciones</th>
             </tr>
           </thead>
@@ -95,14 +95,6 @@ const StoreAdminList = () => {
                   <td className="px-6 py-4 border-b">{store.city}</td>
                   <td className="px-6 py-4 border-b">{store.state}</td>
                   <td className="px-6 py-4 flex justify-center space-x-4">
-                    <button
-                      onClick={() => handleEdit(store)}
-                      className="text-blue-500 hover:text-blue-700"
-                      title="Editar"
-                    >
-                      <i className="fas fa-edit mr-2"></i>
-                      Editar
-                    </button>
                     <button
                       onClick={() => handleDelete(store.id!)}
                       className="text-red-500 hover:text-red-700"

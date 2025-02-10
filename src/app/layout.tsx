@@ -31,7 +31,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <Alert text='SHOPPING VM - FABRICA DE MUEBLES - GIGANTE DEL AHORRO' />
+        <Alert text='🚛 SHOPPING VM - LA FÁBRICA DE MUEBLES MÁS GRANDE DEL PAIS 🪑 💰' />
         <CartProvider>
           <UserProvider>
             <Navbar />

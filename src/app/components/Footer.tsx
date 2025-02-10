@@ -67,14 +67,6 @@ const Footer = () => {
               >
                 <Facebook className="w-6 h-6" />
               </a>
-              <a
-                href="https://www.instagram.com/mueblesverdemanzana/?hl=es-la"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <Instagram className="w-6 h-6" />
-              </a>
             </div>
 
             <div className="mt-6">

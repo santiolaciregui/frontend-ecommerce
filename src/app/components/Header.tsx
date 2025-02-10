@@ -12,9 +12,6 @@ const Header: React.FC = () => {
           <a href="https://www.facebook.com/VERDEMANZANAMUEBLESARGENTINA" target="_blank" rel="noopener noreferrer">
             <Image src="/facebook.png" width={32} height={32} alt="Facebook" />
           </a>
-          <a href="https://www.instagram.com/mueblesverdemanzana/?hl=es-la" target="_blank" rel="noopener noreferrer">
-            <Image src="/instagram.png" width={32} height={32} alt="Instagram" />
-          </a>
         </div>
       </div>
     </div>
