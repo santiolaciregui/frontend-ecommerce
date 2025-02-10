@@ -45,7 +45,7 @@ const ContactForm: React.FC<{
         />
       </div>
       <div className="col-span-2">
-        <label className="block text-sm font-medium mb-1" htmlFor="phone">Teléfono *</label>
+        <label className="block text-sm font-medium mb-1" htmlFor="phone">Teléfono (sin 0 ni 15) *</label>
         <input
           type="tel"
           id="phone"
