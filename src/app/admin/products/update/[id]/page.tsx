@@ -12,6 +12,7 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 
+// Interface for product form data.
 interface ProductForm {
   name: string;
   SKU: number;
@@ -23,14 +24,20 @@ interface ProductForm {
   subcategoryId: number;
   discountId: number;
   optionIds: number[];
-  images: File[];
+  images: File[]; // New images to be uploaded.
+}
+
+// Interface for existing images.
+interface ProductImage {
+  id: number;
+  url: string;
 }
 
 const UpdateProduct = () => {
   const { id } = useParams();
   const router = useRouter();
 
-  // Lists for select fields
+  // State for select fields.
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
@@ -38,15 +45,15 @@ const UpdateProduct = () => {
   const [colorOptions, setColorOptions] = useState<Option[]>([]);
   const [sizeOptions, setSizeOptions] = useState<Option[]>([]);
   
-  // For creating a new size option on the fly
+  // For creating a new size option on the fly.
   const [newSizeName, setNewSizeName] = useState('');
   const [creatingSize, setCreatingSize] = useState(false);
 
-  // UI loading and error state
+  // UI loading and error state.
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // The product form data
+  // Form data (for text fields and new images).
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     SKU: 0,
@@ -61,11 +68,16 @@ const UpdateProduct = () => {
     images: []
   });
 
+  // State for existing images loaded from the product.
+  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
+  // State to track which existing image IDs have been removed.
+  const [removedImageIds, setRemovedImageIds] = useState<number[]>([]);
+
   // Fetch product data and required lists concurrently.
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get product data by ID.
+        // Fetch the product details.
         const product = await apiServiceProducts.fetchProductByID({ id: Number(id) });
         setFormData({
           name: product.name,
@@ -78,12 +90,13 @@ const UpdateProduct = () => {
           categoryId: product.Categories[0]?.parentId || 0,
           subcategoryId: product.Categories[0]?.id || 0,
           discountId: product.discountId || 0,
-          // Cast Options to Option[] so that TypeScript knows its type.
           optionIds: (product.Options as Option[]).map((option: Option) => option.id),
-          images: [] // Existing images are not handled in this view.
+          images: [] // New images will be added separately.
         });
-
-        // Fetch parent categories, options and discounts concurrently.
+        // Set the existing images from the product.
+        setExistingImages(product.Images);
+        
+        // Fetch parent categories, options, and discounts concurrently.
         const [fetchedCategories, fetchedOptions, fetchedDiscounts] = await Promise.all([
           apiServiceCategories.fetchParentCategories(),
           apiServiceOptions.fetchOptions(),
@@ -94,7 +107,7 @@ const UpdateProduct = () => {
         setOptions(fetchedOptions);
         setDiscounts(fetchedDiscounts);
 
-        // Derive color and size options from the full options list.
+        // Filter options into color and size.
         setColorOptions(fetchedOptions.filter((option: Option) => option.type === 0));
         setSizeOptions(fetchedOptions.filter((option: Option) => option.type === 1));
       } catch (err) {
@@ -106,7 +119,7 @@ const UpdateProduct = () => {
     if (id) fetchData();
   }, [id]);
 
-  // When a category is selected, fetch its subcategories.
+  // When the category changes, update the subcategories.
   useEffect(() => {
     const fetchSubcategories = async () => {
       if (formData.categoryId) {
@@ -128,18 +141,17 @@ const UpdateProduct = () => {
     fetchSubcategories();
   }, [formData.categoryId, categories]);
 
-  // Standard change handler for inputs.
+  // Generic input change handler.
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  // Update category selection and reset subcategory.
+  // When the category is changed.
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
     const categoryId = parseInt(value);
     setFormData(prevState => ({ ...prevState, categoryId, subcategoryId: 0 }));
-    
     const selectedCategory = categories.find(category => category.id === categoryId);
     if (selectedCategory && selectedCategory.subcategories) {
       setSubcategories(selectedCategory.subcategories);
@@ -148,7 +160,7 @@ const UpdateProduct = () => {
     }
   };
 
-  // MultiSelect handlers for options (separating colors and sizes).
+  // Handle multi-select option changes.
   const handleOptionSelect = (selectedIds: number[], type: number) => {
     setFormData(prevState => {
       // Preserve options of the other type.
@@ -174,7 +186,7 @@ const UpdateProduct = () => {
     }));
   };
 
-  // Handle image file uploads.
+  // Handle file input changes for new images.
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -185,7 +197,7 @@ const UpdateProduct = () => {
     }
   };
 
-  // Remove an image from the preview list.
+  // Remove a new image before upload.
   const handleImageRemove = (index: number) => {
     setFormData(prevState => ({
       ...prevState,
@@ -193,23 +205,24 @@ const UpdateProduct = () => {
     }));
   };
 
+  // Mark an existing image as removed.
+  const handleExistingImageRemove = (imageId: number) => {
+    setRemovedImageIds(prev => [...prev, imageId]);
+    setExistingImages(prev => prev.filter(image => image.id !== imageId));
+  };
+
   // Create a new size option and add it to the selected options.
   const handleCreateSize = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSizeName.trim()) return;
-
     setCreatingSize(true);
     try {
       const newOption = { name: newSizeName.trim(), type: 1 };
       const createdOption = await apiServiceOptions.createOption(newOption);
-      
-      // Fetch the updated options list.
       const updatedOptions = await apiServiceOptions.fetchOptions() as Option[];
       setOptions(updatedOptions);
       setColorOptions(updatedOptions.filter((option: Option) => option.type === 0));
       setSizeOptions(updatedOptions.filter((option: Option) => option.type === 1));
-
-      // Add the new size option to the form.
       setFormData(prev => ({
         ...prev,
         optionIds: [...prev.optionIds, createdOption.id]
@@ -223,7 +236,10 @@ const UpdateProduct = () => {
     }
   };
 
-  // Submit handler: append all fields into FormData and call the update API.
+  // Submit the update.
+  // The FormData now includes:
+  // - New images (from formData.images)
+  // - A JSON string for removedImageIds (for images the user removed)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -239,8 +255,11 @@ const UpdateProduct = () => {
       data.append('subcategoryId', String(formData.subcategoryId));
       data.append('discountId', String(formData.discountId));
       formData.optionIds.forEach(id => data.append('optionIds', String(id)));
+      // Append the removed image IDs (as a JSON string).
+      data.append('removedImageIds', JSON.stringify(removedImageIds));
+      // Append new images.
       formData.images.forEach(file => data.append('images', file));
-
+      
       await apiServiceProducts.updateProduct(Number(id), data);
       alert('Producto actualizado con éxito');
       router.push('/admin/products');
@@ -261,9 +280,7 @@ const UpdateProduct = () => {
           <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="name">
-                Nombre *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="name">Nombre *</label>
               <input
                 type="text"
                 id="name"
@@ -274,12 +291,9 @@ const UpdateProduct = () => {
                 required
               />
             </div>
-
             {/* SKU */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="SKU">
-                SKU *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="SKU">SKU *</label>
               <input
                 type="number"
                 id="SKU"
@@ -290,12 +304,9 @@ const UpdateProduct = () => {
                 required
               />
             </div>
-
             {/* Descripción */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="description">
-                Descripción *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="description">Descripción *</label>
               <textarea
                 id="description"
                 name="description"
@@ -305,12 +316,9 @@ const UpdateProduct = () => {
                 required
               />
             </div>
-
             {/* Precio */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="price">
-                Precio *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="price">Precio *</label>
               <input
                 type="number"
                 id="price"
@@ -321,12 +329,9 @@ const UpdateProduct = () => {
                 required
               />
             </div>
-
             {/* Stock */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="stock">
-                Stock *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="stock">Stock *</label>
               <input
                 type="number"
                 id="stock"
@@ -337,12 +342,9 @@ const UpdateProduct = () => {
                 required
               />
             </div>
-
             {/* Peso */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="weight">
-                Peso *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="weight">Peso *</label>
               <input
                 type="number"
                 id="weight"
@@ -353,12 +355,9 @@ const UpdateProduct = () => {
                 required
               />
             </div>
-
             {/* Categoría */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="categoryId">
-                Categoría *
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="categoryId">Categoría *</label>
               <select
                 id="categoryId"
                 name="categoryId"
@@ -369,18 +368,13 @@ const UpdateProduct = () => {
               >
                 <option value="">Seleccionar categoría</option>
                 {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
+                  <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </select>
             </div>
-
             {/* Subcategoría */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="subcategoryId">
-                Subcategoría
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="subcategoryId">Subcategoría</label>
               <select
                 id="subcategoryId"
                 name="subcategoryId"
@@ -390,39 +384,13 @@ const UpdateProduct = () => {
               >
                 <option value="">Seleccionar subcategoría</option>
                 {subcategories.map(subcategory => (
-                  <option key={subcategory.id} value={subcategory.id}>
-                    {subcategory.name}
-                  </option>
+                  <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
                 ))}
               </select>
             </div>
-
-            {/* Descuento */}
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="discountId">
-                Descuento
-              </label>
-              <select
-                id="discountId"
-                name="discountId"
-                value={formData.discountId || ''}
-                onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Seleccionar descuento</option>
-                {discounts.map(discount => (
-                  <option key={discount.id} value={discount.id}>
-                    {discount.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Imágenes */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="images">
-                Imágenes (hasta 10 archivos)
-              </label>
+              <label className="block text-sm font-medium mb-1" htmlFor="images">Imágenes (hasta 10 archivos)</label>
               <input
                 type="file"
                 id="images"
@@ -431,11 +399,29 @@ const UpdateProduct = () => {
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <div className="mt-4 grid grid-cols-2 gap-4">
+                {/* Display existing images */}
+                {existingImages.map((image, index) => (
+                  <div key={image.id} className="relative">
+                    <img
+                      src={image.url}
+                      alt={`Existing image ${index}`}
+                      className="w-full h-32 object-cover border rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleExistingImageRemove(image.id)}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+                {/* Display new images */}
                 {formData.images.map((image, index) => (
                   <div key={index} className="relative">
                     <img
                       src={URL.createObjectURL(image)}
-                      alt={`Preview ${index}`}
+                      alt={`New image ${index}`}
                       className="w-full h-32 object-cover border rounded-md"
                     />
                     <button
@@ -449,15 +435,12 @@ const UpdateProduct = () => {
                 ))}
               </div>
             </div>
-
             {/* Opciones (Colores y Tamaños) */}
             <div className="col-span-2">
               <h2 className="text-xl font-semibold mb-4">Opciones</h2>
               {/* Opciones de color */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Colores
-                </label>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Colores</label>
                 <MultiSelect
                   value={getSelectedValues(0)}
                   options={transformOptionsForSelect(colorOptions)}
@@ -469,9 +452,7 @@ const UpdateProduct = () => {
               </div>
               {/* Opciones de tamaño */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Tamaños
-                </label>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Tamaños</label>
                 <div className="flex gap-2">
                   <MultiSelect
                     value={getSelectedValues(1)}
@@ -501,7 +482,6 @@ const UpdateProduct = () => {
               </div>
             </div>
           </div>
-
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600"

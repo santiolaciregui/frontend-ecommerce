@@ -260,7 +260,7 @@ const CreateProduct = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border p-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -335,22 +335,6 @@ const CreateProduct = () => {
                 <option value="">Seleccionar subcategoría</option>
                 {subcategories.map(subcategory => (
                   <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="discountId">Descuento</label>
-              <select
-                id="discountId"
-                name="discountId"
-                value={formData.discountId}
-                onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Seleccionar descuento</option>
-                {discounts.map(discount => (
-                  <option key={discount.id} value={discount.id}>{discount.name}</option>
                 ))}
               </select>
             </div>

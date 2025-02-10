@@ -16,6 +16,7 @@ interface CartModalProps {
 
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart } = useCart();
+  console.log(cart)
 
   useEffect(() => {
   }, [cart]);
@@ -52,7 +53,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
               <div className="flex gap-4" key={generateUniqueKey(item)}>
                 <Image
                   src={item.Product.Images[0] ? getImageUrl(item.Product.Images[0].url) : '/logo-verde-manzana.svg'}
-                  alt={''}
+                  alt={item.Product.name}
                   width={62}
                   height={96}
                   className="object-cover rounded-md"
