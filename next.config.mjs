@@ -8,6 +8,12 @@ const nextConfig = {
         port: '8002',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'ec2-3-146-35-17.us-east-2.compute.amazonaws.com',
+        port: '8002',
+        pathname: '/uploads/**',
+      },
     ],
   },
   
