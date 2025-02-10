@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import apiServiceOptions from "../../pages/api/options"; // Ensure this API service exists
 import { Option } from '@/app/context/types'; // Update the import as needed
+import BackButton from '@/app/components/BackButton';
 
 interface OptionForm {
   name: string;
@@ -64,6 +65,7 @@ const CreateOption = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
+      <BackButton destination="/admin" />
       <h2 className="text-2xl font-semibold mb-4">Crear Nueva Opción</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-8">

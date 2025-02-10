@@ -7,6 +7,10 @@ import apiServiceCategories from "../../../../pages/api/category";
 import apiServiceOptions from "../../../../pages/api/options";
 import apiServiceDiscount from "../../../../pages/api/discount";
 import { Category, Discount, Option } from '@/app/context/types';
+import { MultiSelect } from 'primereact/multiselect';
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
+import "primereact/resources/themes/lara-light-cyan/theme.css";
 
 interface ProductForm {
   name: string;
@@ -26,12 +30,23 @@ const UpdateProduct = () => {
   const { id } = useParams();
   const router = useRouter();
 
+  // Lists for select fields
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
+  const [colorOptions, setColorOptions] = useState<Option[]>([]);
+  const [sizeOptions, setSizeOptions] = useState<Option[]>([]);
+  
+  // For creating a new size option on the fly
+  const [newSizeName, setNewSizeName] = useState('');
+  const [creatingSize, setCreatingSize] = useState(false);
+
+  // UI loading and error state
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  // The product form data
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     SKU: 0,
@@ -46,9 +61,11 @@ const UpdateProduct = () => {
     images: []
   });
 
+  // Fetch product data and required lists concurrently.
   useEffect(() => {
-    const fetchProductData = async () => {
+    const fetchData = async () => {
       try {
+        // Get product data by ID.
         const product = await apiServiceProducts.fetchProductByID({ id: Number(id) });
         setFormData({
           name: product.name,
@@ -57,86 +74,159 @@ const UpdateProduct = () => {
           price: product.price,
           stock: product.stock,
           weight: product.weight,
-          categoryId: product.Categories[0].parentId,
-          subcategoryId: product.Categories[0].id,
-          discountId: product.discountId,
-          optionIds: product.Options.map((option: Option) => option.id),
-          images: [], // Las imágenes deben ser cargadas de otra manera
+          // Assuming product.Categories is an array where the first element holds category info:
+          categoryId: product.Categories[0]?.parentId || 0,
+          subcategoryId: product.Categories[0]?.id || 0,
+          discountId: product.discountId || 0,
+          // Cast Options to Option[] so that TypeScript knows its type.
+          optionIds: (product.Options as Option[]).map((option: Option) => option.id),
+          images: [] // Existing images are not handled in this view.
         });
-        console.log("categoryID:" + product.Categories[0].parentId);
-        console.log(JSON.stringify(product, null, 2));
-        const fetchedCategories = await apiServiceCategories.fetchParentCategories();
+
+        // Fetch parent categories, options and discounts concurrently.
+        const [fetchedCategories, fetchedOptions, fetchedDiscounts] = await Promise.all([
+          apiServiceCategories.fetchParentCategories(),
+          apiServiceOptions.fetchOptions(),
+          apiServiceDiscount.fetchDiscounts()
+        ]) as [Category[], Option[], Discount[]];
+
         setCategories(fetchedCategories);
-
-        const fetchedOptions = await apiServiceOptions.fetchOptions();
         setOptions(fetchedOptions);
-
-        const fetchedDiscounts = await apiServiceDiscount.fetchDiscounts();
         setDiscounts(fetchedDiscounts);
+
+        // Derive color and size options from the full options list.
+        setColorOptions(fetchedOptions.filter((option: Option) => option.type === 0));
+        setSizeOptions(fetchedOptions.filter((option: Option) => option.type === 1));
       } catch (err) {
         setError('Error al cargar los datos del producto');
         console.error(err);
       }
     };
 
-    if (id) fetchProductData();
+    if (id) fetchData();
   }, [id]);
 
+  // When a category is selected, fetch its subcategories.
   useEffect(() => {
-    const fetchCategoriesAndSubcategories = async () => {
-      try {
-        const parentCategories = await apiServiceCategories.fetchParentCategories();
-        setCategories(parentCategories);
-
-        const subcategoriesPromises = parentCategories.map(async (category: Category) => {
-          const subcategoriesForCategory = await apiServiceCategories.fetchSubcategoriesByParent(category.id);
-          return { parentId: category.id, subcategories: subcategoriesForCategory };
-        });
-
-        const subcategoriesResult = await Promise.all(subcategoriesPromises);
-
-        // Aplanar el array de subcategorías y almacenarlas en el estado
-        const allSubcategories = subcategoriesResult.flatMap(item => item.subcategories);
-        setSubcategories(allSubcategories);
-
-      } catch (error) {
-        console.error('Error fetching categories or subcategories:', error);
+    const fetchSubcategories = async () => {
+      if (formData.categoryId) {
+        const selectedCategory = categories.find(category => category.id === formData.categoryId);
+        if (selectedCategory) {
+          if (selectedCategory.subcategories) {
+            setSubcategories(selectedCategory.subcategories);
+          } else {
+            try {
+              const subs = await apiServiceCategories.fetchSubcategoriesByParent(selectedCategory.id);
+              setSubcategories(subs);
+            } catch (err) {
+              console.error('Error fetching subcategories:', err);
+            }
+          }
+        }
       }
     };
+    fetchSubcategories();
+  }, [formData.categoryId, categories]);
 
-    fetchCategoriesAndSubcategories();
-  }, []);
-
+  // Standard change handler for inputs.
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
+  // Update category selection and reset subcategory.
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
-    setFormData(prevState => ({ ...prevState, categoryId: parseInt(value), subcategoryId: 0 }));
-
-    const selectedCategory = categories.find(category => category.id === parseInt(value));
-    if (selectedCategory) {
-      setSubcategories(selectedCategory.subcategories || []);
+    const categoryId = parseInt(value);
+    setFormData(prevState => ({ ...prevState, categoryId, subcategoryId: 0 }));
+    
+    const selectedCategory = categories.find(category => category.id === categoryId);
+    if (selectedCategory && selectedCategory.subcategories) {
+      setSubcategories(selectedCategory.subcategories);
     } else {
       setSubcategories([]);
     }
   };
 
-  const handleOptionChange = (optionId: number) => {
+  // MultiSelect handlers for options (separating colors and sizes).
+  const handleOptionSelect = (selectedIds: number[], type: number) => {
     setFormData(prevState => {
-      const selectedOptions = prevState.optionIds.includes(optionId)
-        ? prevState.optionIds.filter(id => id !== optionId)
-        : [...prevState.optionIds, optionId];
-      return { ...prevState, optionIds: selectedOptions };
+      // Preserve options of the other type.
+      const otherTypeOptions = prevState.optionIds.filter(id => {
+        const option = options.find(opt => opt.id === id);
+        return option && option.type !== type;
+      });
+      return { ...prevState, optionIds: [...otherTypeOptions, ...selectedIds] };
     });
   };
 
+  const getSelectedValues = (type: number) => {
+    return formData.optionIds.filter(id => {
+      const option = options.find(opt => opt.id === id);
+      return option && option.type === type;
+    });
+  };
+
+  const transformOptionsForSelect = (opts: Option[]) => {
+    return opts.map((option: Option) => ({
+      label: option.name,
+      value: option.id
+    }));
+  };
+
+  // Handle image file uploads.
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      setFormData(prevState => ({
+        ...prevState,
+        images: [...prevState.images, ...Array.from(files)]
+      }));
+    }
+  };
+
+  // Remove an image from the preview list.
+  const handleImageRemove = (index: number) => {
+    setFormData(prevState => ({
+      ...prevState,
+      images: prevState.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Create a new size option and add it to the selected options.
+  const handleCreateSize = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSizeName.trim()) return;
+
+    setCreatingSize(true);
+    try {
+      const newOption = { name: newSizeName.trim(), type: 1 };
+      const createdOption = await apiServiceOptions.createOption(newOption);
+      
+      // Fetch the updated options list.
+      const updatedOptions = await apiServiceOptions.fetchOptions() as Option[];
+      setOptions(updatedOptions);
+      setColorOptions(updatedOptions.filter((option: Option) => option.type === 0));
+      setSizeOptions(updatedOptions.filter((option: Option) => option.type === 1));
+
+      // Add the new size option to the form.
+      setFormData(prev => ({
+        ...prev,
+        optionIds: [...prev.optionIds, createdOption.id]
+      }));
+      setNewSizeName('');
+    } catch (err) {
+      setError('Error al crear la opción de tamaño');
+      console.error(err);
+    } finally {
+      setCreatingSize(false);
+    }
+  };
+
+  // Submit handler: append all fields into FormData and call the update API.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const data = new FormData();
       data.append('name', formData.name);
@@ -147,9 +237,10 @@ const UpdateProduct = () => {
       data.append('weight', String(formData.weight));
       data.append('categoryId', String(formData.categoryId));
       data.append('subcategoryId', String(formData.subcategoryId));
+      data.append('discountId', String(formData.discountId));
       formData.optionIds.forEach(id => data.append('optionIds', String(id)));
       formData.images.forEach(file => data.append('images', file));
-      console.log("aca si entre");
+
       await apiServiceProducts.updateProduct(Number(id), data);
       alert('Producto actualizado con éxito');
       router.push('/admin/products');
@@ -168,8 +259,11 @@ const UpdateProduct = () => {
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
+            {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="name">Nombre *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="name">
+                Nombre *
+              </label>
               <input
                 type="text"
                 id="name"
@@ -181,8 +275,11 @@ const UpdateProduct = () => {
               />
             </div>
 
+            {/* SKU */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="SKU">SKU *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="SKU">
+                SKU *
+              </label>
               <input
                 type="number"
                 id="SKU"
@@ -194,8 +291,11 @@ const UpdateProduct = () => {
               />
             </div>
 
+            {/* Descripción */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="description">Descripción *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="description">
+                Descripción *
+              </label>
               <textarea
                 id="description"
                 name="description"
@@ -206,8 +306,11 @@ const UpdateProduct = () => {
               />
             </div>
 
+            {/* Precio */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="price">Precio *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="price">
+                Precio *
+              </label>
               <input
                 type="number"
                 id="price"
@@ -219,8 +322,11 @@ const UpdateProduct = () => {
               />
             </div>
 
+            {/* Stock */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="stock">Stock *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="stock">
+                Stock *
+              </label>
               <input
                 type="number"
                 id="stock"
@@ -232,8 +338,11 @@ const UpdateProduct = () => {
               />
             </div>
 
+            {/* Peso */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="weight">Peso *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="weight">
+                Peso *
+              </label>
               <input
                 type="number"
                 id="weight"
@@ -245,79 +354,154 @@ const UpdateProduct = () => {
               />
             </div>
 
+            {/* Categoría */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="categoryId">Categoría *</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="categoryId">
+                Categoría *
+              </label>
               <select
                 id="categoryId"
                 name="categoryId"
-                value={formData.categoryId}
+                value={formData.categoryId || ''}
                 onChange={handleCategoryChange}
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 <option value="">Seleccionar categoría</option>
                 {categories.map(category => (
-                  <option key={category.id} value={category.id}>{category.name}</option>
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
                 ))}
               </select>
             </div>
 
+            {/* Subcategoría */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="subcategoryId">Subcategoría</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="subcategoryId">
+                Subcategoría
+              </label>
               <select
                 id="subcategoryId"
                 name="subcategoryId"
-                value={formData.subcategoryId}
+                value={formData.subcategoryId || ''}
                 onChange={handleInputChange}
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Seleccionar subcategoría</option>
                 {subcategories.map(subcategory => (
-                  <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                  <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </option>
                 ))}
               </select>
             </div>
 
+            {/* Descuento */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="discountId">Descuento</label>
+              <label className="block text-sm font-medium mb-1" htmlFor="discountId">
+                Descuento
+              </label>
               <select
                 id="discountId"
                 name="discountId"
-                value={formData.discountId}
+                value={formData.discountId || ''}
                 onChange={handleInputChange}
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Seleccionar descuento</option>
                 {discounts.map(discount => (
-                  <option key={discount.id} value={discount.id}>{discount.name}</option>
+                  <option key={discount.id} value={discount.id}>
+                    {discount.name}
+                  </option>
                 ))}
               </select>
             </div>
 
+            {/* Imágenes */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-2" htmlFor="options">
-                Opciones *
+              <label className="block text-sm font-medium mb-1" htmlFor="images">
+                Imágenes (hasta 10 archivos)
               </label>
-              <div className="grid grid-cols-2 gap-4">
-                {options.map(option => (
-                  <div key={option.id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`option-${option.id}`}
-                      name="options"
-                      value={option.id}
-                      checked={formData.optionIds.includes(option.id)}
-                      onChange={() => handleOptionChange(option.id)}
-                      className="form-checkbox"
+              <input
+                type="file"
+                id="images"
+                onChange={handleImageUpload}
+                multiple
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                {formData.images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`Preview ${index}`}
+                      className="w-full h-32 object-cover border rounded-md"
                     />
-                    <label htmlFor={`option-${option.id}`} className="text-sm">
-                      {option.name}
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleImageRemove(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
+                    >
+                      &times;
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Opciones (Colores y Tamaños) */}
+            <div className="col-span-2">
+              <h2 className="text-xl font-semibold mb-4">Opciones</h2>
+              {/* Opciones de color */}
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Colores
+                </label>
+                <MultiSelect
+                  value={getSelectedValues(0)}
+                  options={transformOptionsForSelect(colorOptions)}
+                  onChange={(e) => handleOptionSelect(e.value, 0)}
+                  placeholder="Seleccionar colores"
+                  className="w-full"
+                  display="chip"
+                />
+              </div>
+              {/* Opciones de tamaño */}
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Tamaños
+                </label>
+                <div className="flex gap-2">
+                  <MultiSelect
+                    value={getSelectedValues(1)}
+                    options={transformOptionsForSelect(sizeOptions)}
+                    onChange={(e) => handleOptionSelect(e.value, 1)}
+                    placeholder="Seleccionar tamaños"
+                    className="w-full"
+                    display="chip"
+                  />
+                  <div className="flex gap-2 min-w-[300px]">
+                    <InputText
+                      value={newSizeName}
+                      onChange={(e) => setNewSizeName(e.target.value)}
+                      placeholder="Nuevo tamaño"
+                      className="w-full"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleCreateSize}
+                      disabled={creatingSize || !newSizeName.trim()}
+                      loading={creatingSize}
+                      className="bg-green-500 hover:bg-green-600"
+                      label="Agregar"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600"

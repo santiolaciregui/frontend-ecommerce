@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import apiService from "../../../pages/api/stores";
 import { Store } from '@/app/context/types';
 import { useRouter, useParams } from 'next/navigation';
+import BackButton from '@/app/components/BackButton';
 
 const CreateEditStore = () => {
   const router = useRouter();
@@ -72,6 +73,7 @@ const CreateEditStore = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-2xl mx-auto mt-10 bg-white p-8 rounded shadow">
+      <BackButton destination="/admin/stores" />
         <h2 className="text-2xl font-semibold mb-6">
           {isEditMode ? 'Editar Sucursal' : 'Crear Nueva Sucursal'}
         </h2>

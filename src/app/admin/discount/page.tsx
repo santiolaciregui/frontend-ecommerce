@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import apiServiceDiscount from "../../pages/api/discount";
 import { Discount } from '@/app/context/types';
 import Link from 'next/link';
+import BackButton from '@/app/components/BackButton';
 
 const DiscountAdminList = () => {
   const [discounts, setDiscounts] = useState<Discount[]>([]);
@@ -60,6 +61,8 @@ const DiscountAdminList = () => {
       <div className="max-w-6xl mx-auto mt-10">
 
         <div className="flex justify-between items-center mb-4">
+        <BackButton destination="/admin" />
+
           <h2 className="text-2xl font-semibold">Lista de Descuentos</h2>
           <Link
             href="/admin/discount/create"

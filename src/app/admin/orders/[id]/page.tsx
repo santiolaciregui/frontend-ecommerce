@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import orderService from '../../../pages/api/order';
 import { OrdersDetails } from '@/app/context/types';
+import BackButton from '@/app/components/BackButton';
 
 interface Product {
   id: number;
@@ -91,6 +92,7 @@ const OrderDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md rounded-lg">
+      <BackButton destination="/admin/orders" />
         <h1 className="text-3xl font-semibold mb-8">Detalles de la Orden</h1>
         
         <div className="space-y-4">

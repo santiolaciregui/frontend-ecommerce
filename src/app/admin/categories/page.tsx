@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import apiService from "../../pages/api/category";
 import { Category } from '@/app/context/types';
 import Link from 'next/link';
+import BackButton from '@/app/components/BackButton';
 
 const CategoryAdminList = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -59,6 +60,13 @@ const CategoryAdminList = () => {
               {category.parentId ? `ID: ${category.parentId}` : '—'}
             </td>
             <td className="px-6 py-4 flex justify-center space-x-4">
+            <Link
+              href={`/admin/categories/form?id=${category.id}`}
+              className="text-blue-500 hover:text-blue-700 mr-4"
+            >
+              <i className="fas fa-edit mr-2"></i>
+              Editar
+            </Link>
             <button
               onClick={() => handleDelete(category.id)}
               className="text-red-500 hover:text-red-700"
@@ -78,9 +86,10 @@ const CategoryAdminList = () => {
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-6xl mx-auto mt-10">
         <div className="flex justify-between items-center mb-4">
+        <BackButton destination="/admin" />
           <h2 className="text-2xl font-semibold text-gray-800">Lista de Categorías</h2>
           <Link
-            href="/admin/categories/create"
+            href="/admin/categories/form"
             className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
           >
             <i className="fas fa-plus mr-2"></i>

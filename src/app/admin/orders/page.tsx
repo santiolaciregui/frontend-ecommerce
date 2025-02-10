@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import orderService from '../../pages/api/order';
 import { FaEye, FaTrashAlt, FaSpinner } from 'react-icons/fa';
+import BackButton from '@/app/components/BackButton';
 
 interface Order {
   id: number;
@@ -103,6 +104,7 @@ const OrdersList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8">
+      <BackButton destination="/admin" />
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Listado de Órdenes</h1>
 
         {error && (

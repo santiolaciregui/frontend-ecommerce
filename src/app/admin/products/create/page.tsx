@@ -10,6 +10,7 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { redirect } from 'next/navigation';
+import BackButton from '@/app/components/BackButton';
 
 
 interface ProductForm {
@@ -219,6 +220,7 @@ const CreateProduct = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md">
+      <BackButton destination="/admin/products" />
         <h1 className="text-3xl font-semibold mb-8">
           {editMode ? 'Editar Producto' : 'Crear Producto'}
         </h1>

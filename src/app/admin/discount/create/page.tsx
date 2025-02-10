@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Category, Product } from '@/app/context/types';
 import { createDiscount } from "../../../pages/api/discount";
 import { getImageUrl } from '@/app/utils/getImageURL';
+import BackButton from '@/app/components/BackButton';
 
 interface DiscountForm {
   name: string;
@@ -114,6 +115,7 @@ const DiscountForm = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
+      <BackButton destination="/admin/discount" />
       <h2 className="text-2xl font-semibold mb-4">Crear Nuevo Descuento</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

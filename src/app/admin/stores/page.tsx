@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import apiService from "../../pages/api/stores";
 import { Store } from '@/app/context/types';
 import Link from 'next/link';
+import BackButton from '@/app/components/BackButton';
 
 const StoreAdminList = () => { 
   const [stores, setStores] = useState<Store[]>([]);
@@ -64,6 +65,7 @@ const StoreAdminList = () => {
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-6xl mx-auto mt-10">
         <div className="flex justify-between items-center mb-4">
+        <BackButton destination="/admin" />
           <h2 className="text-2xl font-semibold">Lista de Sucursales</h2>
           <Link
               href="/admin/stores/create"

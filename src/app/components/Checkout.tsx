@@ -95,14 +95,6 @@ const Checkout: React.FC = () => {
     calculateTotalPrice,
   ]);
 
-  // 3) Update shipping cost based on delivery option
-  useEffect(() => {
-    if (formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP) {
-      setShippingCost(0);
-    } else {
-      setShippingCost(30000);
-    }
-  }, [formData.deliveryOption.option]);
 
   // 4) If cart is empty, redirect
   useEffect(() => {
@@ -177,7 +169,6 @@ const Checkout: React.FC = () => {
                       <i className="fas fa-credit-card"></i>
                       <span>Tarjeta de Débito</span>
                     </div>
-                    <span className="text-sm text-gray-500 ml-2">(+5%)</span>
                   </label>
                   <label
                     className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'
@@ -224,10 +215,7 @@ const Checkout: React.FC = () => {
                       <i className="fas fa-university"></i>
                       <span>Transferencia </span>
                     </div>
-                    <span className="text-sm text-gray-500 ml-2">(+10%)</span>
                   </label>
-
-
                   <label
                     className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT ? 'bg-blue-100 border-blue-500' : 'bg-white'
                       }`}
@@ -244,9 +232,6 @@ const Checkout: React.FC = () => {
                       <i className="fas fa-file-upload"></i>
                       <span>Crédito Personal</span>
                     </div>
-                    <span className="text-sm text-gray-500 ml-2">
-                      (+15%)
-                    </span>
                   </label>
 
                 </div>
@@ -342,9 +327,6 @@ const Checkout: React.FC = () => {
                                   {(
                                     displayTotal / installment.numberOfInstallments
                                   ).toFixed(2)}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  Tasa de interés: {installment.interestRate}%
                                 </span>
                               </label>
                             );
@@ -446,7 +428,7 @@ const Checkout: React.FC = () => {
               onClick={handleCheckout}
               className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600"
             >
-              Finalizar compra
+              Realizar el pedido
             </button>
 
           </div>
