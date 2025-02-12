@@ -11,6 +11,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
+import { getImageUrl } from '@/app/utils/getImageURL';
 
 // Interface for product form data.
 interface ProductForm {
@@ -403,7 +404,7 @@ const UpdateProduct = () => {
                 {existingImages.map((image, index) => (
                   <div key={image.id} className="relative">
                     <img
-                      src={image.url}
+                      src={getImageUrl(image.url)}
                       alt={`Existing image ${index}`}
                       className="w-full h-32 object-cover border rounded-md"
                     />
