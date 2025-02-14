@@ -16,3 +16,18 @@ export const getWhatsAppQRCode = async () => {
     throw error;
   }
 };
+
+export const deleteWhatsAppSession = async () => {
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/whatsapp/session`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data; // Expected to have a success message
+  } catch (error) {
+    console.error('Error deleting WhatsApp session:', error);
+    throw error;
+  }
+};

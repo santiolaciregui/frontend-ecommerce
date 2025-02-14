@@ -5,18 +5,6 @@ import orderService from '../../../pages/api/order';
 import { OrdersDetails } from '@/app/context/types';
 import BackButton from '@/app/components/BackButton';
 
-interface Product {
-  id: number;
-  SKU: number;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  weight: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 const OrderDetails: React.FC = () => {
   const [order, setOrder] = useState<OrdersDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +26,7 @@ const OrderDetails: React.FC = () => {
           setError('Orden no encontrada');
         } else {
           setOrder(orderDetails);
+          console.log('orderDetails: ',orderDetails);
         }
       } catch (err) {
         setError('Error al cargar los detalles de la orden');
@@ -89,20 +78,127 @@ const OrderDetails: React.FC = () => {
     }).format(amount);
   };
 
+  // Translate order status
+  const statusTranslations: { [key: string]: string } = {
+    pending: 'Pendiente',
+    completed_paid: 'Completado Pagado',
+    cancelled: 'Cancelado',
+    in_logistics: 'En logística para envío',
+    in_transit: 'Tu envío se encuentra en camino',
+    ready_for_pickup: 'Listo para retirar en sucursal seleccionada',
+    preparing_delivery: 'Preparando producto para su entrega',
+    delivered: 'Entregado',
+  };
+
+  // Parse payment details and format the info
+  const getPaymentInfo = () => {
+    const { paymentFormat, paymentDetails } = order;
+  
+    switch (paymentFormat) {
+      case 'credit_card':
+        return {
+          method: 'Tarjeta de Crédito',
+          details: [
+            paymentDetails?.installments
+              ? `${paymentDetails.installments.numberOfInstallments} cuota(s) ${
+                  paymentDetails.installments.interestRate > 0
+                    ? `con ${paymentDetails.installments.interestRate}% de interés`
+                    : 'sin interés'
+                }`
+              : 'Pago en una cuota',
+            paymentDetails?.provider?.name
+              ? `Proveedor: ${paymentDetails.provider.name}`
+              : null,
+            paymentDetails?.bank?.name
+              ? `Banco: ${paymentDetails.bank.name}`
+              : null
+          ].filter(Boolean)
+        };
+
+      case 'debit_card':
+        return {
+          method: 'Débito',
+          details: ['Pago con tarjeta de débito']
+        };
+  
+      case 'transfer':
+        return {
+          method: 'Transferencia Bancaria',
+          details: [
+            'Pago mediante transferencia bancaria',
+            'El pedido se procesará al confirmar el pago'
+          ]
+        };
+  
+      case 'cash':
+        return {
+          method: 'Efectivo',
+          details: ['Pago en efectivo al retirar']
+        };
+  
+      case 'personal_credit':
+        return {
+          method: 'Crédito Personal',
+          details: [
+            'Hemos recibido tu archivo para revisión.',
+            'Estamos validando tu información, el pedido se procesará una vez confirmada la aprobación.'
+          ]
+        };
+  
+      default:
+        return {
+          method: 'Método de pago',
+          details: ['Método de pago no especificado']
+        };
+    }
+  };
+
+  const paymentInfo = getPaymentInfo();
+
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md rounded-lg">
-      <BackButton destination="/admin/orders" />
-        <h1 className="text-3xl font-semibold mb-8">Detalles de la Orden</h1>
-        
-        <div className="space-y-4">
-          <p><strong>Número de Orden:</strong> {order.orderNumber}</p>
-          <p><strong>Email:</strong> {order.client?.email || order.email || 'No disponible'}</p>
-          <p><strong>Contacto:</strong> {order.client?.phone || 'No disponible'}</p>
-          <p><strong>Monto Total:</strong> {formatCurrency(order.totalAmount)}</p>
-          <p><strong>Dirección de Envío:</strong> {order.shippingAddress || 'Retiro en tienda'}</p>
-          <p><strong>Forma de Pago:</strong> {order.paymentFormat}</p>
-          <p><strong>Fecha:</strong> {formatDate(order.createdAt)}</p>
+        <BackButton destination="/admin/orders" />
+        <h1 className="text-3xl font-semibold mb-8 text-center">Detalles de la Orden</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Información del Pedido */}
+          <div className="space-y-4 p-4 border rounded-lg">
+            <h2 className="text-xl font-bold text-gray-700 border-b pb-2">Información del Pedido</h2>
+            <p><strong>Número de Orden:</strong> {order.orderNumber}</p>
+            <p><strong>Número de Seguimiento:</strong> {order.trackingId}</p>
+            <p>
+              <strong>Status:</strong>{' '}
+              {statusTranslations[order.status] || order.status}
+            </p>
+            <p><strong>Fecha de Creación:</strong> {formatDate(order.createdAt)}</p>
+            <p><strong>Última Actualización:</strong> {formatDate(order.updatedAt)}</p>
+            <p><strong>Método de Pago:</strong> {paymentInfo.method}</p>
+            {paymentInfo.details.length > 0 && (
+              <ul className="list-disc list-inside text-sm text-gray-600">
+                {paymentInfo.details.map((detail, index) => (
+                  <li key={index}>{detail}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Información del Cliente */}
+          <div className="space-y-4 p-4 border rounded-lg">
+            <h2 className="text-xl font-bold text-gray-700 border-b pb-2">Información del Cliente</h2>
+            <p>
+              <strong>Nombre:</strong> {order.client?.firstName} {order.client?.lastName}
+            </p>
+            <p>
+              <strong>Email:</strong> {order.client?.email || order.email || 'No disponible'}
+            </p>
+            <p>
+              <strong>Contacto:</strong> {order.client?.phone || 'No disponible'}
+            </p>
+            <p>
+              <strong>Dirección de Envío:</strong> {order.shippingAddress || 'Retiro en tienda'}
+            </p>
+          </div>
         </div>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">Productos en la Orden</h2>
@@ -112,13 +208,25 @@ const OrderDetails: React.FC = () => {
           ) : (
             <div className="divide-y">
               {order.OrderItems.map((item) => (
-                <div key={item.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                <div
+                  key={item.id}
+                  className="p-4 flex flex-col md:flex-row md:justify-between items-start md:items-center hover:bg-gray-50"
+                >
                   <div className="space-y-1">
-                    <p className="font-medium">{item.Product?.name || item.productName}</p>
+                    <p className="font-medium">
+                      {item.Product?.name || item.productName}
+                    </p>
+                    {item.Product && item.Product.SKU && (
+                      <p className="text-sm text-gray-500">SKU: {item.Product.SKU}</p>
+                    )}
                     <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>
-                    <p className="text-sm text-gray-500">Precio unitario: {formatCurrency(item.unitPrice)}</p>
+                    <p className="text-sm text-gray-500">
+                      Precio unitario: {formatCurrency(item.unitPrice)}
+                    </p>
                   </div>
-                  <p className="font-semibold">{formatCurrency(item.totalPrice)}</p>
+                  <p className="font-semibold mt-2 md:mt-0">
+                    {formatCurrency(item.totalPrice)}
+                  </p>
                 </div>
               ))}
             </div>

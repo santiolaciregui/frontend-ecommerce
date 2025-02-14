@@ -329,7 +329,7 @@ const OrderDetails: React.FC = () => {
                 <div>
                   <p className="font-semibold text-gray-700">{item.productName}</p>
                   <p className="text-sm text-gray-500">
-                    Cantidad: {item.quantity} × ${item.unitPrice.toFixed(2)}
+                    Cantidad: {item.quantity} 
                   </p>
                   {item.options && (
                     <p className="text-sm text-gray-500">
@@ -338,22 +338,39 @@ const OrderDetails: React.FC = () => {
                   )}
                 </div>
               </div>
-              <p className="font-semibold text-lg text-gray-800">
-                ${item.totalPrice}
-              </p>
+             
             </div>
           ))}
 
-          <div className="mt-4 text-sm text-gray-600">
-            <div className="flex justify-between border-b pb-2">
-              <p>Subtotal</p>
-              <p>${order.totalAmount}</p>
-            </div>
-            <div className="flex justify-between mt-2">
-              <p>Envío</p>
-              <p className="text-green-600 font-medium">A coordinar</p>
-            </div>
+        <div className="mt-4 text-sm text-gray-600">
+          <div className="flex justify-between border-b pb-2">
+            <p>Forma de pago</p>
+            <p>{paymentInfo.method}</p>
           </div>
+          {order.paymentFormat === 'credit_card' && order.paymentDetails?.installments && (
+            <>
+              <div className="flex justify-between mt-2">
+                <p>Cantidad de cuotas</p>
+                <p>{order.paymentDetails.installments.numberOfInstallments}</p>
+              </div>
+              <div className="flex justify-between mt-2">
+                <p>Precio por cuota</p>
+                <p>
+                  $
+                  {(
+                    order.totalAmount /
+                    order.paymentDetails.installments.numberOfInstallments
+                  ).toFixed(2)}
+                </p>
+              </div>
+            </>
+          )}
+          <div className="flex justify-between mt-2">
+            <p>Envío</p>
+            <p className="text-green-600 font-medium">A coordinar</p>
+          </div>
+        </div>
+
 
           <div className="border-t mt-6 pt-4 flex justify-between items-center">
             <p className="font-semibold text-xl text-gray-800">Total</p>

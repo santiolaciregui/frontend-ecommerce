@@ -153,9 +153,7 @@ const CreditCardDetailsModal: React.FC<CreditCardDetailsModalProps> = ({
                     <span className="text-sm font-medium">
                       {installment.numberOfInstallments} cuotas
                     </span>
-                    <span className="text-xs text-gray-500">
-                      Tasa de interés: {installment.interestRate}%
-                    </span>
+                    
                    
                   </label>
                 ))}

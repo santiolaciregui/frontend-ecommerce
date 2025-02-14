@@ -50,6 +50,9 @@ const Footer = () => {
               <Link href="/empresa/contacto" className="text-gray-600 hover:text-gray-800">
                 Contáctanos
               </Link>
+              <Link href="/admin" className="text-gray-600 hover:text-gray-800">
+                Administracion
+              </Link>
             </nav>
           </div>
         </div>
@@ -76,7 +79,6 @@ const Footer = () => {
                 <Image src="/mastercard.png" alt="Mastercard" width={40} height={20} />
                 <Image src="/cabal.png" alt="Cabal" width={40} height={20} />
                 <Image src="/American Express.png" alt="AmericanExpress" width={40} height={20} />
-
               </div>
             </div>
           </div>

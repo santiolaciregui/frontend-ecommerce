@@ -158,6 +158,8 @@ export interface FormData {
 
 
 export interface Client {
+  firstName: string | '';
+  lastName: string | '';
   email: string | '';
   phone: string | '';
 }
@@ -170,6 +172,11 @@ export interface OrdersDetails {
   shippingAddress: string | null;
   paymentFormat: string;
   createdAt: string;
+  updatedAt: string;
+  status: string;
+  trackingId: string;
+
+  paymentDetails: any;
   OrderItems: OrderItem[];
   client?: Client;
 }

@@ -90,9 +90,15 @@ const OrdersList: React.FC = () => {
 
   const statusTranslations: { [key: string]: string } = {
     pending: 'Pendiente',
-    completed: 'Completado',
+    completed_paid: 'Completado Pagado',
     cancelled: 'Cancelado',
+    in_logistics: 'En logística para envío',
+    in_transit: 'Tu envío se encuentra en camino',
+    ready_for_pickup: 'Listo para retirar en sucursal seleccionada',
+    preparing_delivery: 'Preparando producto para su entrega',
+    delivered: 'Entregado',
   };
+  
 
   const handleWhatsApp = (contactInfo: string) => {
     const cleanNumber = contactInfo.replace(/\s+/g, '');

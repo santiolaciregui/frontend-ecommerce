@@ -22,7 +22,7 @@ export const useCheckout = () => {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [selectedCardType, setSelectedCardType] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<CardProvider| null>(null);
-  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);''
+  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const [installments, setInstallments] = useState<InstallmentOption[]>([]);
   const [totalPrice, setTotalPrice] = useState(() => {
     const basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { logout } from '../pages/api/authService';
-import { getWhatsAppQRCode } from '../pages/api/whatsapp'; 
+import { getWhatsAppQRCode, deleteWhatsAppSession } from '../pages/api/whatsapp'; 
 import { useEffect, useState } from 'react';
 import BackButton from '../components/BackButton'; // Adjust the import path as needed
 
@@ -35,6 +35,20 @@ const AdminDashboard = () => {
       alert('No se pudo generar el código QR. Verifica que el cliente de WhatsApp esté listo.');
     }
   };
+
+  const handleDeleteSession = async () => {
+    const confirmDelete = window.confirm('¿Estás seguro de eliminar la sesión de WhatsApp y generar un nuevo QR?');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteWhatsAppSession();
+      alert('Sesión de WhatsApp eliminada. Por favor, genera un nuevo QR.');
+      setQrCode(null);
+    } catch (error) {
+      alert('Error eliminando la sesión de WhatsApp.');
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -163,8 +177,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Administración de WhatsApp */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
+           {/* Administración de WhatsApp */}
+           <div className="border rounded-lg bg-white p-6 shadow-md">
             <h2 className="text-lg font-semibold mb-4">Administración de WhatsApp</h2>
             <div className="space-y-4">
               <button
@@ -172,6 +186,12 @@ const AdminDashboard = () => {
                 className="block w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
               >
                 Generar QR
+              </button>
+              <button
+                onClick={handleDeleteSession}
+                className="block w-full text-center bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+              >
+                Eliminar Sesión
               </button>
               {qrCode && (
                 <div className="mt-4">

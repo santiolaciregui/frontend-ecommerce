@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import { useCheckout } from '../hooks/useCheckout';
 
@@ -83,7 +84,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                   <li>• Requiere documentación</li>
                   <li>• Aprobación en 24-48hs</li>
                   <li>• Cuotas fijas en pesos</li>
-                  <li>• Mismo precio que pagando en efectivo</li>
+                  <li>• Precio promocional pagando en efectivo</li>
                 </ul>
               </div>
             </div>
@@ -93,7 +94,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-lg font-semibold mb-4">Débito o Crédito</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• Pago seguro con tarjeta</li>
-                <li>• Cuotas sin interés disponibles</li>
+                <li>• Cuotas disponibles</li>
                 <li>• Múltiples bancos aceptados</li>
               </ul>
 
@@ -184,10 +185,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                           className="mr-2"
                         />
                         <span>{installment.numberOfInstallments} cuotas</span>
-                        <span className="text-sm text-gray-500">
-                          <br />
-                          Interés: {installment.interestRate}%
-                        </span>
+
                       </label>
                     ))}
                   </div>
