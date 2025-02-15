@@ -116,11 +116,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                         checked={selectedProvider?.id === provider.id}
                         onChange={() => handleProviderSelect(provider)}
                       />
-                      <img
-                        src={`/${provider.name}.png`}
-                        alt={provider.name}
-                        className="h-8"
-                      />
+                      <img src={`/${provider.name}.png`} alt={provider.name} className="h-8" />
                     </label>
                   ))}
                 </div>
@@ -135,11 +131,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                   <div className="grid grid-cols-2 gap-4">
                     {banks.map((bank) => (
                       <label
-                        key={bank.id}
-                        className={`p-4 border rounded-md cursor-pointer ${
-                          selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                        }`}
-                      >
+                      key={bank.id}
+                      className={`p-4 border rounded-md cursor-pointer ${
+                        selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'
+                      }`}
+                    >
                         <input
                           type="radio"
                           name="bank"

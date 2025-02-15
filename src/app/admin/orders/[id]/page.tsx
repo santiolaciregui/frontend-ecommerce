@@ -165,7 +165,6 @@ const OrderDetails: React.FC = () => {
           {/* Información del Pedido */}
           <div className="space-y-4 p-4 border rounded-lg">
             <h2 className="text-xl font-bold text-gray-700 border-b pb-2">Información del Pedido</h2>
-            <p><strong>Número de Orden:</strong> {order.orderNumber}</p>
             <p><strong>Número de Seguimiento:</strong> {order.trackingId}</p>
             <p>
               <strong>Status:</strong>{' '}

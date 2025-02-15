@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import { useEffect, useState } from 'react';
 import ProductImages from "@/app/components/ProductImages";
 import CustomizeProducts from "@/app/components/CustomizeProducts";
@@ -7,8 +7,12 @@ import { fetchStores } from "../../pages/api/stores";
 import { useParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
 import Loading from '@/app/components/Loading';
-import PaymentModal from '@/app/components/modalPayments';
 import { emptyProduct } from '@/app/mooks/types';
+import dynamic from 'next/dynamic';
+
+const PaymentModal = dynamic(() => import('@/app/components/modalPayments'), {
+  ssr: false,  // ensures it only renders on the client
+});
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -145,10 +149,12 @@ const SinglePage = () => {
           </h4>
         )}
       </div>
+      <div>
        <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
       /> 
+      </div>
     </div>
 
 

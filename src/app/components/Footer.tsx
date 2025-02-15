@@ -51,7 +51,7 @@ const Footer = () => {
                 Contáctanos
               </Link>
               <Link href="/admin" className="text-gray-600 hover:text-gray-800">
-                Administracion
+                Administración
               </Link>
             </nav>
           </div>
