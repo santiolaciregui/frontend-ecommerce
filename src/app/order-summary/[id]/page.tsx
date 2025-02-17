@@ -159,11 +159,9 @@ const OrderDetails: React.FC = () => {
           method: 'Tarjeta de Crédito',
           details: [
             paymentDetails?.installments
-              ? `${paymentDetails.installments.numberOfInstallments} cuota(s) ${
-                  paymentDetails.installments.interestRate > 0
-                    ? `con ${paymentDetails.installments.interestRate}% de interés`
-                    : 'sin interés'
-                }`
+              ? `${paymentDetails.installments.numberOfInstallments} cuota(s) de $${(
+                  order.totalAmount / paymentDetails.installments.numberOfInstallments
+                ).toFixed(2)}`
               : 'Pago en una cuota',
             paymentDetails?.provider?.name
               ? `Proveedor: ${paymentDetails.provider.name}`
@@ -171,8 +169,9 @@ const OrderDetails: React.FC = () => {
             paymentDetails?.bank?.name
               ? `Banco: ${paymentDetails.bank.name}`
               : null
-          ].filter(Boolean) // Remove null entries
+          ].filter(Boolean)
         };
+      
 
         case 'debit_card':
           return {
@@ -244,14 +243,8 @@ const OrderDetails: React.FC = () => {
           </div>
           <p className="text-sm text-gray-600">¡Hola {order.client.firstName}!</p>
 
-          <div className="mt-4 text-sm text-gray-600">
-            <p>Forma de pago seleccionada: {paymentInfo.method}</p>
-            <ul className="list-disc pl-5">
-              {paymentInfo.details.map((detail, index) => (
-                <li key={index}>{detail}</li>
-              ))}
-            </ul>
-          </div>
+          <p className="text-sm text-gray-600">¡Muchas gracias por tu compra!</p>
+
         </div>
 
 
@@ -331,11 +324,17 @@ const OrderDetails: React.FC = () => {
                   <p className="text-sm text-gray-500">
                     Cantidad: {item.quantity} 
                   </p>
-                  {item.options && (
-                    <p className="text-sm text-gray-500">
-                      Opciones: {JSON.stringify(item.options)}
-                    </p>
+                  {item.options && Array.isArray(item.options) && (
+                    <div className="text-sm text-gray-500">
+                      <p>Opciones:</p>
+                      <ul className="list-disc pl-5">
+                        {item.options.map((option) => (
+                          <li key={option.id}>{option.name}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
+
                 </div>
               </div>
              

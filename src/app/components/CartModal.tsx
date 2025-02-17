@@ -16,8 +16,6 @@ interface CartModalProps {
 
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart } = useCart();
-  console.log(cart)
-
   useEffect(() => {
   }, [cart]);
 

@@ -1,6 +1,6 @@
-'use client'
+'use client';
 import React from 'react';
-import { useCheckout } from '../hooks/useCheckout';
+import { useCreditCardPayment } from '../hooks/useCreditCardPayment';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -13,14 +13,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
   const {
     providers,
     banks,
-    selectedBank,
     selectedProvider,
+    selectedBank,
+    installments,
     handleProviderSelect,
     handleBankSelect,
-    installments,
-    formData,
-    setFormData,
-  } = useCheckout();
+    error,
+  } = useCreditCardPayment();
 
   return (
     <>
@@ -36,7 +35,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
           {/* Header */}
           <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Seleccionar forma de pago</h2>
+              <h2 className="text-xl font-semibold">
+                Seleccionar forma de pago
+              </h2>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-500 transition-colors"
@@ -48,9 +49,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
 
           {/* Content */}
           <div className="px-6 py-4">
+            {/* Static Payment Options */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Cash */}
-              <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
                   <i className="fas fa-money-bill-wave text-green-500 text-xl"></i>
                   <h3 className="font-semibold text-lg">Efectivo</h3>
@@ -62,7 +64,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Bank Transfer */}
-              <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
                   <i className="fas fa-university text-purple-500 text-xl"></i>
                   <h3 className="font-semibold text-lg">Transferencia Bancaria</h3>
@@ -84,13 +86,15 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                   <li>• Requiere documentación</li>
                   <li>• Aprobación en 24-48hs</li>
                   <li>• Cuotas fijas en pesos</li>
-                  <li>• Precio promocional pagando en efectivo</li>
+                  <li>
+                    • Precio promocional pagando en efectivo
+                  </li>
                 </ul>
               </div>
             </div>
 
-            {/* Credit Card Section Below All Options */}
-            <div className="mt-6 col-span-2 bg-gray-50 p-6 rounded-lg border">
+            {/* Credit/Debit Card Section */}
+            <div className="mt-6 bg-gray-50 p-6 rounded-lg border">
               <h3 className="text-lg font-semibold mb-4">Débito o Crédito</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• Pago seguro con tarjeta</li>
@@ -116,7 +120,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                         checked={selectedProvider?.id === provider.id}
                         onChange={() => handleProviderSelect(provider)}
                       />
-                      <img src={`/${provider.name}.png`} alt={provider.name} className="h-8" />
+                      <img
+                        src={`/${provider.name}.png`}
+                        alt={provider.name}
+                        className="h-8"
+                      />
                     </label>
                   ))}
                 </div>
@@ -131,11 +139,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                   <div className="grid grid-cols-2 gap-4">
                     {banks.map((bank) => (
                       <label
-                      key={bank.id}
-                      className={`p-4 border rounded-md cursor-pointer ${
-                        selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                      }`}
-                    >
+                        key={bank.id}
+                        className={`p-4 border rounded-md cursor-pointer ${
+                          selectedBank?.id === bank.id
+                            ? 'bg-blue-100 border-blue-500'
+                            : 'bg-white'
+                        }`}
+                      >
                         <input
                           type="radio"
                           name="bank"
@@ -161,30 +171,27 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                     {installments.map((installment) => (
                       <label
                         key={installment.id}
-                        className={`p-4 border rounded-md cursor-pointer ${
-                          formData.paymentInstallments?.id === installment.id
-                            ? 'bg-blue-100 border-blue-500'
-                            : 'bg-white'
-                        }`}
+                        className="p-4 border rounded-md cursor-pointer"
                       >
                         <input
                           type="radio"
                           name="installments"
                           value={installment.id}
-                          checked={formData.paymentInstallments?.id === installment.id}
-                          onChange={() =>
-                            setFormData({
-                              ...formData,
-                              paymentInstallments: installment,
-                            })
-                          }
                           className="mr-2"
                         />
-                        <span>{installment.numberOfInstallments} cuotas</span>
-
+                        <span>
+                          {installment.numberOfInstallments} cuotas
+                        </span>
                       </label>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Error display */}
+              {error && (
+                <div className="mt-4 text-red-500 text-sm">
+                  {error}
                 </div>
               )}
             </div>

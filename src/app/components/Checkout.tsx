@@ -39,38 +39,32 @@ const Checkout: React.FC = () => {
     calculateTotalPrice,
   } = useCheckout();
 
-
-  const [shippingCost, setShippingCost] = useState(30000); // Default shipping cost
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(() => {
-    // Initial total (just sum of products) if cart not empty
     return cart?.reduce((sum, item) => sum + item.Product.finalPrice * item.quantity, 0) || 0;
   });
 
-  // 1) A helper function so each installment row can show its own monthly price.
+  // Helper function to calculate installment display price
   const getInstallmentDisplayPrice = useCallback(
     (installment: InstallmentOption): number => {
-      // Start with the base cart amount
       let basePrice =
         cart?.reduce((sum, item) => sum + item.Product.finalPrice * item.quantity, 0) || 0;
 
-      // Add shipping if not pickup
       if (formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP) {
-        basePrice += shippingCost;
+        basePrice;
       }
 
-      // Only apply *this installment's* interest (not the user's selected installment)
       const interestRate = installment.interestRate || 0;
       basePrice *= 1 + interestRate / 100;
 
       return basePrice;
     },
-    [cart, shippingCost, formData.deliveryOption.option]
+    [cart, formData.deliveryOption.option]
   );
 
-  // If user selects "Delivery" + "Cash", force them to use a different method
+  // Force a different payment option if user selects Delivery + Cash
   useEffect(() => {
     if (
       formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY &&
@@ -78,50 +72,78 @@ const Checkout: React.FC = () => {
     ) {
       setFormData((prev) => ({
         ...prev,
-        paymentFormat: PAYMENT_FORMATS.CREDIT_CARD, // or any other
+        paymentFormat: PAYMENT_FORMATS.CREDIT_CARD,
       }));
     }
   }, [formData.deliveryOption.option, formData.paymentFormat, setFormData]);
 
-  // 2) Whenever paymentFormat, installment, or cart changes -> recalc final total
+  // Recalculate total price when payment or cart changes
   useEffect(() => {
-    const updatedTotal = calculateTotalPrice() + shippingCost;
+    const updatedTotal = calculateTotalPrice() ;
     setTotalPrice(updatedTotal);
   }, [
     cart,
     formData.paymentFormat,
     formData.paymentInstallments,
-    shippingCost,
     calculateTotalPrice,
   ]);
 
-
-  // 4) If cart is empty, redirect
+  // Redirect if cart is empty
   useEffect(() => {
     if (!cart || cart.length === 0) {
       router.push('/products');
     }
   }, [cart, router]);
 
+  // ---- Validation: Check if all required fields are completed ----
+  const isCheckoutEnabled = (() => {
+    // Validate Contact Info
+    const { email, firstName, lastName, phone } = formData.contactInfo;
+    if (!email || !firstName || !lastName || !phone) return false;
+
+    // Validate Delivery Option
+    if (formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY) {
+      const { address, city, province, zip } = formData.deliveryOption;
+      if (!address || !city || !province || !zip) return false;
+    } else {
+      // For pickup, ensure a store is selected (default is set to 1)
+      if (!formData.deliveryOption.storeId) return false;
+    }
+
+    // Validate Payment Details
+    if (
+      formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ||
+      formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD
+    ) {
+      if (!formData.paymentDetails?.provider || !formData.paymentDetails?.bank) return false;
+      // For credit cards, ensure an installment is selected
+      if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && !formData.paymentInstallments)
+        return false;
+    }
+
+    return true;
+  })();
+  // ---------------------------------------------------------------------
+
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Finaliza tu compra</h1>
-          <a href="/products" className="text-blue-500 hover:underline">Continuar comprando</a>
+          <a href="/products" className="text-blue-500 hover:underline">
+            Continuar comprando
+          </a>
         </div>
 
         {error && <p className="text-red-500">{error}</p>}
         {success && <p className="text-green-500">{success}</p>}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* FORM SECTION */}
           <div className="lg:col-span-2">
             <form className="space-y-4">
               {/* Contact Details */}
-              <ContactForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-              />
+              <ContactForm formData={formData} handleInputChange={handleInputChange} />
               <hr />
               {/* Delivery Details */}
               <DeliveryForm
@@ -136,11 +158,20 @@ const Checkout: React.FC = () => {
               <hr />
               {/* Payment Details */}
               <h2 className="text-xl font-semibold mb-4">Forma de pago</h2>
-              <p className="text-sm text-gray-500">Seleccione la opción deseada y un vendedor se pondrá en contacto con usted para coordinar el pago</p>
+              <p className="text-sm text-gray-500">
+                Seleccione la opción deseada y un vendedor se pondrá en contacto con usted para
+                coordinar el pago
+              </p>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                  <label className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                    }`}>
+                  {/* Payment Option: Tarjeta de Crédito */}
+                  <label
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${
+                      formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD
+                        ? 'bg-blue-100 border-blue-500'
+                        : 'bg-white'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="paymentFormat"
@@ -154,9 +185,14 @@ const Checkout: React.FC = () => {
                       <span>Tarjeta de Crédito</span>
                     </div>
                   </label>
-
-                  <label className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                    }`}>
+                  {/* Payment Option: Tarjeta de Débito */}
+                  <label
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${
+                      formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD
+                        ? 'bg-blue-100 border-blue-500'
+                        : 'bg-white'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="paymentFormat"
@@ -170,9 +206,13 @@ const Checkout: React.FC = () => {
                       <span>Tarjeta de Débito</span>
                     </div>
                   </label>
+                  {/* Payment Option: Efectivo */}
                   <label
-                    className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.CASH ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                      }`}
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${
+                      formData.paymentFormat === PAYMENT_FORMATS.CASH
+                        ? 'bg-blue-100 border-blue-500'
+                        : 'bg-white'
+                    }`}
                   >
                     <input
                       type="radio"
@@ -180,12 +220,14 @@ const Checkout: React.FC = () => {
                       value={PAYMENT_FORMATS.CASH}
                       checked={formData.paymentFormat === PAYMENT_FORMATS.CASH}
                       onChange={handleOptionChange}
-                      disabled={formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY} // Disable if Delivery is selected
+                      disabled={formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY}
                       className="mr-3 cursor-pointer disabled:cursor-not-allowed"
                     />
                     <div className="flex items-center space-x-3">
                       {formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY && (
-                        <span className="text-xs text-gray-400">(No disponible para entrega a domicilio)</span>
+                        <span className="text-xs text-gray-400">
+                          (No disponible para entrega a domicilio)
+                        </span>
                       )}
                       <i className="fas fa-money-bill-wave"></i>
                       <span>Efectivo</span>
@@ -196,12 +238,13 @@ const Checkout: React.FC = () => {
                         : 'Aprovecha nuestro precio promocional'}
                     </span>
                   </label>
-
+                  {/* Payment Option: Transferencia */}
                   <label
-                    className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${
+                      formData.paymentFormat === PAYMENT_FORMATS.TRANSFER
                         ? 'bg-blue-100 border-blue-500'
                         : 'bg-white'
-                      }`}
+                    }`}
                   >
                     <input
                       type="radio"
@@ -216,9 +259,13 @@ const Checkout: React.FC = () => {
                       <span>Transferencia </span>
                     </div>
                   </label>
+                  {/* Payment Option: Crédito Personal */}
                   <label
-                    className={`p-4 border rounded-md flex items-center cursor-pointer ${formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                      }`}
+                    className={`p-4 border rounded-md flex items-center cursor-pointer ${
+                      formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT
+                        ? 'bg-blue-100 border-blue-500'
+                        : 'bg-white'
+                    }`}
                   >
                     <input
                       type="radio"
@@ -233,147 +280,159 @@ const Checkout: React.FC = () => {
                       <span>Crédito Personal</span>
                     </div>
                   </label>
-
                 </div>
 
-                {/* Payment details section */}
+                {/* Payment details for Credit/Debit Cards */}
                 {(formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ||
                   formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD) && (
-                    <div className="space-y-4">
-                      {/* Provider Selection */}
+                  <div className="space-y-4">
+                    {/* Provider Selection */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Selecciona el proveedor de tu tarjeta
+                      </label>
+                      <div className="flex flex-wrap gap-4">
+                        {providers.map((provider) => (
+                          <label key={provider.id} className="inline-flex items-center">
+                            <input
+                              type="radio"
+                              name="cardProvider"
+                              value={provider.id}
+                              checked={selectedProvider?.id === provider.id}
+                              onChange={() => handleProviderSelect(provider)}
+                              className="mr-2"
+                            />
+                            {/* Example of provider logos: adapt to your naming or route */}
+                            <img
+                              src={`/${provider.name}.png`}
+                              alt={provider.name}
+                              className="h-6"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bank Selection */}
+                    {selectedProvider && (
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Selecciona el proveedor de tu tarjeta
+                          Selecciona el banco
                         </label>
-                        <div className="flex flex-wrap gap-4">
-                          {providers.map((provider) => (
-                            <label key={provider.id} className="inline-flex items-center">
+                        <div className="grid grid-cols-2 gap-4">
+                          {banks.map((bank) => (
+                            <label
+                              key={bank.id}
+                              className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${
+                                selectedBank?.id === bank.id
+                                  ? 'bg-blue-100 border-blue-500'
+                                  : 'bg-white'
+                              }`}
+                            >
                               <input
                                 type="radio"
-                                name="cardProvider"
-                                value={provider.id}
-                                checked={selectedProvider?.id === provider.id}
-                                onChange={() => handleProviderSelect(provider)}
+                                name="bank"
+                                value={bank.id}
+                                checked={selectedBank?.id === bank.id}
+                                onChange={() => handleBankSelect(bank)}
                                 className="mr-2"
                               />
-                              <img
-                                src={`/${provider.name}.png`}
-                                alt={provider.name}
-                                className="h-6"
-                              />
+                              <span>{bank.name}</span>
                             </label>
                           ))}
                         </div>
                       </div>
+                    )}
 
-                      {/* Bank Selection */}
-                      {selectedProvider && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Selecciona el banco
-                          </label>
-                          <div className="grid grid-cols-2 gap-4">
-                            {banks.map((bank) => (
-                              <label
-                                key={bank.id}
-                                className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${selectedBank?.id === bank.id ? 'bg-blue-100 border-blue-500' : 'bg-white'
-                                  }`}
-                              >
-                                <input
-                                  type="radio"
-                                  name="bank"
-                                  value={bank.id}
-                                  checked={selectedBank?.id === bank.id}
-                                  onChange={() => handleBankSelect(bank)}
-                                  className="mr-2"
-                                />
-                                <span>{bank.name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Installments Selection - Only show for credit cards */}
-                      {selectedBank && formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && installments.length > 0 && (
+                    {/* 
+                      ADAPTED: Installments Selection for Credit Cards
+                      -------------------------------------------------
+                      Shows interest rate, total with interest, and monthly cost
+                    */}
+                    {selectedBank &&
+                      formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD &&
+                      installments.length > 0 && (
                         <div>
                           <label className="block text-sm font-medium mb-2">
                             Selecciona el número de cuotas
                           </label>
-                          <div className="grid grid-cols-2 gap-4">
-                          {installments.map((installment) => {
-                            // Instead of using the selected installment’s price,
-                            // compute each installment's monthly amount individually:
-                            const displayTotal = getInstallmentDisplayPrice(installment);
-                            return (
-                              <label
-                                key={installment.id}
-                                className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${
-                                  formData.paymentInstallments?.id === installment.id
-                                    ? 'bg-blue-100 border-blue-500'
-                                    : 'bg-white'
-                                }`}
-                              >
-                                <input
-                                  type="radio"
-                                  name="installments"
-                                  value={installment.id}
-                                  checked={formData.paymentInstallments?.id === installment.id}
-                                  onChange={() => handleInstallmentSelect(installment)}
-                                  className="mr-2"
-                                />
-                                <span className="text-sm">
-                                  {installment.numberOfInstallments} cuotas de $
-                                  {(
-                                    displayTotal / installment.numberOfInstallments
-                                  ).toFixed(2)}
-                                </span>
-                              </label>
-                            );
-                          })}
-                        </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {installments.map((installment) => {
+                              // Calculate total with interest:
+                              const displayTotal = getInstallmentDisplayPrice(installment);
+                              // Monthly payment:
+                              const monthlyCost = (displayTotal / installment.numberOfInstallments).toFixed(2);
+
+                              return (
+                                <label
+                                  key={installment.id}
+                                  onClick={() => handleInstallmentSelect(installment)}
+                                  className={`p-4 border rounded-md flex flex-col space-y-2 cursor-pointer ${
+                                    formData.paymentInstallments?.id === installment.id
+                                      ? 'bg-blue-100 border-blue-500'
+                                      : 'bg-white'
+                                  }`}
+                                >
+                                  <div className="flex items-center">
+                                    <input
+                                      type="radio"
+                                      name="installments"
+                                      value={installment.id}
+                                      checked={formData.paymentInstallments?.id === installment.id}
+                                      onChange={() => handleInstallmentSelect(installment)}
+                                      className="mr-2 cursor-pointer"
+                                    />
+                                    <span className="">
+                                      {installment.numberOfInstallments} cuotas de ${monthlyCost}
+                                    </span>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
-                    </div>
-                  )}
-
+                  </div>
+                )}
 
                 {formData.paymentFormat === PAYMENT_FORMATS.CASH && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="cash">Al finalizar la compra, se coordinará el pago con el vendedor en sucursal</label>
+                    <label className="block text-sm font-medium mb-1" htmlFor="cash">
+                      Al finalizar la compra, se coordinará el pago con el vendedor en sucursal
+                    </label>
                   </div>
                 )}
 
                 {formData.paymentFormat === PAYMENT_FORMATS.TRANSFER && (
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="transfer">Al finalizar la compra, se contactarán con los datos de la cuenta</label>
-                  </div>
-                )}
-
-                {formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="personalCredit">Es necesario que suba un archivo de su ultimo recibo de sueldo para validarlo</label>
-                    <input
-                      type="file"
-                      id="personalCreditFile"
-                      name="personalCreditFile"
-                      className="mt-2"
-                      onChange={handleFileUpload}
-                    />
+                    <label className="block text-sm font-medium mb-1" htmlFor="transfer">
+                      Al finalizar la compra, se contactarán con los datos de la cuenta
+                    </label>
                   </div>
                 )}
               </div>
             </form>
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
+          {/* ORDER SUMMARY SECTION */}
+          <div 
+            className="
+              lg:col-span-1 
+              lg:sticky
+              lg:top-8
+              self-start
+            "
+          >
             <h2 className="text-xl font-semibold mb-4">Resumen del pedido</h2>
             <div className="border p-4 rounded-md space-y-4">
               {cart?.map((item) => (
                 <div className="flex gap-4" key={generateUniqueKey(item)}>
                   <Image
-                    src={item.Product.Images[0] ? getImageUrl(item.Product.Images[0]?.url) : '/logo-verde-manzana.svg'}
+                    src={
+                      item.Product.Images[0]
+                        ? getImageUrl(item.Product.Images[0]?.url)
+                        : '/logo-verde-manzana.svg'
+                    }
                     alt={item.Product.name}
                     width={62}
                     height={96}
@@ -383,7 +442,9 @@ const Checkout: React.FC = () => {
                     <div>
                       <div className="flex justify-between items-center gap-8">
                         <h3 className="font-semibold">{item.Product.name}</h3>
-                        <span className="text-sm text-gray-500">${item.Product.finalPrice.toFixed(2)}</span>
+                        <span className="text-sm text-gray-500">
+                          ${item.Product.finalPrice.toFixed(2)}
+                        </span>
                       </div>
                       <div className="text-sm text-gray-500">
                         {item.Options?.map((option) => (
@@ -403,17 +464,27 @@ const Checkout: React.FC = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
                   <span>Subtotal</span>
-                  <span>${cart ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2) : '0.00'}</span>
+                  <span>
+                    $
+                    {cart
+                      ? cart
+                          .reduce(
+                            (acc, item) => acc + item.Product.finalPrice * item.quantity,
+                            0
+                          )
+                          .toFixed(2)
+                      : '0.00'}
+                  </span>
                 </div>
                 {formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP && (
-                  <div className="flex justify-between items-center gap-8">
+                  <div className="flex flex-col gap-1 mt-2">
                     <span>Envío</span>
-                    <p className="text-xs  text-gray-400 mt-2">
+                    <p className="text-xs text-gray-400">
                       Se coordinará con el vendedor dependiendo tu zona
                     </p>
                   </div>
                 )}
-                <div className="flex justify-between items-center font-semibold">
+                <div className="flex justify-between items-center font-semibold mt-2">
                   <span>Total</span>
                   <span>${totalPrice.toFixed(2)}</span>
                 </div>
@@ -426,11 +497,15 @@ const Checkout: React.FC = () => {
             </div>
             <button
               onClick={handleCheckout}
-              className="w-full bg-blue-500 text-white p-2 mt-4 rounded-md hover:bg-blue-600"
+              disabled={loading || !isCheckoutEnabled}
+              className={`w-full p-2 mt-4 rounded-md ${
+                loading || !isCheckoutEnabled
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
             >
               Realizar el pedido
             </button>
-
           </div>
         </div>
       </div>

@@ -16,7 +16,6 @@ export const useCheckout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [shippingCost, setShippingCost] = useState(30000);
   const [stores, setStores] = useState([]);
   // Payment related states
   const [providers, setProviders] = useState<CardProvider[]>([]);
@@ -64,9 +63,6 @@ export const useCheckout = () => {
     }
   }, [cart, router]);
 
-  useEffect(() => {
-    setShippingCost(formData.deliveryOption.option === DELIVERY_OPTIONS.PICKUP ? 0 : 30000);
-  }, [formData.deliveryOption.option]);
 
   // Add these to your existing useEffect or create a new one
   useEffect(() => {
@@ -79,10 +75,6 @@ export const useCheckout = () => {
         setError('Error fetching card providers');
       }
     };
-    
-    if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD) {
-      fetchProviders();
-    }
   }, [formData.paymentFormat]);
 
 
@@ -118,8 +110,7 @@ const calculateTotalPrice = () => {
         deliveryOption: isPickup
           ? { option: 'pickup', storeId: formData.deliveryOption.storeId }
           : {
-              ...formData.deliveryOption,
-              shippingCost,
+              ...formData.deliveryOption
             },
         paymentFormat: formData.paymentFormat,
         paymentInstallments: formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ? formData.paymentInstallments : null,
@@ -329,7 +320,6 @@ const calculateTotalPrice = () => {
     stores,
     cart,
     totalPrice,
-    shippingCost,
     providers,
     banks,
     selectedProvider,

@@ -8,11 +8,8 @@ import { useParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
 import Loading from '@/app/components/Loading';
 import { emptyProduct } from '@/app/mooks/types';
-import dynamic from 'next/dynamic';
+import PaymentModal from '@/app/components/modalPayments';
 
-const PaymentModal = dynamic(() => import('@/app/components/modalPayments'), {
-  ssr: false,  // ensures it only renders on the client
-});
 
 const SinglePage = () => {
   const { id } = useParams();

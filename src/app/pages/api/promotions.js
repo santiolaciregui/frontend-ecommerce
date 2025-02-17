@@ -56,8 +56,6 @@ export const fetchInstallmentsByBank = async (bankId, cardId) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching installments:', error);
-    throw error;
   }
 };
 

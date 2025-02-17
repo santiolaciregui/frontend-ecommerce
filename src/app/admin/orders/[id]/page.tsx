@@ -26,7 +26,7 @@ const OrderDetails: React.FC = () => {
           setError('Orden no encontrada');
         } else {
           setOrder(orderDetails);
-          console.log('orderDetails: ',orderDetails);
+          console.log('orderDetails: ', orderDetails);
         }
       } catch (err) {
         setError('Error al cargar los detalles de la orden');
@@ -219,9 +219,18 @@ const OrderDetails: React.FC = () => {
                       <p className="text-sm text-gray-500">SKU: {item.Product.SKU}</p>
                     )}
                     <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>
-                    <p className="text-sm text-gray-500">
-                      Precio unitario: {formatCurrency(item.unitPrice)}
-                    </p>
+                    {item.options &&
+                      Array.isArray(item.options) &&
+                      item.options.length > 0 && (
+                        <div className="text-sm text-gray-500">
+                          <p>Opciones:</p>
+                          <ul className="list-disc pl-5">
+                            {item.options.map((option) => (
+                              <li key={option.id}>{option.name}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                   <p className="font-semibold mt-2 md:mt-0">
                     {formatCurrency(item.totalPrice)}
@@ -231,6 +240,24 @@ const OrderDetails: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Total Summary */}
+        <div className="flex justify-end p-4">
+          <p className="text-lg font-bold mr-4">Total:</p>
+          <p className="text-lg font-bold">{formatCurrency(order.totalAmount)}</p>
+        </div>
+
+        {/* Show installment info if payment is with credit card */}
+        {order.paymentFormat === 'credit_card' && order.paymentDetails?.installments && (
+          <div className="flex justify-end p-4">
+            <p className="text-lg font-bold">
+              {order.paymentDetails.installments.numberOfInstallments} cuotas de{' '}
+              {formatCurrency(
+                order.totalAmount / order.paymentDetails.installments.numberOfInstallments
+              )}
+            </p>
+          </div>
+        )}
 
         <div className="mt-8 flex justify-end">
           <button
