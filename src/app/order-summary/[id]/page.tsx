@@ -8,6 +8,18 @@ import { fetchStoreById } from '@/app/pages/api/stores';
 import { Store } from '@/app/context/types';
 import { getImageUrl } from '@/app/utils/getImageURL';
 
+// New status translations with added states
+const statusTranslations: { [key: string]: string } = {
+  pending: 'Pendiente',
+  completed_paid: 'Completado Pagado',
+  cancelled: 'Cancelado',
+  in_logistics: 'En logística para envío',
+  in_transit: 'Tu envío se encuentra en camino',
+  ready_for_pickup: 'Listo para retirar en sucursal seleccionada',
+  preparing_delivery: 'Preparando producto para su entrega',
+  delivered: 'Entregado',
+};
+
 interface OrderDetails {
   id: number;
   trackingId: string;
@@ -21,7 +33,8 @@ interface OrderDetails {
   shippingAddress: string | null;
   pickupStoreId: string | null;
   paymentFormat: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  // Updated status field to include new states
+  status: 'pending' | 'completed_paid' | 'cancelled' | 'in_logistics' | 'in_transit' | 'ready_for_pickup' | 'preparing_delivery' | 'delivered';
   paymentDetails?: {
     provider?: {
       id: number;
@@ -106,7 +119,6 @@ const OrderDetails: React.FC = () => {
     }
   }, [id]);
 
-
   if (loading) return <p>Cargando...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
   if (!order) return <p>No se encontraron detalles para esta orden.</p>;
@@ -172,12 +184,11 @@ const OrderDetails: React.FC = () => {
           ].filter(Boolean)
         };
       
-
-        case 'debit_card':
-          return {
-            method: 'Débito',
-            details: ['Pago con tarjeta de débito']
-          };
+      case 'debit_card':
+        return {
+          method: 'Débito',
+          details: ['Pago con tarjeta de débito']
+        };
   
       case 'transfer':
         return {
@@ -194,7 +205,6 @@ const OrderDetails: React.FC = () => {
           details: ['Pago en efectivo al retirar']
         };
         
-  
       case 'personal_credit':
         return {
           method: 'Crédito Personal',
@@ -212,7 +222,6 @@ const OrderDetails: React.FC = () => {
     }
   };
   
-
   const deliveryInfo = getDeliveryInfo();
   const paymentInfo = getPaymentInfo();
 
@@ -229,25 +238,18 @@ const OrderDetails: React.FC = () => {
           </p>
         </div>
 
-         {/* Payment Status */}
-         <div className="border-b pb-6 mb-6">
+        {/* Payment Status */}
+        <div className="border-b pb-6 mb-6">
           <div className="flex items-center space-x-2 mb-2">
             <Clock className="w-5 h-5 text-gray-600" />
+            {/* Using the new statusTranslations for a cleaner display */}
             <h1 className="text-2xl font-bold">
-              {order.status === 'pending'
-                ? 'En espera de pago'
-                : order.status === 'completed'
-                ? 'Pagado'
-                : 'Cancelado'}
+              {statusTranslations[order.status] || 'Estado desconocido'}
             </h1>
           </div>
           <p className="text-sm text-gray-600">¡Hola {order.client.firstName}!</p>
-
           <p className="text-sm text-gray-600">¡Muchas gracias por tu compra!</p>
-
         </div>
-
-
 
         {/* Delivery Information */}
         <div className="flex items-center mb-6">
@@ -290,7 +292,9 @@ const OrderDetails: React.FC = () => {
               </div>
               <div>
                 <strong className="text-gray-700">DATOS DE CONTACTO</strong>
-                <p className="text-gray-600">{order.client.firstName} {order.client.lastName}</p>
+                <p className="text-gray-600">
+                  {order.client.firstName} {order.client.lastName}
+                </p>
                 <p className="text-gray-600">{order.client.phone}</p>
               </div>
               <div>
@@ -307,13 +311,18 @@ const OrderDetails: React.FC = () => {
         {/* Order Summary */}
         <div className="mt-8 bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all">
           {order.OrderItems.map((item) => (
-            <div key={item.id} className="flex justify-between items-center py-3 border-b hover:bg-gray-50 transition-all">
+            <div
+              key={item.id}
+              className="flex justify-between items-center py-3 border-b hover:bg-gray-50 transition-all"
+            >
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-24 relative">
                   <Image
-                    src={item.Product.Images[0]?.url 
-                      ? getImageUrl(item.Product.Images[0]?.url)
-                      : '/placeholder-product.png'}
+                    src={
+                      item.Product.Images[0]?.url
+                        ? getImageUrl(item.Product.Images[0]?.url)
+                        : '/placeholder-product.png'
+                    }
                     alt={item.productName}
                     fill
                     className="object-cover rounded-md"
@@ -321,9 +330,7 @@ const OrderDetails: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-700">{item.productName}</p>
-                  <p className="text-sm text-gray-500">
-                    Cantidad: {item.quantity} 
-                  </p>
+                  <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>
                   {item.options && Array.isArray(item.options) && (
                     <div className="text-sm text-gray-500">
                       <p>Opciones:</p>
@@ -334,48 +341,43 @@ const OrderDetails: React.FC = () => {
                       </ul>
                     </div>
                   )}
-
                 </div>
               </div>
-             
             </div>
           ))}
 
-        <div className="mt-4 text-sm text-gray-600">
-          <div className="flex justify-between border-b pb-2">
-            <p>Forma de pago</p>
-            <p>{paymentInfo.method}</p>
+          <div className="mt-4 text-sm text-gray-600">
+            <div className="flex justify-between border-b pb-2">
+              <p>Forma de pago</p>
+              <p>{paymentInfo.method}</p>
+            </div>
+            {order.paymentFormat === 'credit_card' && order.paymentDetails?.installments && (
+              <>
+                <div className="flex justify-between mt-2">
+                  <p>Cantidad de cuotas</p>
+                  <p>{order.paymentDetails.installments.numberOfInstallments}</p>
+                </div>
+                <div className="flex justify-between mt-2">
+                  <p>Precio por cuota</p>
+                  <p>
+                    $
+                    {(
+                      order.totalAmount /
+                      order.paymentDetails.installments.numberOfInstallments
+                    ).toFixed(2)}
+                  </p>
+                </div>
+              </>
+            )}
+            <div className="flex justify-between mt-2">
+              <p>Envío</p>
+              <p className="text-green-600 font-medium">A coordinar</p>
+            </div>
           </div>
-          {order.paymentFormat === 'credit_card' && order.paymentDetails?.installments && (
-            <>
-              <div className="flex justify-between mt-2">
-                <p>Cantidad de cuotas</p>
-                <p>{order.paymentDetails.installments.numberOfInstallments}</p>
-              </div>
-              <div className="flex justify-between mt-2">
-                <p>Precio por cuota</p>
-                <p>
-                  $
-                  {(
-                    order.totalAmount /
-                    order.paymentDetails.installments.numberOfInstallments
-                  ).toFixed(2)}
-                </p>
-              </div>
-            </>
-          )}
-          <div className="flex justify-between mt-2">
-            <p>Envío</p>
-            <p className="text-green-600 font-medium">A coordinar</p>
-          </div>
-        </div>
-
 
           <div className="border-t mt-6 pt-4 flex justify-between items-center">
             <p className="font-semibold text-xl text-gray-800">Total</p>
-            <p className="font-semibold text-xl text-gray-900">
-              ${order.totalAmount}
-            </p>
+            <p className="font-semibold text-xl text-gray-900">${order.totalAmount}</p>
           </div>
         </div>
 
