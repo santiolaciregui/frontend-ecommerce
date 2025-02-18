@@ -10,7 +10,6 @@ import Loading from '@/app/components/Loading';
 import { emptyProduct } from '@/app/mooks/types';
 import PaymentModal from '@/app/components/modalPayments';
 
-
 const SinglePage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
@@ -55,16 +54,23 @@ const SinglePage = () => {
   if (error) return <div>Error: {error}</div>;
   if (!product) return <h1>Product not found</h1>;
 
+  // Calculate final price after discount (if any)
   const currentPrice = product.price;
   const activeDiscounts = product.Discounts?.filter(discount => discount.active);
   const bestDiscount = activeDiscounts?.reduce((max, discount) =>
     discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
 
-  const finalPrice = bestDiscount
-    ? (currentPrice * (1 - bestDiscount.percentage / 100)).toFixed(2)
-    : currentPrice.toFixed(2);
-
+  // Compute numeric final price (used for further calculations)
+  const numericFinalPrice = bestDiscount
+    ? currentPrice * (1 - bestDiscount.percentage / 100)
+    : currentPrice;
+  const finalPriceString = numericFinalPrice.toFixed(2);
   const discountPercentage = bestDiscount?.percentage || null;
+
+  // Payment Options calculations
+  const formattedTransferPrice = (numericFinalPrice * 1.10).toFixed(2);
+  const formattedThreeInstallment = ((numericFinalPrice * 1.30) / 3).toFixed(2);
+  const formattedSixInstallment = ((numericFinalPrice * 1.45) / 6).toFixed(2);
 
   return (
     <div className='px-4 mt-12 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
@@ -79,18 +85,39 @@ const SinglePage = () => {
 
         <div className="flex items-center gap-4">
           {discountPercentage && (
-            <h3 className="text-xl text-gray-500 line-through">${currentPrice.toFixed(2)}</h3>
+            <h3 className="text-xl text-gray-500 line-through">
+              ${currentPrice.toFixed(2)}
+            </h3>
           )}
-          <h2 className="font-medium text-2xl text-gray-800">${finalPrice}</h2>
+          <h2 className="font-medium text-2xl text-gray-800">
+            ${finalPriceString}
+          </h2>
         </div>
 
-        {<button
+        {/* Payment Options Display */}
+        <div className="mt-2 space-y-1">
+          <div className="text-sm">
+            <span>Transferencia: </span>
+            <span className="font-semibold">${formattedTransferPrice}</span>
+          </div>
+          <div className="text-sm">
+            <span>3 cuotas con tarjeta de: </span>
+            <span className="font-semibold">${formattedThreeInstallment}</span>
+          </div>
+          <div className="text-sm">
+            <span>6 cuotas con tarjeta de: </span>
+            <span className="font-semibold">${formattedSixInstallment}</span>
+          </div>
+        </div>
+
+        {/* Button to open payment modal */}
+        <button
           onClick={() => setIsPaymentModalOpen(true)}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors duration-200"
         >
           <i className="fas fa-info-circle"></i>
           Ver formas de pago disponibles
-        </button>}
+        </button>
         <div className="h-[2px] bg-gray-200 my-4" />
 
         {product.stock ? (
@@ -120,9 +147,18 @@ const SinglePage = () => {
               {stores.length > 0 ? (
                 stores.map(store => (
                   <div key={store.id} className="bg-gray-100 p-4 rounded mt-2 shadow-md">
-                    <p className="font-semibold text-lg text-gray-800"><i className="fas fa-map-marker-alt mr-2"></i>{store.name}</p>
-                    <p className="text-gray-700"><i className="fas fa-map-pin mr-2"></i>{store.address} - {store.city}, {store.state}</p>
-                    <p className="text-gray-700"><i className="fas fa-phone mr-2"></i>{store.phone}</p>
+                    <p className="font-semibold text-lg text-gray-800">
+                      <i className="fas fa-map-marker-alt mr-2"></i>
+                      {store.name}
+                    </p>
+                    <p className="text-gray-700">
+                      <i className="fas fa-map-pin mr-2"></i>
+                      {store.address} - {store.city}, {store.state}
+                    </p>
+                    <p className="text-gray-700">
+                      <i className="fas fa-phone mr-2"></i>
+                      {store.phone}
+                    </p>
                   </div>
                 ))
               ) : (
@@ -147,14 +183,12 @@ const SinglePage = () => {
         )}
       </div>
       <div>
-       <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-      /> 
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+        />
       </div>
     </div>
-
-
   );
 };
 
