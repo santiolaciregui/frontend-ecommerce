@@ -236,6 +236,12 @@ const OrderDetails: React.FC = () => {
           <p className="text-xs text-gray-400">
             Fecha: {formatDate(order.createdAt)}
           </p>
+          {order.status === 'pending' && (
+            <h2 className="text-lg font-bold text-gray-600 mt-2">
+              Un vendedor se comunicará con vos a la brevedad para procesar el pago.
+            </h2>
+          )}
+          
         </div>
 
         {/* Payment Status */}
