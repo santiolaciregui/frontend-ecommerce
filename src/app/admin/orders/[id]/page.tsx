@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import orderService from '../../../pages/api/order';
 import { OrdersDetails } from '@/app/context/types';
 import BackButton from '@/app/components/BackButton';
+import { getImageUrl } from '@/app/utils/getImageURL';
 
 const OrderDetails: React.FC = () => {
   const [order, setOrder] = useState<OrdersDetails | null>(null);
@@ -247,15 +248,19 @@ const OrderDetails: React.FC = () => {
           <p className="text-lg font-bold">{formatCurrency(order.totalAmount)}</p>
         </div>
 
-        {/* Show installment info if payment is with credit card */}
-        {order.paymentFormat === 'credit_card' && order.paymentDetails?.installments && (
-          <div className="flex justify-end p-4">
-            <p className="text-lg font-bold">
-              {order.paymentDetails.installments.numberOfInstallments} cuotas de{' '}
-              {formatCurrency(
-                order.totalAmount / order.paymentDetails.installments.numberOfInstallments
-              )}
-            </p>
+        {/* Download attached file for Personal Credit */}
+        {order.paymentFormat === 'personal_credit' && order.paymentDetails.fileUrl && (
+          <div className="mt-8 bg-green-50 p-4 rounded-md border-l-4 border-green-300 flex items-center justify-between">
+            <span className="text-gray-700 font-semibold">Archivo adjunto:</span>
+            <a
+              href={getImageUrl(order.paymentDetails.fileUrl)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+            >
+              Descargar Archivo
+            </a>
           </div>
         )}
 

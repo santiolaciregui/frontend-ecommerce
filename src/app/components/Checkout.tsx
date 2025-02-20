@@ -10,13 +10,10 @@ import { useCheckout } from '../hooks/useCheckout';
 import { InstallmentOption } from '../context/types';
 import { getImageUrl } from '../utils/getImageURL';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
 const Checkout: React.FC = () => {
   const router = useRouter();
-  const { cart } = useCart();
+  const { cart, fetchCart } = useCart();
 
-  // Pull everything you need from the useCheckout hook
   const {
     handleCheckout,
     formData,
@@ -36,29 +33,23 @@ const Checkout: React.FC = () => {
     selectedProvider,
     selectedBank,
     installments,
-    calculateTotalPrice,
+    totalPrice,
   } = useCheckout();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [totalPrice, setTotalPrice] = useState<number>(() => {
-    return cart?.reduce((sum, item) => sum + item.Product.finalPrice * item.quantity, 0) || 0;
-  });
 
   // Helper function to calculate installment display price
   const getInstallmentDisplayPrice = useCallback(
     (installment: InstallmentOption): number => {
       let basePrice =
         cart?.reduce((sum, item) => sum + item.Product.finalPrice * item.quantity, 0) || 0;
-
       if (formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP) {
         basePrice;
       }
-
       const interestRate = installment.interestRate || 0;
       basePrice *= 1 + interestRate / 100;
-
       return basePrice;
     },
     [cart, formData.deliveryOption.option]
@@ -79,17 +70,12 @@ const Checkout: React.FC = () => {
 
   // Recalculate total price when payment or cart changes
   useEffect(() => {
-    const updatedTotal = calculateTotalPrice() ;
-    setTotalPrice(updatedTotal);
-  }, [
-    cart,
-    formData.paymentFormat,
-    formData.paymentInstallments,
-    calculateTotalPrice,
-  ]);
+    // totalPrice is provided from the useCheckout hook
+  }, [cart, formData.paymentFormat, formData.paymentInstallments]);
 
   // Redirect if cart is empty
   useEffect(() => {
+    fetchCart();
     if (!cart || cart.length === 0) {
       router.push('/products');
     }
@@ -97,33 +83,40 @@ const Checkout: React.FC = () => {
 
   // ---- Validation: Check if all required fields are completed ----
   const isCheckoutEnabled = (() => {
-    // Validate Contact Info
     const { email, firstName, lastName, phone } = formData.contactInfo;
     if (!email || !firstName || !lastName || !phone) return false;
-
-    // Validate Delivery Option
     if (formData.deliveryOption.option === DELIVERY_OPTIONS.DELIVERY) {
       const { address, city, province, zip } = formData.deliveryOption;
       if (!address || !city || !province || !zip) return false;
     } else {
-      // For pickup, ensure a store is selected (default is set to 1)
       if (!formData.deliveryOption.storeId) return false;
     }
-
-    // Validate Payment Details
     if (
       formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ||
       formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD
     ) {
       if (!formData.paymentDetails?.provider || !formData.paymentDetails?.bank) return false;
-      // For credit cards, ensure an installment is selected
       if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && !formData.paymentInstallments)
         return false;
     }
-
     return true;
   })();
   // ---------------------------------------------------------------------
+
+  // New function to handle order submission with loading state
+  const handlePlaceOrder = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await handleCheckout();
+      // Optionally, you can set a success message here
+      setSuccess("Pedido realizado exitosamente.");
+    } catch (err: any) {
+      setError(err.message || "Error al realizar el pedido.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -159,8 +152,7 @@ const Checkout: React.FC = () => {
               {/* Payment Details */}
               <h2 className="text-xl font-semibold mb-4">Forma de pago</h2>
               <p className="text-sm text-gray-500">
-                Seleccione la opción deseada y un vendedor se pondrá en contacto con usted para
-                coordinar el pago
+                Seleccione la opción deseada y un vendedor se pondrá en contacto con usted para coordinar el pago
               </p>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
@@ -282,6 +274,22 @@ const Checkout: React.FC = () => {
                   </label>
                 </div>
 
+                {/* When Crédito Personal is selected, show the file upload button */}
+                {formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium mb-2" htmlFor="personalCreditFile">
+                      Adjuntar archivo para Crédito Personal
+                    </label>
+                    <input
+                      type="file"
+                      id="personalCreditFile"
+                      name="personalCreditFile"
+                      onChange={handleFileUpload}
+                      className="border p-2 rounded-md"
+                    />
+                  </div>
+                )}
+
                 {/* Payment details for Credit/Debit Cards */}
                 {(formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD ||
                   formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD) && (
@@ -302,7 +310,6 @@ const Checkout: React.FC = () => {
                               onChange={() => handleProviderSelect(provider)}
                               className="mr-2"
                             />
-                            {/* Example of provider logos: adapt to your naming or route */}
                             <img
                               src={`/${provider.name}.png`}
                               alt={provider.name}
@@ -344,11 +351,7 @@ const Checkout: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 
-                      ADAPTED: Installments Selection for Credit Cards
-                      -------------------------------------------------
-                      Shows interest rate, total with interest, and monthly cost
-                    */}
+                    {/* Installments Selection for Credit Cards */}
                     {selectedBank &&
                       formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD &&
                       installments.length > 0 && (
@@ -358,11 +361,8 @@ const Checkout: React.FC = () => {
                           </label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {installments.map((installment) => {
-                              // Calculate total with interest:
                               const displayTotal = getInstallmentDisplayPrice(installment);
-                              // Monthly payment:
                               const monthlyCost = (displayTotal / installment.numberOfInstallments).toFixed(2);
-
                               return (
                                 <label
                                   key={installment.id}
@@ -382,7 +382,7 @@ const Checkout: React.FC = () => {
                                       onChange={() => handleInstallmentSelect(installment)}
                                       className="mr-2 cursor-pointer"
                                     />
-                                    <span className="">
+                                    <span>
                                       {installment.numberOfInstallments} cuotas de ${monthlyCost}
                                     </span>
                                   </div>
@@ -415,14 +415,7 @@ const Checkout: React.FC = () => {
           </div>
 
           {/* ORDER SUMMARY SECTION */}
-          <div 
-            className="
-              lg:col-span-1 
-              lg:sticky
-              lg:top-8
-              self-start
-            "
-          >
+          <div className="lg:col-span-1 lg:sticky lg:top-8 self-start">
             <h2 className="text-xl font-semibold mb-4">Resumen del pedido</h2>
             <div className="border p-4 rounded-md space-y-4">
               {cart?.map((item) => (
@@ -443,13 +436,16 @@ const Checkout: React.FC = () => {
                       <div className="flex justify-between items-center gap-8">
                         <h3 className="font-semibold">{item.Product.name}</h3>
                         <span className="text-sm text-gray-500">
-                          ${item.Product.finalPrice.toFixed(2)}
+                          ${item.Product.finalPrice.toFixed(2)} 
                         </span>
                       </div>
                       <div className="text-sm text-gray-500">
-                        {item.Options?.map((option) => (
-                          <span key={option.id}>{option.name}</span>
-                        ))}
+                        Opciones: 
+                        <ul className="list-disc pl-5">
+                          {item.Options?.map((option) => (
+                            <li key={option.id}>{option.name}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -462,20 +458,6 @@ const Checkout: React.FC = () => {
                 </div>
               ))}
               <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <span>Subtotal</span>
-                  <span>
-                    $
-                    {cart
-                      ? cart
-                          .reduce(
-                            (acc, item) => acc + item.Product.finalPrice * item.quantity,
-                            0
-                          )
-                          .toFixed(2)
-                      : '0.00'}
-                  </span>
-                </div>
                 {formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP && (
                   <div className="flex flex-col gap-1 mt-2">
                     <span>Envío</span>
@@ -496,7 +478,7 @@ const Checkout: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={handleCheckout}
+              onClick={handlePlaceOrder}
               disabled={loading || !isCheckoutEnabled}
               className={`w-full p-2 mt-4 rounded-md ${
                 loading || !isCheckoutEnabled
@@ -504,7 +486,7 @@ const Checkout: React.FC = () => {
                   : 'bg-blue-500 text-white hover:bg-blue-600'
               }`}
             >
-              Realizar el pedido
+              {loading ? "Realizando el pedido ..." : "Realizar el pedido"}
             </button>
           </div>
         </div>

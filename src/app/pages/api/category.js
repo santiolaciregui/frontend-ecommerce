@@ -30,7 +30,7 @@ export const fetchCategoriesDashboard = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/categories/parentsDashboard`);
     console.log(JSON.stringify(response))
-    return response.data.categoriesWithImages;
+    return response.data;
   } catch (error) {
     console.error('Error fetching parent categories:', error);
     throw error;

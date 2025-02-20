@@ -71,29 +71,31 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
   return (
     <div className="flex flex-col gap-6">
       {/* Opciones de Color */}
-      {colorOptions.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h4 className="font-medium">Elige un Color</h4>
-          <ul className="flex items-center gap-3">
-            {colorOptions.map((option) => (
-              <li
-                key={option.id}
-                className="w-8 h-8 rounded-full ring-1 ring-gray-300 relative"
-                style={{
-                  backgroundColor: option.colorCode,
-                  cursor: 'pointer',
-                  boxShadow: selectedOptions['Color'] === option.name ? '0 0 0 2px #000' : ''
-                }}
-                onClick={() => handleOptionSelect('Color', option.name)}
-              >
-                {selectedOptions['Color'] === option.name && (
-                  <div className='absolute w-10 h-10 rounded-full ring-2 ring-black top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' />
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {colorOptions.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <h4 className="font-medium">Elige un Color</h4>
+            <ul className="flex items-center gap-3">
+              {colorOptions.map((option) => (
+                <li key={option.id} className="flex flex-col items-center">
+                  <div
+                    className="w-8 h-8 rounded-full ring-1 ring-gray-300 relative cursor-pointer"
+                    style={{
+                      backgroundColor: option.colorCode,
+                      boxShadow: selectedOptions['Color'] === option.name ? '0 0 0 2px #000' : ''
+                    }}
+                    onClick={() => handleOptionSelect('Color', option.name)}
+                  >
+                    {selectedOptions['Color'] === option.name && (
+                      <div className="absolute w-10 h-10 rounded-full ring-2 ring-black top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                    )}
+                  </div>
+                  <span className="text-xs mt-1">{option.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
 
       {/* Opciones de Tamaño */}
       {sizeOptions.length > 0 && (

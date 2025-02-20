@@ -76,22 +76,6 @@ export const fetchOrderByTrackingId = async (id) => {
   }
 };
 
-// Update an order (admin-only)
-export const updateOrder = async (id, orderData) => {
-  const token = localStorage.getItem('accessToken');  
-  try {
-    const response = await axios.put(`${API_BASE_URL}/orders/${id}`, orderData, {
-      headers: {
-        Authorization: `Bearer ${token}`,  // Include the token for authentication
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating order:', error);
-    throw error;
-  }
-};
-
 // Delete an order (admin-only)
 export const deleteOrderById = async (id) => {
   const token = localStorage.getItem('accessToken');
@@ -130,7 +114,6 @@ export default {
   fetchOrders,
   fetchOrderById,
   createOrder,
-  updateOrder,
   updateOrderById,
   deleteOrderById,
   fetchOrdersByEmailAndNumber,

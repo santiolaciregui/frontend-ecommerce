@@ -153,8 +153,11 @@ export interface FormData {
     bank?: Bank;
     installments?: InstallmentOption;
   };
-  paymentInstallments: InstallmentOption | null; // Add proper type instead of 'any'
+  paymentInstallments: InstallmentOption | null;
+  personalCreditFile?: File | null; // Added file property for personal credit payments
 }
+
+
 
 
 export interface Client {

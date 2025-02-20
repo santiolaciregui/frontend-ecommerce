@@ -62,9 +62,12 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                       <h3 className="font-semibold">{item.Product.name}</h3>
                     </div>
                     <div className="text-sm text-gray-500">
-                      {item.Options?.map((option) => (
-                        <span key={option.id}>{option.name}</span>
-                      ))}
+                    Opciones: 
+                        <ul className="list-disc pl-5">
+                        {item.Options?.map((option) => (
+                          <li key={option.id}>{option.name}</li>
+                        ))}
+                        </ul>
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -90,7 +93,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
               <span>${cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0).toFixed(2)}</span>
             </div>
             <p className="text-gray-500 text-sm mt--2 mb-4">
-              Envio calculado al momento de finalizar la compra
             </p>
             <div className="flex justify-between text-sm">
               <Link href='/checkout' className="rounded-md py-3 px-4 bg-green-500 text-white" onClick={onClose}>

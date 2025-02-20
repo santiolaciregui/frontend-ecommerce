@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import orderService from '../../pages/api/order';
@@ -8,7 +8,6 @@ import { fetchStoreById } from '@/app/pages/api/stores';
 import { Store } from '@/app/context/types';
 import { getImageUrl } from '@/app/utils/getImageURL';
 
-// New status translations with added states
 const statusTranslations: { [key: string]: string } = {
   pending: 'Pendiente',
   completed_paid: 'Completado Pagado',
@@ -33,17 +32,18 @@ interface OrderDetails {
   shippingAddress: string | null;
   pickupStoreId: string | null;
   paymentFormat: string;
-  // Updated status field to include new states
-  status: 'pending' | 'completed_paid' | 'cancelled' | 'in_logistics' | 'in_transit' | 'ready_for_pickup' | 'preparing_delivery' | 'delivered';
+  status:
+    | 'pending'
+    | 'completed_paid'
+    | 'cancelled'
+    | 'in_logistics'
+    | 'in_transit'
+    | 'ready_for_pickup'
+    | 'preparing_delivery'
+    | 'delivered';
   paymentDetails?: {
-    provider?: {
-      id: number;
-      name: string;
-    };
-    bank?: {
-      id: number;
-      name: string;
-    };
+    provider?: { id: number; name: string };
+    bank?: { id: number; name: string };
     installments?: {
       id: number;
       numberOfInstallments: number;
@@ -52,6 +52,7 @@ interface OrderDetails {
     };
   };
   createdAt: string;
+  deliveryDate?: string | null; // <--- IMPORTANT: Add this
   OrderItems: {
     id: number;
     productName: string;
@@ -85,7 +86,6 @@ const OrderDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { id } = useParams();
-  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
     const fetchOrderAndStoreDetails = async () => {
@@ -129,7 +129,7 @@ const OrderDetails: React.FC = () => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -137,34 +137,34 @@ const OrderDetails: React.FC = () => {
     if (order.pickupStoreId === null && order.shippingAddress) {
       return {
         title: 'Envío a domicilio',
-        details: order.shippingAddress
+        details: order.shippingAddress,
       };
     }
-    
+
     if (storeLoading) {
       return {
         title: 'Retiras en Local',
-        details: 'Cargando información de la tienda...'
+        details: 'Cargando información de la tienda...',
       };
     }
-    
+
     if (store) {
       return {
         title: `Retiras en ${store.name}`,
         details: `${store.address}, ${store.city}`,
-        phone: store.phone
+        phone: store.phone,
       };
     }
 
     return {
       title: 'Retiras en Local',
-      details: 'Información de la tienda no disponible'
+      details: 'Información de la tienda no disponible',
     };
   };
 
   const getPaymentInfo = () => {
     const { paymentFormat, paymentDetails } = order;
-  
+
     switch (paymentFormat) {
       case 'credit_card':
         return {
@@ -172,56 +172,55 @@ const OrderDetails: React.FC = () => {
           details: [
             paymentDetails?.installments
               ? `${paymentDetails.installments.numberOfInstallments} cuota(s) de $${(
-                  order.totalAmount / paymentDetails.installments.numberOfInstallments
+                  order.totalAmount /
+                  paymentDetails.installments.numberOfInstallments
                 ).toFixed(2)}`
               : 'Pago en una cuota',
             paymentDetails?.provider?.name
               ? `Proveedor: ${paymentDetails.provider.name}`
               : null,
-            paymentDetails?.bank?.name
-              ? `Banco: ${paymentDetails.bank.name}`
-              : null
-          ].filter(Boolean)
+            paymentDetails?.bank?.name ? `Banco: ${paymentDetails.bank.name}` : null,
+          ].filter(Boolean),
         };
-      
+
       case 'debit_card':
         return {
           method: 'Débito',
-          details: ['Pago con tarjeta de débito']
+          details: ['Pago con tarjeta de débito'],
         };
-  
+
       case 'transfer':
         return {
           method: 'Transferencia Bancaria',
           details: [
             'Pago mediante transferencia bancaria',
-            'El pedido se procesará al confirmar el pago'
-          ]
+            'El pedido se procesará al confirmar el pago',
+          ],
         };
-  
+
       case 'cash':
         return {
           method: 'Efectivo',
-          details: ['Pago en efectivo al retirar']
+          details: ['Pago en efectivo al retirar'],
         };
-        
+
       case 'personal_credit':
         return {
           method: 'Crédito Personal',
           details: [
             'Hemos recibido tu archivo para revisión.',
-            'Estamos validando tu información, el pedido se procesará una vez confirmada la aprobación.'
-          ]
+            'Estamos validando tu información, el pedido se procesará una vez confirmada la aprobación.',
+          ],
         };
-  
+
       default:
         return {
           method: 'Método de pago',
-          details: ['Método de pago no especificado']
+          details: ['Método de pago no especificado'],
         };
     }
   };
-  
+
   const deliveryInfo = getDeliveryInfo();
   const paymentInfo = getPaymentInfo();
 
@@ -241,14 +240,12 @@ const OrderDetails: React.FC = () => {
               Un vendedor se comunicará con vos a la brevedad para procesar el pago.
             </h2>
           )}
-          
         </div>
 
         {/* Payment Status */}
         <div className="border-b pb-6 mb-6">
           <div className="flex items-center space-x-2 mb-2">
             <Clock className="w-5 h-5 text-gray-600" />
-            {/* Using the new statusTranslations for a cleaner display */}
             <h1 className="text-2xl font-bold">
               {statusTranslations[order.status] || 'Estado desconocido'}
             </h1>
@@ -263,6 +260,18 @@ const OrderDetails: React.FC = () => {
           <div className="ml-2">
             <h2 className="text-lg font-semibold">{deliveryInfo.title}</h2>
             <p className="text-sm text-gray-600">Dirección: {deliveryInfo.details}</p>
+
+            {/*
+              Show "Fecha de entrega" ONLY if status != pending/cancelled AND we have a deliveryDate
+            */}
+            {order.deliveryDate &&
+              order.status !== 'pending' &&
+              order.status !== 'cancelled' && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Fecha de entrega/retiro estimada:{' '}
+                  <strong>{formatDate(order.deliveryDate)}</strong>
+                </p>
+              )}
           </div>
         </div>
 
@@ -274,7 +283,8 @@ const OrderDetails: React.FC = () => {
               <span>Seguimiento del pedido</span>
             </h3>
             <p className="text-gray-600 mb-6">
-              Seguí el estado de tu pedido utilizando el número de seguimiento que te enviamos por correo electrónico.
+              Seguí el estado de tu pedido utilizando el número de seguimiento que
+              te enviamos por correo electrónico.
             </p>
             <div className="flex justify-center">
               <button
@@ -307,7 +317,9 @@ const OrderDetails: React.FC = () => {
                 <strong className="text-gray-700">FORMA DE PAGO</strong>
                 <p className="text-gray-600">{paymentInfo.method}</p>
                 {paymentInfo.details.map((detail, index) => (
-                  <p key={index} className="text-gray-600">{detail}</p>
+                  <p key={index} className="text-gray-600">
+                    {detail}
+                  </p>
                 ))}
               </div>
             </div>
@@ -392,7 +404,7 @@ const OrderDetails: React.FC = () => {
           <p className="flex items-center space-x-2">
             <span>❓</span>
             <span>
-              ¿Necesitás ayuda?{" "}
+              ¿Necesitás ayuda?{' '}
               <a
                 href="/empresa/contacto"
                 className="font-semibold text-gray-800 hover:underline"

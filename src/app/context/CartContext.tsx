@@ -6,6 +6,7 @@ import * as cartService from '../pages/api/cart';
 
 type CartContextType = {
   cart: CartItem[] | null;
+  fetchCart: () => Promise<void>;
   addToCart: (productId: number, quantity: number, optionIds: number[]) => Promise<void>;
   removeFromCart: (cartItemId: number) => Promise<void>;
   updateCartItemQuantity: (cartItemId: number, quantity: number) => Promise<void>;
@@ -107,9 +108,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return cart || 0;
   };
 
+  const fetchCart = async () => {
+    try {
+      setIsLoading(true);
+      const response = await cartService.getCart(sessionId);
+      setCart(response);
+    } catch (err) {
+      setError('Failed to load cart');
+      console.error('Error loading cart:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <CartContext.Provider value={{
       cart,
+      fetchCart,
       addToCart,
       updateCartItemQuantity,
       removeFromCart,

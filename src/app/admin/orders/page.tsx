@@ -13,6 +13,7 @@ interface Order {
   totalAmount: number;
   createdAt: string;
   status: string;
+  deliveryDate: string | null;
   client: {
     id: number;
     firstName: string;
@@ -84,6 +85,38 @@ const OrdersList: React.FC = () => {
     }
   };
 
+  const handleDeliveryDateChange = async (orderId: number, newDateValue: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 1) Convert to a proper Date (if needed) 
+      //    Then pass it to the update call in the format your backend expects
+      const isoDate = new Date(newDateValue).toISOString();
+  
+      // 2) Make your API call
+      await orderService.updateOrderById(orderId, {
+        id: orderId,
+        // or if your backend only needs {deliveryDate}, remove "id" or adapt accordingly
+        deliveryDate: isoDate 
+      });
+  
+      // 3) Update local orders state
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId
+            ? { ...order, deliveryDate: isoDate }
+            : order
+        )
+      );
+    } catch (err) {
+      setError('Error updating delivery date');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
   const handleViewDetails = (orderId: number) => {
     router.push(`/admin/orders/${orderId}`);
   };
@@ -134,6 +167,7 @@ const OrdersList: React.FC = () => {
                   <th className="px-6 py-3 text-left">Contacto</th>
                   <th className="px-6 py-3 text-left">Monto Total</th>
                   <th className="px-6 py-3 text-left">Estado</th>
+                  <th className="px-6 py-3 text-left">Fecha de entrega</th>
                   <th className="px-6 py-3 text-center">Acciones</th>
                 </tr>
               </thead>
@@ -182,6 +216,23 @@ const OrdersList: React.FC = () => {
                             </div>
                           )}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {order.status !== 'pending' ? (
+                          <input
+                            type="date"
+                            // Convert existing deliveryDate (e.g. "2025-03-10T00:00:00Z") to YYYY-MM-DD for the date input
+                            value={
+                              order.deliveryDate
+                                ? order.deliveryDate.split('T')[0] // or more robust date handling
+                                : ''
+                            }
+                            onChange={(e) => handleDeliveryDateChange(order.id, e.target.value)}
+                            className="border p-1 rounded"
+                          />
+                        ) : (
+                          <span>—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
