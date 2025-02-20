@@ -383,6 +383,8 @@ const CreateProduct = () => {
           placeholder="Seleccionar colores"
           className="w-full"
           display="chip"
+          filter
+          filterPlaceholder='Buscar colores'
         />
       </div>
 

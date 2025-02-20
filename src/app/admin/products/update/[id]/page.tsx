@@ -449,6 +449,8 @@ const UpdateProduct = () => {
                   placeholder="Seleccionar colores"
                   className="w-full"
                   display="chip"
+                  filter
+                  filterPlaceholder='Buscar colores'
                 />
               </div>
               {/* Opciones de tamaño */}
