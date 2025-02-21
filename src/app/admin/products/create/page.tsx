@@ -9,7 +9,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import BackButton from '@/app/components/BackButton';
 
 
@@ -28,6 +28,7 @@ interface ProductForm {
 }
 
 const CreateProduct = () => {
+  const router = useRouter();
   const [isFormValid, setIsFormValid] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
@@ -205,12 +206,11 @@ const CreateProduct = () => {
       formData.optionIds.forEach((id) => data.append('optionIds', String(id)));
       formData.images.forEach((file) => data.append('images', file));
       console.log(formData)
-      const response = await apiServiceProducts.createProduct(data);
+      await apiServiceProducts.createProduct(data);
       alert(editMode ? 'Producto actualizado con éxito' : 'Producto creado con éxito');
-      redirect('/admin/products');
+      router.push('/admin/products');
     } catch (err) {
       setError('Error al crear el producto');
-      redirect('/admin/products');
       console.error(err);
     } finally {
       setLoading(false);
