@@ -24,7 +24,7 @@ const HomePage = () => {
     router.push(`/products?page=&category=${categoryId}`);
   };
 
-  const promoImages = ['/carousel1.png', '/carousel2.png', '/carousel3.png'];
+  const promoImages = ['/carousel1.png', '/carousel2.png', '/carousel3.png', '/carousel4.png'];
 
   return (
     <div className="text-center">
