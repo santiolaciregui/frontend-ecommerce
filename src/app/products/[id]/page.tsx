@@ -7,18 +7,22 @@ import { fetchStores } from "../../pages/api/stores";
 import { useParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
 import Loading from '@/app/components/Loading';
-import { emptyProduct } from '@/app/mooks/types';
 import PaymentModal from '@/app/components/modalPayments';
+import paymentFormatsService from "../../pages/api/paymentFormat"; // Importa el API para paymentFormats
+import { PAYMENT_FORMATS_ES } from '@/app/constants/checkoutConstants';
 
 const SinglePage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
+  const [paymentFormats, setPaymentFormats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paymentFormatsLoading, setPaymentFormatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isStoresOpen, setIsStoresOpen] = useState(false);
 
+  // Cargar el producto
   useEffect(() => {
     if (id) {
       const fetchProduct = async () => {
@@ -38,6 +42,7 @@ const SinglePage = () => {
     }
   }, [id]);
 
+  // Cargar los locales
   useEffect(() => {
     const loadStores = async () => {
       try {
@@ -50,36 +55,61 @@ const SinglePage = () => {
     loadStores();
   }, []);
 
-  if (loading) return <Loading />;
+  // Cargar los paymentFormats
+  useEffect(() => {
+    const fetchPaymentFormats = async () => {
+      try {
+        const data = await paymentFormatsService.fetchPaymentFormats();
+        setPaymentFormats(data);
+      } catch (err) {
+        console.error("Error fetching payment formats:", err);
+      } finally {
+        setPaymentFormatsLoading(false);
+      }
+    };
+    fetchPaymentFormats();
+  }, []);
+
+  if (loading || paymentFormatsLoading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
   if (!product) return <h1>Product not found</h1>;
 
-  // Calculate final price after discount (if any)
+  // Calcular precio final aplicando descuento (si existe)
   const currentPrice = product.price;
   const activeDiscounts = product.Discounts?.filter(discount => discount.active);
   const bestDiscount = activeDiscounts?.reduce((max, discount) =>
     discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
 
-  // Compute numeric final price (used for further calculations)
+  // Precio final numérico
   const numericFinalPrice = bestDiscount
     ? currentPrice * (1 - bestDiscount.percentage / 100)
     : currentPrice;
   const finalPriceString = numericFinalPrice.toFixed(2);
   const discountPercentage = bestDiscount?.percentage || null;
 
-  // Payment Options calculations
-  const formattedTransferPrice = (numericFinalPrice * 1.10).toFixed(2);
-  const formattedThreeInstallment = ((numericFinalPrice * 1.30) / 3).toFixed(2);
-  const formattedSixInstallment = ((numericFinalPrice * 1.45) / 6).toFixed(2);
+  // Obtención de la configuración de medios de pago
+  const transferConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER);
+  const threeInstallmentsConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER);
+  const sixInstallmentsConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_6);
+
+  // Uso de la configuración o valores por defecto
+  const transferMultiplier = transferConfig ? 1 + Number(transferConfig.percentage) : 1.10;
+  const threeInstallmentMultiplier = threeInstallmentsConfig ? 1 + Number(threeInstallmentsConfig.percentage) : 1.30;
+  const sixInstallmentMultiplier = sixInstallmentsConfig ? 1 + Number(sixInstallmentsConfig.percentage) : 1.45;
+
+  // Cálculos de opciones de pago
+  const formattedTransferPrice = (numericFinalPrice * transferMultiplier).toFixed(2);
+  const formattedThreeInstallment = ((numericFinalPrice * threeInstallmentMultiplier) / 3).toFixed(2);
+  const formattedSixInstallment = ((numericFinalPrice * sixInstallmentMultiplier) / 6).toFixed(2);
 
   return (
     <div className='px-4 mt-12 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
-      {/* Image */}
+      {/* Imágenes del producto */}
       <div className="w-full lg:w-1/2 lg:sticky top-20 h-max">
         <ProductImages items={product.Images} />
       </div>
 
-      {/* Texts */}
+      {/* Detalles del producto */}
       <div className="w-full lg:w-1/2 flex flex-col gap-6">
         <h1 className="text-4xl font-medium text-gray-800">{product.name}</h1>
 
@@ -94,7 +124,7 @@ const SinglePage = () => {
           </h2>
         </div>
 
-        {/* Payment Options Display */}
+        {/* Opciones de pago */}
         <div className="mt-2 space-y-1">
           <div className="text-sm">
             <span>Transferencia: </span>
@@ -110,7 +140,7 @@ const SinglePage = () => {
           </div>
         </div>
 
-        {/* Button to open payment modal */}
+        {/* Botón para abrir modal de pagos */}
         <button
           onClick={() => setIsPaymentModalOpen(true)}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors duration-200"
@@ -128,7 +158,7 @@ const SinglePage = () => {
           </button>
         )}
 
-        {/* Nuestros locales */}
+        {/* Sección de locales */}
         <div className="border-t border-gray-300 mt-4 pt-4">
           <button
             className="flex justify-between items-center w-full py-2 text-left hover:bg-gray-100 transition-colors duration-200"
@@ -182,6 +212,8 @@ const SinglePage = () => {
           </h4>
         )}
       </div>
+      
+      {/* Modal de medios de pago */}
       <div>
         <PaymentModal
           isOpen={isPaymentModalOpen}

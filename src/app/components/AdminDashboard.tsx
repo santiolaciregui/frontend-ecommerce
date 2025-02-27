@@ -1,3 +1,4 @@
+// AdminDashboard.tsx
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -73,6 +74,19 @@ const AdminDashboard = () => {
 
         {/* Main Dashboard Options */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Administración de Inicio */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Inicio</h2>
+            <div className="space-y-4">
+              <Link
+                href="/admin/dashboard"
+                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              >
+                Administrar Carrusel
+              </Link>
+            </div>
+          </div>
+        
           {/* Administración de Productos */}
           <div className="border rounded-lg bg-white p-6 shadow-md">
             <h2 className="text-lg font-semibold mb-4">Administración de Productos</h2>
@@ -143,8 +157,6 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-
-
           {/* Administración de Órdenes */}
           <div className="border rounded-lg bg-white p-6 shadow-md">
             <h2 className="text-lg font-semibold mb-4">Administración de Órdenes</h2>
@@ -199,6 +211,19 @@ const AdminDashboard = () => {
                   <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain border" />
                 </div>
               )}
+            </div>
+          </div>
+          {/* Administración de Medios de Pago */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Administración de Medios de Pago</h2>
+            <div className="space-y-4">
+              <Link
+                href="/admin/paymentFormats"
+                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              >
+                Ver Medios de Pago
+              </Link>
+              
             </div>
           </div>
         </div>

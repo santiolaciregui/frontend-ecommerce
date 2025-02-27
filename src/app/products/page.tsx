@@ -1,11 +1,10 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, SlidersHorizontal } from "lucide-react";
 import Filter from "../components/Filter";
 import ProductList from "../components/ProductList";
 import Loading from '../components/Loading';
 import { Product } from "../context/types";
-import { useEffect } from "react";
 import apiService from "../pages/api/products";
 
 interface MobileFilterProps {
@@ -21,7 +20,6 @@ const MobileFilter: React.FC<MobileFilterProps> = ({
   onProductsFetched, 
   setLoading 
 }) => {
-  // State to store temporary filter results before applying
   const [tempProducts, setTempProducts] = useState<Product[]>([]);
   const [isFiltering, setIsFiltering] = useState(false);
 
@@ -79,53 +77,90 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
   const subcategoryId = searchParams.categoryId; 
   const [products, setProducts] = useState<Product[]>([]);
   
-  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
-  const currentPage = pageParam ? parseInt(pageParam) : 0;
-
+  // Estados para infinite scrolling
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showLoading, setShowLoading] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const handleProductsFetched = (fetchedProducts: Product[]) => {
-    setProducts(fetchedProducts);
-    setLoading(false);
-    // Close mobile filter after applying filters
-    setIsMobileFilterOpen(false);
-  };
-
+  // Cuando cambian los filtros o categorías, reseteamos la lista
   useEffect(() => {
-    const fetchProducts = async () => {
+    setProducts([]);
+    setPage(0);
+    setHasMore(true);
+    const fetchInitialProducts = async () => {
       setLoading(true);
-      setShowLoading(true);
       try {
-        const fetchedProducts = await apiService.fetchProducts({ categoryId, subcategoryId, searchParams });
-        setProducts(fetchedProducts);
+        const initialProducts = await apiService.fetchProducts({ 
+          categoryId, 
+          subcategoryId, 
+          page: 0, 
+          searchParams 
+        });
+        setProducts(initialProducts);
+        if (initialProducts.length < 9) {
+          setHasMore(false);
+        }
       } catch (err) {
         setError('Error fetching products');
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
+    fetchInitialProducts();
+  }, [categoryId, subcategoryId, searchParams]);
 
-    fetchProducts();
-  }, [categoryId, searchParams]);
-
+  // Configuramos el IntersectionObserver para cargar más productos
   useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => setShowLoading(false), 2000);
-      return () => clearTimeout(timer);
+    if (loading) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        const fetchMore = async () => {
+          setLoading(true);
+          try {
+            const newProducts = await apiService.fetchProducts({ 
+              categoryId, 
+              subcategoryId, 
+              page: nextPage, 
+              searchParams 
+            });
+            setProducts(prev => [...prev, ...newProducts]);
+            if (newProducts.length < 9) {
+              setHasMore(false);
+            }
+          } catch (err) {
+            setError('Error fetching products');
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchMore();
+      }
+    }, { threshold: 1.0 });
+    
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
     }
-  }, [loading]);
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [loadMoreRef, page, hasMore, loading, categoryId, subcategoryId, searchParams]);
 
-  useEffect(() => {
-    if (!loading) {
-      const timer = setTimeout(() => setShowLoading(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [loading]);
+  // Callback para el filtro móvil: reemplaza la lista de productos
+  const handleProductsFetched = (fetchedProducts: Product[]) => {
+    setProducts(fetchedProducts);
+    setPage(0);
+    setHasMore(fetchedProducts.length === 9);
+    setLoading(false);
+    setIsMobileFilterOpen(false);
+  };
 
-  // Prevent body scroll when mobile filter is open
+  // Evitar scroll del body cuando el filtro móvil está abierto
   useEffect(() => {
     if (isMobileFilterOpen) {
       document.body.style.overflow = 'hidden';
@@ -137,11 +172,11 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
     };
   }, [isMobileFilterOpen]);
 
-  if (showLoading) return <Loading />;
+  if (loading && products.length === 0) return <Loading />;
 
   return (
     <div className="mt-12 px-2 md:px-4 lg:px-8 xl:px-16 2xl:px-32 relative">
-      {/* Mobile Filter Button */}
+      {/* Botón para filtro móvil */}
       <div className="md:hidden mb-4">
         <button
           onClick={() => setIsMobileFilterOpen(true)}
@@ -152,7 +187,7 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
         </button>
       </div>
 
-      {/* Mobile Filter Panel */}
+      {/* Panel de filtro móvil */}
       <MobileFilter
         isOpen={isMobileFilterOpen}
         onClose={() => setIsMobileFilterOpen(false)}
@@ -161,27 +196,28 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
       />
 
       <div className="flex flex-col md:flex-row gap-4">
-        {/* Desktop Filter */}
+        {/* Filtro para escritorio */}
         <div className="hidden md:block md:w-1/4">
           <Filter onProductsFetched={handleProductsFetched} setLoading={setLoading} />
         </div>
 
-        {/* Product List */}
+        {/* Lista de productos */}
         <div className="w-full md:w-3/4">
           {products.length > 0 ? (
-            <ProductList
-              products={products}
-              currentPage={currentPage}
-              hasPrev={currentPage > 0}
-              hasNext={products.length === 9}
-            />
+            <>
+              <ProductList products={products} />
+              {/* Div sentinel para detectar el scroll y cargar más */}
+              <div ref={loadMoreRef} className="h-10"></div>
+              {loading && <div className="text-center py-4">Cargando más productos...</div>}
+            </>
           ) : (
             <div className="flex justify-center items-center min-h-[400px] bg-gray-50 rounded-lg">
-              <p className="text-xl text-gray-600">¡Estamos renovando nuestro catalogo de productos!</p>
+              <p className="text-xl text-gray-600">¡Estamos renovando nuestro catálogo de productos!</p>
             </div>
           )}
         </div>
       </div>
+      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
     </div>
   );
 };

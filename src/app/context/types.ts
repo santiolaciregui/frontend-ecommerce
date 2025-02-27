@@ -197,3 +197,10 @@ export interface OrderItem {
   productId: number;
   Product: Product;
 } 
+
+export interface PaymentFormat {
+  id: number;
+  paymentMethod: string;
+  percentage: number;
+  active: boolean;
+}

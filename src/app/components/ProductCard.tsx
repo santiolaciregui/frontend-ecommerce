@@ -1,37 +1,59 @@
+// ProductCard.tsx
+'use client';
+
 import React from "react";
-import { Product } from "../context/types";
+import { PaymentFormat, Product } from "../context/types";
 import Image from "next/image";
 import Link from "next/link";
 import { getImageUrl } from "../utils/getImageURL";
+import { PAYMENT_FORMATS_ES } from "../constants/checkoutConstants";
+
 
 interface Props {
   product: Product;
+  paymentFormats: PaymentFormat[];
 }
 
-const ProductCard = ({ product }: Props) => {
+const ProductCard = ({ product, paymentFormats }: Props) => {
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-  // Use the product's final price (assumed to be a number)
   const finalPrice = product.finalPrice;
   const formattedFinalPrice = finalPrice.toFixed(2);
 
-  // According to your checkout:
-  // - Cash: base price (no multiplier)
-  // - Transfer: 10% extra (as seen in your order summary note)
-  // - Installments: no interest (sin interés) unless a specific installment option with interest is selected at checkout
-  const transferPrice = finalPrice * 1.10;
+  // Buscar las configuraciones específicas
+  const transferConfig = paymentFormats.find(
+    (config) => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER
+  );
+  const threeInstallmentsConfig = paymentFormats.find(
+    (config) => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_3
+  );
+  const sixInstallmentsConfig = paymentFormats.find(
+    (config) => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_6
+  );
+
+  // Si la configuración no existe, se usan valores por defecto
+  const transferMultiplier = transferConfig
+    ? 1 + Number(transferConfig.percentage)
+    : 2.10;
+  const threeInstallmentMultiplier = threeInstallmentsConfig
+    ? 1 + Number(threeInstallmentsConfig.percentage)
+    : 2.30;
+  const sixInstallmentMultiplier = sixInstallmentsConfig
+    ? 1 + Number(sixInstallmentsConfig.percentage)
+    : 2.45;
+
+  const transferPrice = finalPrice * transferMultiplier;
   const formattedTransferPrice = transferPrice.toFixed(2);
 
-  const threeInstallment = finalPrice * 1.30 / 3;
+  const threeInstallment = (finalPrice * threeInstallmentMultiplier) / 3;
   const formattedThreeInstallment = threeInstallment.toFixed(2);
 
-  const sixInstallment = finalPrice * 1.45 / 6;
+  const sixInstallment = (finalPrice * sixInstallmentMultiplier) / 6;
   const formattedSixInstallment = sixInstallment.toFixed(2);
 
   return (
     <div className="w-full flex flex-col h-[480px] sm:w-[45%] lg:w-[30%] shadow-sm rounded-md p-4">
       <Link href={`/products/${product.id}`} className="relative w-full h-80 group">
-        {/* Primary Image */}
+        {/* Imagen principal */}
         <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-100 group-hover:opacity-0">
           <Image
             src={
@@ -47,7 +69,7 @@ const ProductCard = ({ product }: Props) => {
           />
         </div>
 
-        {/* Secondary Image */}
+        {/* Imagen secundaria */}
         <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100">
           <Image
             src={
@@ -64,7 +86,7 @@ const ProductCard = ({ product }: Props) => {
         </div>
       </Link>
 
-      {/* Product Details */}
+      {/* Detalles del producto */}
       <div className="flex-grow mt-4">
         <div className="flex justify-between items-center">
           <span className="font-medium">{product.name}</span>
@@ -78,7 +100,7 @@ const ProductCard = ({ product }: Props) => {
           </div>
         </div>
 
-        {/* Payment Options */}
+        {/* Opciones de pago */}
         <div className="mt-2 space-y-1">
           <div className="text-sm">
             <span>Transferencia: </span>
@@ -95,12 +117,10 @@ const ProductCard = ({ product }: Props) => {
         </div>
       </div>
 
-      {/* Action Button */}
+      {/* Botón de acción */}
       <div className="mt-auto pt-4 flex justify-center">
         <Link href={`/products/${product.id}`}>
-          <button
-            className="w-56 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200"
-          >
+          <button className="w-56 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200">
             Seleccionar opciones
           </button>
         </Link>

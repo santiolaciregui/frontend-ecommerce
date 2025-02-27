@@ -1,14 +1,16 @@
+// useCheckout.ts
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import type { FormData } from '../context/types';
 import { Bank, CardProvider, InstallmentOption, Option } from '../context/types';
-import { DELIVERY_OPTIONS, PAYMENT_FORMATS } from '../constants/checkoutConstants';
+import { DELIVERY_OPTIONS, PAYMENT_FORMATS, PAYMENT_FORMATS_ES} from '../constants/checkoutConstants';
 import { createOrder } from '../pages/api/order';
 import { AddressDetails } from '../components/AddressAutocomplete';
 import { fetchStores } from '../pages/api/stores';
 import apiServiceCards from '../pages/api/promotions';
+import paymentFormatsService from '../pages/api/paymentFormat';
 
 export const useCheckout = () => {
   const [personalCreditFile, setPersonalCreditFile] = useState<File | null>(null);
@@ -45,6 +47,10 @@ export const useCheckout = () => {
     personalCreditFile: null, // Initialize personal credit file as null
   });
 
+  // Estado para la configuración de medios de pago
+  const [paymentFormats, setPaymentFormats] = useState<any[]>([]);
+  const [paymentFormatsLoading, setPaymentFormatsLoading] = useState(true);
+
   useEffect(() => {
     const loadStores = async () => {
       try {
@@ -55,6 +61,21 @@ export const useCheckout = () => {
       }
     };
     loadStores();
+  }, []);
+
+  // Obtener paymentFormats desde la API
+  useEffect(() => {
+    const fetchPaymentFormats = async () => {
+      try {
+        const data = await paymentFormatsService.fetchPaymentFormats();
+        setPaymentFormats(data);
+      } catch (err) {
+        console.error("Error fetching payment formats:", err);
+      } finally {
+        setPaymentFormatsLoading(false);
+      }
+    };
+    fetchPaymentFormats();
   }, []);
 
   useEffect(() => {
@@ -78,20 +99,45 @@ export const useCheckout = () => {
     }
   }, [formData.paymentFormat]);
 
-  // Function to calculate the adjusted total price
+  // Función para calcular el precio total ajustado usando los porcentajes dinámicos
   const calculateTotalPrice = () => {
-    let basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
-    if (formData.paymentFormat === PAYMENT_FORMATS.PERSONAL_CREDIT) {
-      basePrice *= 1.15; // 15% for personal credit
-    } else if (formData.paymentFormat === PAYMENT_FORMATS.TRANSFER) {
-      basePrice *= 1.05; // 5% for transfer
-    } else if (formData.paymentFormat === PAYMENT_FORMATS.DEBIT_CARD) {
-      basePrice *= 1.10; // 10% for debit card
-    } else if (formData.paymentFormat === PAYMENT_FORMATS.CREDIT_CARD && formData.paymentInstallments) {
-      const interestRate = formData.paymentInstallments.interestRate || 0;
-      basePrice *= (1 + interestRate / 100);
+    let basePrice =
+      cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
+    let multiplier = 1;
+
+    switch (formData.paymentFormat) {
+      case PAYMENT_FORMATS.PERSONAL_CREDIT: {
+        const config = paymentFormats.find(
+          (format) => format.paymentMethod === PAYMENT_FORMATS_ES.PERSONAL_CREDIT
+        );
+        multiplier = config ? 1 + Number(config.percentage) : 1.15;
+        break;
+      }
+      case PAYMENT_FORMATS.TRANSFER: {
+        const config = paymentFormats.find(
+          (format) => format.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER
+        );
+        multiplier = config ? 1 + Number(config.percentage) : 2.05;
+        break;
+      }
+      case PAYMENT_FORMATS.DEBIT_CARD: {
+        const config = paymentFormats.find(
+          (format) => format.paymentMethod === PAYMENT_FORMATS_ES.DEBIT_CARD
+        );
+        multiplier = config ? 1 + Number(config.percentage) : 1.10;
+        break;
+      }
+      case PAYMENT_FORMATS.CREDIT_CARD: {
+        if (formData.paymentInstallments) {
+          const interestRate = formData.paymentInstallments.interestRate || 0;
+          multiplier = 1 + interestRate / 100;
+        }
+        break;
+      }
+      default:
+        multiplier = 1;
     }
-    return basePrice;
+    return basePrice * multiplier;
   };
 
   const handleCheckout = async () => {
@@ -267,20 +313,35 @@ export const useCheckout = () => {
       ...prevData,
       [name]: value,
     }));
+  
     const basePrice = cart
-    ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0)
-    : 0;
+      ? cart.reduce((acc, item) => acc + item.Product.finalPrice * item.quantity, 0)
+      : 0;
+  
+    let multiplier = 1;
   
     if (value === PAYMENT_FORMATS.TRANSFER) {
-      setTotalPrice(basePrice * 1.05); // or 1.10 if that is correct per your business logic
+      const config = paymentFormats.find(
+        (format) => format.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER
+      );
+      multiplier = config ? 1 + Number(config.percentage) : 1.05;
     } else if (value === PAYMENT_FORMATS.PERSONAL_CREDIT) {
-      setTotalPrice(basePrice * 1.15);
+      const config = paymentFormats.find(
+        (format) => format.paymentMethod === PAYMENT_FORMATS_ES.PERSONAL_CREDIT
+      );
+      multiplier = config ? 1 + Number(config.percentage) : 1.15;
     } else if (value === PAYMENT_FORMATS.DEBIT_CARD) {
-      setTotalPrice(basePrice * 1.10);
+      const config = paymentFormats.find(
+        (format) => format.paymentMethod === PAYMENT_FORMATS_ES.DEBIT_CARD
+      );
+      multiplier = config ? 1 + Number(config.percentage) : 1.10;
     } else {
-      setTotalPrice(basePrice);
+      multiplier = 1;
     }
+  
+    setTotalPrice(basePrice * multiplier);
   };
+  
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
