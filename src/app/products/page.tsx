@@ -1,44 +1,31 @@
-'use client'
-import React, { useState, useEffect, useRef } from "react";
-import { X, SlidersHorizontal } from "lucide-react";
+// app/products/page.tsx
+"use client";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
 import Filter from "../components/Filter";
 import ProductList from "../components/ProductList";
-import Loading from '../components/Loading';
-import { Product } from "../context/types";
-import apiService from "../pages/api/products";
+import Loading from "../components/Loading";
+import { Product, Category } from "../context/types";
+import apiService from "../pages/api/products"; // tu servicio de fetch
+import { fetchParentCategories, fetchSubcategoriesByParent } from "../pages/api/category";
 
+// Componente para el Filtro en versión móvil
 interface MobileFilterProps {
   isOpen: boolean;
   onClose: () => void;
-  onProductsFetched: (products: Product[]) => void;
-  setLoading: (loading: boolean) => void;
+  children?: React.ReactNode;
 }
 
-const MobileFilter: React.FC<MobileFilterProps> = ({ 
-  isOpen, 
-  onClose, 
-  onProductsFetched, 
-  setLoading 
-}) => {
-  const [tempProducts, setTempProducts] = useState<Product[]>([]);
-  const [isFiltering, setIsFiltering] = useState(false);
-
-  const handleTempProductsFetched = (products: Product[]) => {
-    setTempProducts(products);
-    setIsFiltering(false);
-  };
-
-  const handleApplyChanges = () => {
-    onProductsFetched(tempProducts);
-  };
-
+const MobileFilter: React.FC<MobileFilterProps> = ({ isOpen, onClose, children }) => {
   return (
-    <div className={`
-      fixed inset-0 bg-white z-50 transform transition-transform duration-300 ease-in-out
-      ${isOpen ? 'translate-y-0' : 'translate-y-full'}
-    `}>
+    <div
+      className={`
+        fixed inset-0 bg-white z-50 transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+      `}
+    >
       <div className="h-full flex flex-col">
-        {/* Header */}
+        {/* Header del filtro móvil */}
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="text-lg font-medium">Filtros</h2>
           <button onClick={onClose} className="p-1">
@@ -46,24 +33,18 @@ const MobileFilter: React.FC<MobileFilterProps> = ({
           </button>
         </div>
 
-        {/* Filter Content - Scrollable Area */}
+        {/* Contenido (el <Filter /> en sí) */}
         <div className="flex-1 overflow-y-auto pb-20">
-          <Filter 
-            onProductsFetched={handleTempProductsFetched} 
-            setLoading={setIsFiltering}
-          />
+          {children}
         </div>
 
-        {/* Fixed Bottom Button */}
+        {/* Botón fijo al fondo (opcional) */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
           <button
-            onClick={handleApplyChanges}
-            disabled={isFiltering}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium
-              disabled:bg-blue-300 disabled:cursor-not-allowed
-              hover:bg-blue-700 transition-colors"
+            onClick={onClose}
+            className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
-            {isFiltering ? 'Aplicando filtros...' : 'Aplicar cambios'}
+            Cerrar
           </button>
         </div>
       </div>
@@ -71,94 +52,145 @@ const MobileFilter: React.FC<MobileFilterProps> = ({
   );
 };
 
-const ListPage = ({ searchParams }: { searchParams: any }) => {
+const ListPage = () => {
+  // Control del panel de filtro móvil
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const categoryId = searchParams.categoryId; 
-  const subcategoryId = searchParams.categoryId; 
+
+  // =========================
+  //   Categorías y filtros
+  // =========================
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
+
+  // Estado de los filtros seleccionados
+  const [filters, setFilters] = useState<{
+    parentCategory: number | null;
+    subcategory: number | null;
+  }>({
+    parentCategory: null,
+    subcategory: null,
+  });
+
+  // =========================
+  //   Productos y paginación
+  // =========================
   const [products, setProducts] = useState<Product[]>([]);
-  
-  // Estados para infinite scrolling
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  // Ref para IntersectionObserver
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // Cuando cambian los filtros o categorías, reseteamos la lista
+  // =========================
+  //     Efecto: Categorías
+  // =========================
   useEffect(() => {
-    setProducts([]);
-    setPage(0);
-    setHasMore(true);
-    const fetchInitialProducts = async () => {
+    (async () => {
+      try {
+        const parentCats = await fetchParentCategories();
+        setParentCategories(parentCats);
+      } catch (err) {
+        console.error("Error al obtener categorías padres:", err);
+      }
+    })();
+  }, []);
+
+  // Cuando cambie la categoría padre, cargamos sus subcategorías
+  useEffect(() => {
+    if (!filters.parentCategory) {
+      setSubcategories([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        const subs = await fetchSubcategoriesByParent(filters.parentCategory);
+        setSubcategories(subs);
+      } catch (err) {
+        console.error("Error al obtener subcategorías:", err);
+      }
+    })();
+  }, [filters.parentCategory]);
+
+  // =========================
+  //     Efecto: Productos
+  // =========================
+  useEffect(() => {
+    // Si es la primera página (o cambiaron los filtros), reiniciamos
+    if (page === 0) {
+      setProducts([]);
+      setHasMore(true);
+    }
+
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const initialProducts = await apiService.fetchProducts({ 
-          categoryId, 
-          subcategoryId, 
-          page: 0, 
-          searchParams 
+        const newProducts = await apiService.fetchProducts({
+          categoryId: filters.parentCategory,
+          subcategoryId: filters.subcategory,
+          page,
+          // Si tuvieras más filtros (minPrice, maxPrice, etc.),
+          // pásalos aquí dentro de searchParams:
+          // searchParams: { ... }
         });
-        setProducts(initialProducts);
-        if (initialProducts.length < 9) {
+
+        setProducts(prev =>
+          page === 0 ? newProducts : [...prev, ...newProducts]
+        );
+
+        if (newProducts.length < 9) {
           setHasMore(false);
         }
       } catch (err) {
-        setError('Error fetching products');
+        console.error(err);
+        setError("Error al cargar productos");
       } finally {
         setLoading(false);
       }
     };
-    fetchInitialProducts();
-  }, [categoryId, subcategoryId, searchParams]);
 
-  // Configuramos el IntersectionObserver para cargar más productos
+    fetchData();
+  }, [filters, page]);
+
+  // =========================
+  //   IntersectionObserver
+  // =========================
   useEffect(() => {
     if (loading) return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        const fetchMore = async () => {
-          setLoading(true);
-          try {
-            const newProducts = await apiService.fetchProducts({ 
-              categoryId, 
-              subcategoryId, 
-              page: nextPage, 
-              searchParams 
-            });
-            setProducts(prev => [...prev, ...newProducts]);
-            if (newProducts.length < 9) {
-              setHasMore(false);
-            }
-          } catch (err) {
-            setError('Error fetching products');
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchMore();
-      }
-    }, { threshold: 1.0 });
-    
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage(prev => prev + 1);
+        }
+      },
+      { threshold: 1.0 }
+    );
+
     if (loadMoreRef.current) {
       observer.observe(loadMoreRef.current);
     }
+
     return () => {
       if (loadMoreRef.current) {
         observer.unobserve(loadMoreRef.current);
       }
     };
-  }, [loadMoreRef, page, hasMore, loading, categoryId, subcategoryId, searchParams]);
+  }, [hasMore, loading]);
 
-  // Callback para el filtro móvil: reemplaza la lista de productos
-  const handleProductsFetched = (fetchedProducts: Product[]) => {
-    setProducts(fetchedProducts);
-    setPage(0);
-    setHasMore(fetchedProducts.length === 9);
-    setLoading(false);
-    setIsMobileFilterOpen(false);
-  };
+  // =========================
+  //   Callbacks de Filtros
+  // =========================
+  const handleChangeFilters = useCallback(
+    (newFilters: { parentCategory: number | null; subcategory: number | null }) => {
+      // Al cambiar cualquier filtro, reseteamos la paginación
+      setPage(0);
+      setFilters(newFilters);
+    },
+    []
+  );
 
   // Evitar scroll del body cuando el filtro móvil está abierto
   useEffect(() => {
@@ -172,11 +204,17 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
     };
   }, [isMobileFilterOpen]);
 
-  if (loading && products.length === 0) return <Loading />;
+  // =========================
+  //       Render UI
+  // =========================
+  // Si está cargando y aún no hay productos, muestra el loader
+  if (loading && products.length === 0) {
+    return <Loading />;
+  }
 
   return (
     <div className="mt-12 px-2 md:px-4 lg:px-8 xl:px-16 2xl:px-32 relative">
-      {/* Botón para filtro móvil */}
+      {/* Botón para abrir el filtro en móvil */}
       <div className="md:hidden mb-4">
         <button
           onClick={() => setIsMobileFilterOpen(true)}
@@ -191,14 +229,27 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
       <MobileFilter
         isOpen={isMobileFilterOpen}
         onClose={() => setIsMobileFilterOpen(false)}
-        onProductsFetched={handleProductsFetched}
-        setLoading={setLoading}
-      />
+      >
+        {/* Inyectamos el mismo <Filter /> que en desktop */}
+        <Filter
+          parentCategories={parentCategories}
+          subcategories={subcategories}
+          selectedParentCategory={filters.parentCategory}
+          selectedSubcategory={filters.subcategory}
+          onChangeFilters={handleChangeFilters}
+        />
+      </MobileFilter>
 
       <div className="flex flex-col md:flex-row gap-4">
-        {/* Filtro para escritorio */}
+        {/* Filtro en desktop */}
         <div className="hidden md:block md:w-1/4">
-          <Filter onProductsFetched={handleProductsFetched} setLoading={setLoading} />
+          <Filter
+            parentCategories={parentCategories}
+            subcategories={subcategories}
+            selectedParentCategory={filters.parentCategory}
+            selectedSubcategory={filters.subcategory}
+            onChangeFilters={handleChangeFilters}
+          />
         </div>
 
         {/* Lista de productos */}
@@ -206,17 +257,24 @@ const ListPage = ({ searchParams }: { searchParams: any }) => {
           {products.length > 0 ? (
             <>
               <ProductList products={products} />
-              {/* Div sentinel para detectar el scroll y cargar más */}
-              <div ref={loadMoreRef} className="h-10"></div>
-              {loading && <div className="text-center py-4">Cargando más productos...</div>}
+              {/* Sentinel para el infinite scroll */}
+              <div ref={loadMoreRef} className="h-10" />
+              {loading && (
+                <div className="text-center py-4">
+                  Cargando más productos...
+                </div>
+              )}
             </>
           ) : (
             <div className="flex justify-center items-center min-h-[400px] bg-gray-50 rounded-lg">
-              <p className="text-xl text-gray-600">¡Estamos renovando nuestro catálogo de productos!</p>
+              <p className="text-xl text-gray-600">
+                ¡Estamos renovando nuestro catálogo de productos!
+              </p>
             </div>
           )}
         </div>
       </div>
+
       {error && <div className="text-red-500 text-center mt-4">{error}</div>}
     </div>
   );
