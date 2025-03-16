@@ -70,7 +70,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
         </div>
 
         {/* Imagen secundaria */}
-        <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100">
+       {/*  <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100">
           <Image
             src={
               product.Images[1]
@@ -83,7 +83,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
             className="object-cover rounded-md"
             unoptimized
           />
-        </div>
+        </div> */}
       </Link>
 
       {/* Detalles del producto */}
