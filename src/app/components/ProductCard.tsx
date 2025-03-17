@@ -54,7 +54,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
     <div className="w-full flex flex-col h-[480px] sm:w-[45%] lg:w-[30%] shadow-sm rounded-md p-4">
       <Link href={`/products/${product.id}`} className="relative w-full h-80 group">
         {/* Imagen principal */}
-        <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-100 group-hover:opacity-0">
+        <div className="absolute inset-0">
           <Image
             src={
               product.Images[0]
@@ -69,7 +69,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
           />
         </div>
 
-        {/* Imagen secundaria */}
+        {/* Imagen secundaria - comentada */}
        {/*  <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100">
           <Image
             src={
