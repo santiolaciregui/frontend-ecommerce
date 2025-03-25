@@ -10,8 +10,10 @@ import { Category, Discount, Option } from '@/app/context/types';
 import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown'; // Added Dropdown import
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { getImageUrl } from '@/app/utils/getImageURL';
+import BackButton from '@/app/components/BackButton';
 
 // Interface for product form data.
 interface ProductForm {
@@ -25,13 +27,25 @@ interface ProductForm {
   subcategoryId: number;
   discountId: number;
   optionIds: number[];
-  images: File[]; // New images to be uploaded.
 }
 
 // Interface for existing images.
 interface ProductImage {
   id: number;
   url: string;
+  altText?: string;
+  ProductImage: {
+    id: number;
+    productId: number;
+    imageId: number;
+    colorId: number | null;
+  };
+}
+
+// Interface for uploaded images with color assignment
+interface UploadedImage {
+  file: File;
+  colorId?: number;  // which color this image belongs to, if any
 }
 
 const UpdateProduct = () => {
@@ -54,7 +68,7 @@ const UpdateProduct = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // Form data (for text fields and new images).
+  // Form data (for text fields)
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     SKU: 0,
@@ -65,14 +79,15 @@ const UpdateProduct = () => {
     categoryId: 0,
     subcategoryId: 0,
     discountId: 0,
-    optionIds: [],
-    images: []
+    optionIds: []
   });
 
   // State for existing images loaded from the product.
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   // State to track which existing image IDs have been removed.
   const [removedImageIds, setRemovedImageIds] = useState<number[]>([]);
+  // State for new uploaded images with color assignment
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
   // Fetch product data and required lists concurrently.
   useEffect(() => {
@@ -91,8 +106,7 @@ const UpdateProduct = () => {
           categoryId: product.Categories[0]?.parentId || 0,
           subcategoryId: product.Categories[0]?.id || 0,
           discountId: product.discountId || 0,
-          optionIds: (product.Options as Option[]).map((option: Option) => option.id),
-          images: [] // New images will be added separately.
+          optionIds: (product.Options as Option[]).map((option: Option) => option.id)
         });
         // Set the existing images from the product.
         setExistingImages(product.Images);
@@ -188,28 +202,56 @@ const UpdateProduct = () => {
   };
 
   // Handle file input changes for new images.
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      setFormData(prevState => ({
-        ...prevState,
-        images: [...prevState.images, ...Array.from(files)]
-      }));
-    }
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const newFiles = Array.from(e.target.files).map(file => ({
+      file,
+      colorId: undefined, // no color assigned initially
+    }));
+    setUploadedImages(prev => [...prev, ...newFiles]);
   };
 
   // Remove a new image before upload.
-  const handleImageRemove = (index: number) => {
-    setFormData(prevState => ({
-      ...prevState,
-      images: prevState.images.filter((_, i) => i !== index)
-    }));
+  const handleRemoveUploadedImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   // Mark an existing image as removed.
   const handleExistingImageRemove = (imageId: number) => {
     setRemovedImageIds(prev => [...prev, imageId]);
     setExistingImages(prev => prev.filter(image => image.id !== imageId));
+  };
+
+  // Set color for an uploaded image
+  const handleSetColorForImage = (imageIndex: number, colorId: number | undefined) => {
+    setUploadedImages(prev => {
+      const updated = [...prev];
+      updated[imageIndex] = { ...updated[imageIndex], colorId };
+      return updated;
+    });
+  };
+
+  // Custom template to show a circle + color name
+  const colorOptionTemplate = (option: Option) => {
+    if (!option || !option.name) {
+      return <span>Sin color específico</span>;
+    }
+    return (
+      <div className="flex items-center">
+        <span
+          style={{
+            display: 'inline-block',
+            width: '16px',
+            height: '16px',
+            borderRadius: '50%',
+            backgroundColor: (option as any).colorCode || '#ccc',
+            marginRight: '8px',
+            border: '1px solid #ccc',
+          }}
+        />
+        <span>{option.name}</span>
+      </div>
+    );
   };
 
   // Create a new size option and add it to the selected options.
@@ -238,9 +280,6 @@ const UpdateProduct = () => {
   };
 
   // Submit the update.
-  // The FormData now includes:
-  // - New images (from formData.images)
-  // - A JSON string for removedImageIds (for images the user removed)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -255,11 +294,19 @@ const UpdateProduct = () => {
       data.append('categoryId', String(formData.categoryId));
       data.append('subcategoryId', String(formData.subcategoryId));
       data.append('discountId', String(formData.discountId));
+      
+      // Append option IDs
       formData.optionIds.forEach(id => data.append('optionIds', String(id)));
+      
       // Append the removed image IDs (as a JSON string).
       data.append('removedImageIds', JSON.stringify(removedImageIds));
-      // Append new images.
-      formData.images.forEach(file => data.append('images', file));
+      
+      // Append new images with their color IDs
+      uploadedImages.forEach((img, index) => {
+        data.append('images', img.file, img.file.name);
+        const cId = img.colorId ?? 0; 
+        data.append('imageColorIds', String(cId));
+      });
       
       await apiServiceProducts.updateProduct(Number(id), data);
       alert('Producto actualizado con éxito');
@@ -275,137 +322,164 @@ const UpdateProduct = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md">
+        <BackButton destination="/admin/products" />
         <h1 className="text-3xl font-semibold mb-8">Actualizar Producto</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
+        
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Basic product fields */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Nombre */}
+            {/* Name */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="name">Nombre *</label>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Nombre *
+              </label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
             {/* SKU */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="SKU">SKU *</label>
+              <label htmlFor="SKU" className="block text-sm font-medium mb-1">
+                SKU *
+              </label>
               <input
-                type="number"
+                type="text"
                 id="SKU"
                 name="SKU"
                 value={formData.SKU}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {/* Descripción */}
+
+            {/* Description */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="description">Descripción *</label>
+              <label htmlFor="description" className="block text-sm font-medium mb-1">
+                Descripción *
+              </label>
               <textarea
                 id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {/* Precio */}
+
+            {/* Price */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="price">Precio *</label>
+              <label htmlFor="price" className="block text-sm font-medium mb-1">
+                Precio *
+              </label>
               <input
                 type="number"
                 id="price"
                 name="price"
                 value={formData.price}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
             {/* Stock */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="stock">Stock *</label>
+              <label htmlFor="stock" className="block text-sm font-medium mb-1">
+                Stock *
+              </label>
               <input
                 type="number"
                 id="stock"
                 name="stock"
                 value={formData.stock}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {/* Peso */}
+
+            {/* Weight */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="weight">Peso *</label>
+              <label htmlFor="weight" className="block text-sm font-medium mb-1">
+                Peso *
+              </label>
               <input
                 type="number"
                 id="weight"
                 name="weight"
                 value={formData.weight}
                 onChange={handleInputChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {/* Categoría */}
+
+            {/* Category */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="categoryId">Categoría *</label>
+              <label htmlFor="categoryId" className="block text-sm font-medium mb-1">
+                Categoría *
+              </label>
               <select
                 id="categoryId"
                 name="categoryId"
                 value={formData.categoryId || ''}
                 onChange={handleCategoryChange}
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Seleccionar categoría</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>{category.name}</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
               </select>
             </div>
-            {/* Subcategoría */}
+
+            {/* Subcategory */}
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="subcategoryId">Subcategoría</label>
+              <label htmlFor="subcategoryId" className="block text-sm font-medium mb-1">
+                Subcategoría *
+              </label>
               <select
                 id="subcategoryId"
                 name="subcategoryId"
                 value={formData.subcategoryId || ''}
                 onChange={handleInputChange}
+                required
+                disabled={!formData.categoryId}
                 className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Seleccionar subcategoría</option>
-                {subcategories.map(subcategory => (
-                  <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                {subcategories.map(sub => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name}
+                  </option>
                 ))}
               </select>
             </div>
-            {/* Imágenes */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1" htmlFor="images">Imágenes (hasta 10 archivos)</label>
-              <input
-                type="file"
-                id="images"
-                onChange={handleImageUpload}
-                multiple
-                className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                {/* Display existing images */}
-                {existingImages.map((image, index) => (
+          </div>
+
+          {/* Existing Images */}
+          {existingImages.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-lg font-medium mb-2">Imágenes Existentes</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {existingImages.map((image) => (
                   <div key={image.id} className="relative">
                     <img
                       src={getImageUrl(image.url)}
-                      alt={`Existing image ${index}`}
+                      alt={image.altText || 'Product Image'}
                       className="w-full h-32 object-cover border rounded-md"
                     />
                     <button
@@ -415,83 +489,126 @@ const UpdateProduct = () => {
                     >
                       &times;
                     </button>
+                    <div className="mt-1 text-xs text-gray-500">
+                      {image.ProductImage?.colorId ? 
+                        `Color: ${colorOptions.find(c => c.id === image.ProductImage.colorId)?.name || 'Unknown'}` : 
+                        'Sin color específico'}
+                    </div>
                   </div>
                 ))}
-                {/* Display new images */}
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative">
+              </div>
+            </div>
+          )}
+
+          {/* Single file input for all new images */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2" htmlFor="allImages">
+              Nuevas Imágenes (asignar color después)
+            </label>
+            <input
+              type="file"
+              id="allImages"
+              multiple
+              onChange={handleFileInputChange}
+              className="border p-2 rounded-md"
+            />
+          </div>
+
+          {/* Display each uploaded file with a color dropdown */}
+          {uploadedImages.length > 0 && (
+            <div className="mt-4 space-y-4">
+              {uploadedImages.map((imgObj, index) => {
+                const previewUrl = URL.createObjectURL(imgObj.file);
+                return (
+                  <div
+                    key={index}
+                    className="p-4 border rounded-md flex items-start gap-4 relative"
+                  >
                     <img
-                      src={URL.createObjectURL(image)}
-                      alt={`New image ${index}`}
-                      className="w-full h-32 object-cover border rounded-md"
+                      src={previewUrl}
+                      alt={`Uploaded ${index}`}
+                      className="w-24 h-24 object-cover border rounded-md"
                     />
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium mb-1">
+                        Asignar color (opcional)
+                      </label>
+                      <Dropdown
+                        value={imgObj.colorId ?? null}
+                        options={colorOptions}
+                        onChange={(e) => {
+                          const newColorId = e.value || 0;
+                          handleSetColorForImage(index, newColorId === 0 ? undefined : newColorId);
+                        }}
+                        optionValue="id"
+                        optionLabel="name"
+                        placeholder="Sin color específico"
+                        className="border p-2 rounded-md w-full md:w-60"
+                        itemTemplate={colorOptionTemplate}
+                        valueTemplate={colorOptionTemplate}
+                      />
+                    </div>
+                    {/* Remove button */}
                     <button
                       type="button"
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
+                      onClick={() => handleRemoveUploadedImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                     >
                       &times;
                     </button>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-            {/* Opciones (Colores y Tamaños) */}
-            <div className="col-span-2">
-              <h2 className="text-xl font-semibold mb-4">Opciones</h2>
-              {/* Opciones de color */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Colores</label>
+          )}
+
+          {/* COLOR & SIZE MULTISELECTS */}
+          <div className="mt-6">
+            <h2 className="text-xl font-semibold mb-4">Opciones de tamaño</h2>
+
+            {/* Size MultiSelect + "create new size" UI */}
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Tamaños
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
                 <MultiSelect
-                  value={getSelectedValues(0)}
-                  options={transformOptionsForSelect(colorOptions)}
-                  onChange={(e) => handleOptionSelect(e.value, 0)}
-                  placeholder="Seleccionar colores"
-                  className="w-full"
+                  value={getSelectedValues(1)} // size IDs
+                  options={transformOptionsForSelect(sizeOptions)}
+                  onChange={(e) => handleOptionSelect(e.value, 1)}
+                  placeholder="Seleccionar tamaños"
+                  className="min-w-[220px]"
                   display="chip"
-                  filter
-                  filterPlaceholder='Buscar colores'
                 />
-              </div>
-              {/* Opciones de tamaño */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Tamaños</label>
-                <div className="flex gap-2">
-                  <MultiSelect
-                    value={getSelectedValues(1)}
-                    options={transformOptionsForSelect(sizeOptions)}
-                    onChange={(e) => handleOptionSelect(e.value, 1)}
-                    placeholder="Seleccionar tamaños"
-                    className="w-full"
-                    display="chip"
+                <div className="flex gap-2 items-center">
+                  <InputText
+                    value={newSizeName}
+                    onChange={(e) => setNewSizeName(e.target.value)}
+                    placeholder="Nuevo tamaño"
                   />
-                  <div className="flex gap-2 min-w-[300px]">
-                    <InputText
-                      value={newSizeName}
-                      onChange={(e) => setNewSizeName(e.target.value)}
-                      placeholder="Nuevo tamaño"
-                      className="w-full"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleCreateSize}
-                      disabled={creatingSize || !newSizeName.trim()}
-                      loading={creatingSize}
-                      className="bg-green-500 hover:bg-green-600"
-                      label="Agregar"
-                    />
-                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleCreateSize}
+                    disabled={creatingSize || !newSizeName.trim()}
+                    loading={creatingSize}
+                    className="bg-green-500 hover:bg-green-600"
+                    label="Agregar"
+                  />
                 </div>
               </div>
+              {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
             </div>
           </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600"
-            disabled={loading}
-          >
-            {loading ? 'Actualizando...' : 'Actualizar Producto'}
-          </button>
+
+          {/* SUBMIT */}
+          <div className="mt-6">
+            <Button
+              type="submit"
+              disabled={loading}
+              label="Actualizar Producto"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </form>
       </div>
     </div>

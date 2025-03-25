@@ -5,9 +5,10 @@ import { useCart } from '../context/CartContext';
 
 interface CustomizeProductsProps {
   product: Product;
+  onColorSelect?: (colorId: number) => void;
 }
 
-const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
+const CustomizeProducts = ({ product, onColorSelect }: CustomizeProductsProps) => {
   const { addToCart } = useCart();  
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
@@ -25,11 +26,16 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
     fetchProductOptions();
   }, [product]);
 
-  const handleOptionSelect = (optionType: string, choice: string) => {
+  const handleOptionSelect = (optionType: string, choice: string, optionId?: number) => {
     setSelectedOptions((prev) => ({
       ...prev,
       [optionType]: choice
     }));
+    
+    // If this is a color option and we have the onColorSelect callback, call it
+    if (optionType === 'Color' && onColorSelect && optionId) {
+      onColorSelect(optionId);
+    }
   };
 
   const handleQuantity = (type: 'i' | 'd') => {
@@ -83,7 +89,7 @@ const CustomizeProducts = ({ product }: CustomizeProductsProps) => {
                       backgroundColor: option.colorCode,
                       boxShadow: selectedOptions['Color'] === option.name ? '0 0 0 2px #000' : ''
                     }}
-                    onClick={() => handleOptionSelect('Color', option.name)}
+                    onClick={() => handleOptionSelect('Color', option.name, option.id)}
                   >
                     {selectedOptions['Color'] === option.name && (
                       <div className="absolute w-10 h-10 rounded-full ring-2 ring-black top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />

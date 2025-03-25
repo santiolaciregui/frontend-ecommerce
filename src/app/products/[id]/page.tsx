@@ -21,6 +21,7 @@ const SinglePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isStoresOpen, setIsStoresOpen] = useState(false);
+  const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
 
   // Cargar el producto
   useEffect(() => {
@@ -102,11 +103,15 @@ const SinglePage = () => {
   const formattedThreeInstallment = ((numericFinalPrice * threeInstallmentMultiplier) / 3).toFixed(2);
   const formattedSixInstallment = ((numericFinalPrice * sixInstallmentMultiplier) / 6).toFixed(2);
 
+  const handleColorSelect = (colorId: number) => {
+    setSelectedColorId(colorId);
+  };
+
   return (
     <div className='px-4 mt-12 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
       {/* Imágenes del producto */}
       <div className="w-full lg:w-1/2 lg:sticky top-20 h-max">
-        <ProductImages items={product.Images} />
+        <ProductImages items={product.Images as any[]} selectedColorId={selectedColorId} />
       </div>
 
       {/* Detalles del producto */}
@@ -151,7 +156,7 @@ const SinglePage = () => {
         <div className="h-[2px] bg-gray-200 my-4" />
 
         {product.stock ? (
-          <CustomizeProducts product={product} />
+          <CustomizeProducts product={product} onColorSelect={handleColorSelect} />
         ) : (
           <button className="w-36 text-sm rounded-2xl ring-1 ring-gray-400 text-gray-400 py-2 px-4 cursor-default bg-gray-200">
             No disponible
