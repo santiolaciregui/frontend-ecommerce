@@ -23,7 +23,7 @@ const staticStores: Store[] = [
   { id: 2, address: 'Neuquen 1544', imgSrc: '/stores/Roca.jpeg', link: 'https://wa.link/a4h9qa' },
   { id: 3, address: 'Lainez 267', imgSrc: '/stores/Lainez.jpeg', link: 'https://wa.link/a4h9qa' },
   { id: 4, address: 'Perú 58', imgSrc: '/stores/Centenario.jpeg', link: 'https://wa.link/a4h9qa' },
-  { id: 5, address: 'Alcorta 533', imgSrc: '/stores/Alcorta.jpeg', link: 'https://wa.link/a4h9qa' },
+  { id: 5, address: 'Amancio Alcorta 533', imgSrc: '/stores/Alcorta.jpeg', link: 'https://wa.link/a4h9qa' },
 ];
 
 const StoreCards: React.FC = () => {
