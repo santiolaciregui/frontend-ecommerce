@@ -50,6 +50,9 @@ const Footer = () => {
               <Link href="/empresa/contacto" className="text-gray-600 hover:text-gray-800">
                 Contáctanos
               </Link>
+              <Link href="/terminos_condiciones" className="text-gray-600 hover:text-gray-800">
+                Términos y Condiciones
+              </Link>
               <Link href="/admin" className="text-gray-600 hover:text-gray-800">
                 Administración
               </Link>
