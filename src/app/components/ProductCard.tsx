@@ -15,7 +15,6 @@ interface Props {
 }
 
 const ProductCard = ({ product, paymentFormats }: Props) => {
-  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const finalPrice = product.finalPrice;
   const formattedFinalPrice = finalPrice.toFixed(2);
 
@@ -29,6 +28,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   const sixInstallmentsConfig = paymentFormats.find(
     (config) => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_6
   );
+  console.log("Product: ",product)
 
   // Si la configuración no existe, se usan valores por defecto
   const transferMultiplier = transferConfig
@@ -51,10 +51,9 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   const formattedSixInstallment = sixInstallment.toFixed(2);
 
   return (
-    <div className="w-full flex flex-col h-[480px] sm:w-[45%] lg:w-[30%] shadow-sm rounded-md p-4">
-      <Link href={`/products/${product.id}`} className="relative w-full h-80 group">
-        {/* Imagen principal */}
-        <div className="absolute inset-0">
+    <div className="w-full flex flex-col h-[600px] sm:w-[60%] md:w-[60%] lg:w-[30%] shadow-sm rounded-md p-4">
+      <Link href={`/products/${product.id}`} className="relative w-full h-[400px] flex items-center justify-center group">
+        <div className="relative w-full h-full">
           <Image
             src={
               product.Images[0]
@@ -63,12 +62,12 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
             }
             alt={product.name}
             layout="fill"
-            sizes="25vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover rounded-md"
             unoptimized
           />
         </div>
-
+      </Link>
         {/* Imagen secundaria - comentada */}
        {/*  <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100">
           <Image
@@ -84,7 +83,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
             unoptimized
           />
         </div> */}
-      </Link>
+  
 
       {/* Detalles del producto */}
       <div className="flex-grow mt-4">
