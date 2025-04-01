@@ -15,7 +15,6 @@ const CategoryAdminList = () => {
       setLoading(true);
       try {
         const fetchedCategories = await apiService.fetchCategories();
-        console.log("categories: "+fetchedCategories);
         setCategories(fetchedCategories);
       } catch (err) {
         setError('Error fetching categories');

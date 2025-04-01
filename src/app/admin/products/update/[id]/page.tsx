@@ -509,6 +509,7 @@ const UpdateProduct = () => {
               type="file"
               id="allImages"
               multiple
+              accept=".png,.jpg,.jpeg"
               onChange={handleFileInputChange}
               className="border p-2 rounded-md"
             />

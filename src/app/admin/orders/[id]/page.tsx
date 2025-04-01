@@ -27,7 +27,6 @@ const OrderDetails: React.FC = () => {
           setError('Orden no encontrada');
         } else {
           setOrder(orderDetails);
-          console.log('orderDetails: ', orderDetails);
         }
       } catch (err) {
         setError('Error al cargar los detalles de la orden');
