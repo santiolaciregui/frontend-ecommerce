@@ -274,8 +274,6 @@ const ListPage = () => {
           )}
         </div>
       </div>
-
-      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
     </div>
   );
 };

@@ -48,7 +48,6 @@ export const createProduct = async (productData) => {
 export const fetchAllProducts = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/products`);
-    console.log('Products:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -90,7 +89,10 @@ export const deleteProductByID = async ({ id }) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -101,7 +103,6 @@ export const updateProduct = async (id, productData) => {
 
   try {
     // Inspect FormData for debugging
-    console.log("Content of productData:");
     for (const pair of productData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
     }
@@ -113,7 +114,10 @@ export const updateProduct = async (id, productData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
