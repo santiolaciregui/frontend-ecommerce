@@ -52,8 +52,9 @@ const Menu = () => {
                 {/* Enlaces del menú */}
                 <Link href='/products' onClick={handleLinkClick}>Productos</Link>
                 <Link href="/empresa/contacto" onClick={handleLinkClick}>Contacto</Link>
-                <Link href="/empresa/sobre-nosotros" onClick={handleLinkClick}>Sobre Nosotros</Link>
-                <Link href="/order-tracking" onClick={handleLinkClick}>Seguir mi pedido</Link>
+                <Link href="/empresa/sobre-nosotros" onClick={handleLinkClick}>Sobre nosotros</Link>
+{/*                 <Link href="/reviews" onClick={handleLinkClick}>Reseñas</Link>
+ */}                <Link href="/order-tracking" onClick={handleLinkClick}>Seguir mi pedido</Link>
             </div>
         </div>
     )

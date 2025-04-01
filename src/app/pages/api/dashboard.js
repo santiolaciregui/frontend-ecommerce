@@ -16,7 +16,10 @@ export const uploadCarouselImages = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error uploading carousel images:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -43,7 +46,10 @@ export const deleteCarouselImage = async (filename) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting carousel image:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -59,7 +65,10 @@ export const deleteAllCarouselImages = async () => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting all carousel images:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -76,7 +85,10 @@ export const updateCarouselImages = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating carousel images:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };

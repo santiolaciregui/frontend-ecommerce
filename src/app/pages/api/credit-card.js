@@ -12,7 +12,10 @@ export const createCreditCard = async (creditCardData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating credit card:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };

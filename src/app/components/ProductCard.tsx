@@ -28,7 +28,6 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   const sixInstallmentsConfig = paymentFormats.find(
     (config) => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_6
   );
-  console.log("Product: ",product)
 
   // Si la configuración no existe, se usan valores por defecto
   const transferMultiplier = transferConfig

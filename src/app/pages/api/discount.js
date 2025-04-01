@@ -35,7 +35,10 @@ export const createDiscount = async (discountData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating discount:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -51,7 +54,10 @@ export const updateDiscount = async (id, discountData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating discount:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -67,7 +73,10 @@ export const deleteDiscountByID = async (id) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting discount:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };

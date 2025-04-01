@@ -226,6 +226,19 @@ const AdminDashboard = () => {
               
             </div>
           </div>
+
+          {/* Administración de Reseñas de Clientes */}
+          <div className="border rounded-lg bg-white p-6 shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Reseñas de Clientes</h2>
+            <div className="space-y-4">
+              <Link
+                href="/admin/reviews"
+                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              >
+                Administrar Reseñas
+              </Link>
+            </div>
+          </div> 
         </div>
       </div>
     </div>

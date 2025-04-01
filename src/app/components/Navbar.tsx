@@ -76,8 +76,11 @@ const Navbar = () => {
             <Link href="/empresa/contacto">Contacto</Link>
           </div>
           <div className="cursor-pointer">
-            <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
+            <Link href="/empresa/sobre-nosotros">Sobre nosotros</Link>
           </div>
+{/*           <div className="cursor-pointer">
+            <Link href="/reviews">Reseñas</Link>
+          </div> */}
           <div className="cursor-pointer">
             <Link href="/order-tracking">Seguir mi pedido</Link>
           </div>

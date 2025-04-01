@@ -36,7 +36,10 @@ export const createPaymentFormat = async (data) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating payment format:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -52,7 +55,10 @@ export const updatePaymentFormat = async (id, data) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating payment format:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -68,7 +74,10 @@ export const deletePaymentFormat = async (id) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting payment format:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };

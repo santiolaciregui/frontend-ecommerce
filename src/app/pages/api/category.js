@@ -29,7 +29,6 @@ export const fetchParentCategories = async () => {
 export const fetchCategoriesDashboard = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/categories/parentsDashboard`);
-    console.log(JSON.stringify(response))
     return response.data;
   } catch (error) {
     console.error('Error fetching parent categories:', error);
@@ -77,11 +76,15 @@ export const createCategory = async (categoryData) => {
     const response = await axios.post(`${API_BASE_URL}/categories`, categoryData, {
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': categoryData instanceof FormData ? 'multipart/form-data' : 'application/json'
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating category:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -93,11 +96,15 @@ export const updateCategory = async (id, categoryData) => {
     const response = await axios.put(`${API_BASE_URL}/categories/${id}`, categoryData, {
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': categoryData instanceof FormData ? 'multipart/form-data' : 'application/json'
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating category:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -113,7 +120,10 @@ export const deleteCategory = async (id) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting category:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };

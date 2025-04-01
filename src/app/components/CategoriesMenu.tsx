@@ -8,7 +8,6 @@ interface CategoriesProps {
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const CategoriesMenu: React.FC<CategoriesProps> = ({ categories, onCategoryClick }) => {
-  console.log(categories)
   return (
     <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {categories && categories.map((category) => (

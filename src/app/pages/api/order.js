@@ -13,7 +13,10 @@ export const createOrder = async (orderData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -29,7 +32,10 @@ export const updateOrderById = async (id, orderData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -45,7 +51,10 @@ export const fetchOrders = async () => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -60,7 +69,10 @@ export const fetchOrderById = async (id, token) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching order:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -87,7 +99,10 @@ export const deleteOrderById = async (id) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting order:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
@@ -105,7 +120,10 @@ export const fetchOrdersByEmailAndNumber = async (email, orderNumber, token) => 
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching orders by email and order number:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };

@@ -25,7 +25,10 @@ export const createOption = async (optionData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating option:', error);
+    console.error('Error message:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
     throw error;
   }
 };
