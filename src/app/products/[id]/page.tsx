@@ -10,6 +10,7 @@ import Loading from '@/app/components/Loading';
 import PaymentModal from '@/app/components/modalPayments';
 import paymentFormatsService from "../../pages/api/paymentFormat"; // Importa el API para paymentFormats
 import { PAYMENT_FORMATS_ES } from '@/app/constants/checkoutConstants';
+import BackButton from '@/app/components/BackButton';
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -109,6 +110,11 @@ const SinglePage = () => {
 
   return (
     <div className='px-4 mt-12 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
+      {/* Back button in the upper left corner */}
+      <div className="absolute top-[-40px] left-4 md:left-8 lg:left-16 xl:left-32 2xl:left-64">
+        <BackButton />
+      </div>
+      
       {/* Imágenes del producto */}
       <div className="w-full lg:w-1/2 lg:sticky top-20 h-max">
         <ProductImages items={product.Images as any[]} selectedColorId={selectedColorId} />

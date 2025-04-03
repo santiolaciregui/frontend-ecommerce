@@ -23,7 +23,6 @@ const SeguimientoPedido: React.FC = () => {
 
       if (orden) {
         const idOrden = orden.id;
-        console.log("ID de la orden: " + idOrden);
         router.push(`/order-summary/${idOrden}`);  // Redirige al resumen del pedido
       } else {
         setError('No encontramos un pedido con ese número');

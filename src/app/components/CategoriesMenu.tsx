@@ -16,7 +16,7 @@ const CategoriesMenu: React.FC<CategoriesProps> = ({ categories, onCategoryClick
           className="bg-white shadow-md rounded-lg p-4 hover:shadow-xl transition-shadow duration-300 cursor-pointer"
           onClick={() => onCategoryClick(category.id)} // Trigger on click
         >
-          <h3 className="text-lg font-semibold">{category.name}</h3>
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold">{category.name}</h3>
           <div className="w-full aspect-w-16 aspect-h-9 mt-2 rounded-lg overflow-hidden">
             <img
               src={

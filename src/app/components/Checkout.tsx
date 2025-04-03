@@ -9,6 +9,7 @@ import { DELIVERY_OPTIONS, PAYMENT_FORMATS } from '../constants/checkoutConstant
 import { useCheckout } from '../hooks/useCheckout';
 import { InstallmentOption } from '../context/types';
 import { getImageUrl } from '../utils/getImageURL';
+import BackButton from './BackButton';
 
 const Checkout: React.FC = () => {
   const router = useRouter();
@@ -120,7 +121,9 @@ const Checkout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
+      
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md">
+      <BackButton />
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Finaliza tu compra</h1>
           <a href="/products" className="text-blue-500 hover:underline">

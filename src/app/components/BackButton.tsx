@@ -1,8 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 interface BackButtonProps {
-  // Optional: if you want to navigate to a specific route instead of going back in history
   destination?: string;
 }
 
@@ -11,10 +11,8 @@ const BackButton = ({ destination }: BackButtonProps) => {
 
   const handleBack = () => {
     if (destination) {
-      // Navigate to a specific route
       router.push(destination);
     } else {
-      // Go back to the previous page in the history
       router.back();
     }
   };
@@ -22,9 +20,10 @@ const BackButton = ({ destination }: BackButtonProps) => {
   return (
     <button
       onClick={handleBack}
-      className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-black transition-all duration-200 shadow-sm hover:shadow-md"
     >
-      Volver
+      <ArrowLeft size={18} />
+      <span className="text-sm font-medium">Atrás</span>
     </button>
   );
 };
