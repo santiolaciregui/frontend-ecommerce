@@ -116,7 +116,7 @@ const SinglePage = () => {
       </div>
       
       {/* Imágenes del producto */}
-      <div className="w-full lg:w-1/2 lg:sticky top-20 h-max">
+      <div className="w-full lg:w-1/2 lg:sticky top-10 h-max">
         <ProductImages items={product.Images as any[]} selectedColorId={selectedColorId} />
       </div>
 

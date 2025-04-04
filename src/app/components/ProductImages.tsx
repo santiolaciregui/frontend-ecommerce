@@ -47,7 +47,7 @@ const ProductImages = ({ items, selectedColorId }: ProductImagesProps) => {
           unoptimized
         />
       </div>
-      <div className="flex justify-between gap-4 mt-8">
+      <div className="flex justify-between gap-4">
         {items.map((item: ProductImage, i: number) => (
           <div
             className="w-1/4 h-32 relative cursor-pointer"

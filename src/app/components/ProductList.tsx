@@ -1,11 +1,9 @@
-// ProductList.tsx
 'use client';
 
 import React, { useEffect, useState } from "react";
 import { PaymentFormat, Product } from "../context/types";
 import ProductCard from "./ProductCard";
 import paymentFormatService from "../pages/api/paymentFormat";
-
 
 type Props = {
   products: Product[];
@@ -32,17 +30,18 @@ const ProductList = ({ products }: Props) => {
     fetchPaymentFormats();
   }, []);
 
-  if (loading) return <div>Cargando medios de pago...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="text-center py-8">Cargando medios de pago...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
 
   return (
-    <div className='mt-12 flex gap-x-8 gap-y-8 justify-start flex-wrap items-stretch'>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((product) => (
-        <ProductCard
-          product={product}
-          paymentFormats={paymentFormats}
-          key={product.id}
-        />
+        <div key={product.id} className="h-full">
+          <ProductCard
+            product={product}
+            paymentFormats={paymentFormats}
+          />
+        </div>
       ))}
     </div>
   );

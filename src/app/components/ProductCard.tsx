@@ -1,4 +1,3 @@
-// ProductCard.tsx
 'use client';
 
 import React from "react";
@@ -7,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { getImageUrl } from "../utils/getImageURL";
 import { PAYMENT_FORMATS_ES } from "../constants/checkoutConstants";
-
 
 interface Props {
   product: Product;
@@ -50,8 +48,9 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   const formattedSixInstallment = sixInstallment.toFixed(2);
 
   return (
-    <div className="w-full flex flex-col h-[600px] sm:w-[60%] md:w-[60%] lg:w-[30%] shadow-sm rounded-md p-4">
-      <Link href={`/products/${product.id}`} className="relative w-full h-[400px] flex items-center justify-center group">
+    <div className="flex flex-col h-full shadow-sm rounded-md p-4 border border-gray-100 hover:shadow-md transition-shadow">
+      {/* Fixed height image container */}
+      <Link href={`/products/${product.id}`} className="block w-full h-80 md:h-96 mb-4 overflow-hidden rounded-md">
         <div className="relative w-full h-full">
           <Image
             src={
@@ -60,65 +59,49 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
                 : "/logo-verde-manzana.svg"
             }
             alt={product.name}
-            layout="fill"
+            fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover rounded-md"
+            className="object-contain rounded-md"
             unoptimized
           />
         </div>
       </Link>
-        {/* Imagen secundaria - comentada */}
-       {/*  <div className="absolute inset-0 transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100">
-          <Image
-            src={
-              product.Images[1]
-                ? `${API_URL}${product.Images[1].url}`
-                : "/logo-verde-manzana.svg"
-            }
-            alt={product.name}
-            layout="fill"
-            sizes="25vw"
-            className="object-cover rounded-md"
-            unoptimized
-          />
-        </div> */}
-  
 
-      {/* Detalles del producto */}
-      <div className="flex-grow mt-4">
-        <div className="flex justify-between items-center">
-          <span className="font-medium">{product.name}</span>
+      {/* Fixed height details container */}
+      <div className="flex-grow h-36">
+        <div className="flex justify-between items-start">
+          <span className="font-medium text-xs md:text-sm line-clamp-2 h-12">{product.name}</span>
           <div className="flex items-center space-x-2">
             {product.Discounts && product.Discounts.length > 0 && (
-              <span className="text-gray-500 line-through text-sm">
+              <span className="text-gray-500 line-through text-xs md:text-xs">
                 ${product.price.toFixed(2)}
               </span>
             )}
-            <span className="font-semibold text-lg">${formattedFinalPrice}</span>
+            <span className="font-semibold text-sm md:text-base">${formattedFinalPrice}</span>
           </div>
         </div>
 
-        {/* Opciones de pago */}
-        <div className="mt-2 space-y-1">
-          <div className="text-sm">
+        {/* Opciones de pago - fixed height */}
+        <div className="mt-2 space-y-1 h-20">
+          <div className="text-xs md:text-xs">
             <span>Transferencia: </span>
             <span className="font-semibold">${formattedTransferPrice}</span>
           </div>
-          <div className="text-sm">
+          <div className="text-xs md:text-xs">
             <span>3 cuotas de: </span>
             <span className="font-semibold">${formattedThreeInstallment}</span>
           </div>
-          <div className="text-sm">
+          <div className="text-xs md:text-xs">
             <span>6 cuotas de: </span>
             <span className="font-semibold">${formattedSixInstallment}</span>
           </div>
         </div>
       </div>
 
-      {/* Botón de acción */}
-      <div className="mt-auto pt-4 flex justify-center">
-        <Link href={`/products/${product.id}`}>
-          <button className="w-56 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200">
+      {/* Botón de acción - fixed height */}
+      <div className="mt-auto pt-2 flex justify-center h-12">
+        <Link href={`/products/${product.id}`} className="w-full">
+          <button className="w-full text-xs rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200 transition-colors">
             Seleccionar opciones
           </button>
         </Link>
