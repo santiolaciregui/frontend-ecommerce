@@ -47,6 +47,9 @@ const Footer = () => {
               <Link href="/empresa/sobre-nosotros" className="text-gray-600 hover:text-gray-800">
                 Sobre Nosotros
               </Link>
+              <Link href="/reviews" className="text-gray-600 hover:text-gray-800">
+              Clientes Felices
+              </Link>
               <Link href="/empresa/contacto" className="text-gray-600 hover:text-gray-800">
                 Contáctanos
               </Link>

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Navigation, Pagination, Autoplay, EffectFlip } from 'swiper/modules';
 import { getImageUrl } from '../utils/getImageURL';
 import { fetchReviewImages } from '../pages/api/reviews';
 
@@ -9,6 +9,7 @@ import { fetchReviewImages } from '../pages/api/reviews';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-flip';
 
 // Sample review data - in a real app, this could come from your backend
 const sampleReviews = [
@@ -59,11 +60,17 @@ const ClientReviews: React.FC = () => {
   return (
     <div className="py-8">
       <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
+        modules={[Navigation, Pagination, Autoplay, EffectFlip]}
         spaceBetween={30}
         slidesPerView={1}
         navigation
-        pagination={{ clickable: true }}
+        effect={'flip'}
+        flipEffect={{ slideShadows: false }}
+        pagination={{ 
+          clickable: true,
+          el: '.swiper-pagination',
+          type: 'bullets',
+        }}
         autoplay={{ delay: 5000, disableOnInteraction: false }}
         breakpoints={{
           640: { slidesPerView: 1 },
@@ -75,8 +82,8 @@ const ClientReviews: React.FC = () => {
         {reviewImages.length > 0 ? (
           reviewImages.map((imageUrl, index) => (
             <SwiperSlide key={index}>
-              <div className="bg-white rounded-lg shadow-md p-6 h-full flex items-center justify-center">
-                <div className="w-full max-w-[300px] max-h-[567px] mx-auto overflow-hidden rounded-lg">
+              <div className="bg-white rounded-lg p-6 h-full flex items-center justify-center">
+                <div className="w-full h-[500px] mx-auto overflow-hidden rounded-lg">
                   <img 
                     src={getImageUrl(imageUrl)} 
                     alt="Client Review" 
@@ -90,8 +97,8 @@ const ClientReviews: React.FC = () => {
           // Fallback to sample placeholders if no images are available
           sampleReviews.map((_, index) => (
             <SwiperSlide key={index}>
-              <div className="bg-white rounded-lg shadow-md p-6 h-full flex items-center justify-center">
-                <div className="w-full max-w-[375px] max-h-[667px] mx-auto overflow-hidden rounded-lg">
+              <div className="bg-white rounded-lg p-6 h-full flex items-center justify-center">
+                <div className="w-full h-[500px] mx-auto overflow-hidden rounded-lg">
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                     <span className="text-gray-400 text-lg">Image placeholder</span>
                   </div>
@@ -101,6 +108,9 @@ const ClientReviews: React.FC = () => {
           ))
         )}
       </Swiper>
+      
+      {/* Pagination dots container */}
+      <div className="swiper-pagination mt-4 flex justify-center"></div>
 
       {/* Custom styles for Swiper */}
       <style jsx global>{`
@@ -113,6 +123,25 @@ const ClientReviews: React.FC = () => {
         }
         .swiper-pagination-bullet-active {
           background: #4a5568;
+        }
+        .swiper-pagination {
+          position: relative;
+          bottom: 0;
+          margin-top: 15px;
+        }
+        .swiper-pagination-bullet {
+          margin: 0 4px;
+        }
+        .swiper-slide {
+          height: auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .swiper-slide img {
+          transition: transform 0.3s ease;
+          max-height: 500px;
+          width: auto;
         }
       `}</style>
     </div>
