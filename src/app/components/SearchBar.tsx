@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Search } from 'lucide-react';
 import { Product } from '../context/types';
 import { getImageUrl } from '../utils/getImageURL';
+import LoadingSearchBar from './LoadingSearchBar';
 
 const SearchBar = () => {
   const router = useRouter();
@@ -14,35 +15,24 @@ const SearchBar = () => {
 
   const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;  
 
-  useEffect(() => {
-    if (query.length > 2) {
-      const delayDebounceFn = setTimeout(() => {
-        fetchResults();
-      }, 500);
-
-      return () => clearTimeout(delayDebounceFn);
-    } else {
-      setResults([]);
-    }
-  }, [query]);
-
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/search?query=${encodeURIComponent(query)}`);
+      const response = await axios.get(`${API_URL}/search?query=${encodeURIComponent(query)}`);
       setResults(response.data);
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
     setLoading(false);
-  };
+  }, [query, API_URL]);
+
   const clearSearch = useCallback(() => {
     setQuery('');
     setResults([]);
   }, []);
 
   useEffect(() => {
-    if (query.length > 2) {
+    if (query.length > 1) {
       const delayDebounceFn = setTimeout(() => {
         fetchResults();
       }, 500);
@@ -51,15 +41,12 @@ const SearchBar = () => {
     } else {
       setResults([]);
     }
-  }, [query]);
-
-  // ... fetchResults function remains the same ...
+  }, [query, fetchResults]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (query) {
+    if (query && results.length > 0) {
       clearSearch();
-      router.push(`/list?name=${query}`);
     }
   };
 
@@ -74,20 +61,27 @@ const SearchBar = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="silla"
-          className="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+          placeholder="Buscar productos..."
+          className="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent text-sm"
         />
-        <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2">
+        <button 
+          type="submit" 
+          className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${query.length > 2 && results.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
+          disabled={query.length > 2 && results.length === 0}
+        >
           <Search className="h-5 w-5 text-green-600" />
         </button>
       </form>
 
-      {query.length > 2 && results.length > 0 && (
+      {query.length > 2 && (
         <div className="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg overflow-hidden z-10">
-        <div className="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
           {loading ? (
-            <p className="p-4 text-gray-500">Loading...</p>
-          ) : (
+            <div className="p-4">
+              <div className="w-full flex items-center justify-center">
+                <LoadingSearchBar />
+              </div>
+            </div>
+          ) : results.length > 0 ? (
             results.map((product) => (
               <div
                 key={product.id}
@@ -124,8 +118,9 @@ const SearchBar = () => {
                 </div>
               </div>
             ))
+          ) : (
+            <p className="p-4 text-gray-500">No se han encontrado resultados</p>
           )}
-        </div>
         </div>
       )}
     </div>

@@ -69,7 +69,7 @@ const Filter: React.FC<FilterProps> = ({
             <div key={parent.id}>
               {/* Nombre de la categoría padre */}
               <div
-                className={`cursor-pointer ${
+                className={`cursor-pointer text-sm ${
                   selectedParentCategory === parent.id ? "font-bold" : ""
                 }`}
                 onClick={() => handleParentCategoryClick(parent.id)}
@@ -83,7 +83,7 @@ const Filter: React.FC<FilterProps> = ({
                   {subcategories.map((subcategory) => (
                     <div
                       key={subcategory.id}
-                      className={`cursor-pointer ${
+                      className={`cursor-pointer text-xs ${
                         selectedSubcategory === subcategory.id ? "font-bold" : ""
                       }`}
                       onClick={() => handleSubcategoryClick(subcategory.id)}

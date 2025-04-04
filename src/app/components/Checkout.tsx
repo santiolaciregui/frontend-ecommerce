@@ -80,7 +80,7 @@ const Checkout: React.FC = () => {
     if (!cart || cart.length === 0) {
       router.push('/products');
     }
-  }, [cart, router]);
+  }, []);
 
   // ---- Validation: Check if all required fields are completed ----
   const isCheckoutEnabled = (() => {
@@ -432,7 +432,7 @@ const Checkout: React.FC = () => {
                     alt={item.Product.name}
                     width={62}
                     height={96}
-                    className="object-cover rounded-md"
+                    className="object-contain rounded-xl"
                   />
                   <div className="flex flex-col justify-between w-full">
                     <div>

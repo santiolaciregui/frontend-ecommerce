@@ -78,6 +78,11 @@ export const useCheckout = () => {
     fetchPaymentFormats();
   }, []);
 
+  // Add this useEffect to update totalPrice when relevant factors change
+  useEffect(() => {
+    setTotalPrice(calculateTotalPrice());
+  }, [formData.paymentFormat, formData.paymentInstallments, cart]);
+
   useEffect(() => {
     if (!cart || cart.length === 0) {
       router.push('/products');
@@ -284,6 +289,12 @@ export const useCheckout = () => {
         installments: installment,
       },
     }));
+    
+    // Recalculate total price when installment is selected
+    const basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
+    const interestRate = installment.interestRate || 0;
+    const multiplier = 1 + interestRate / 100;
+    setTotalPrice(basePrice * multiplier);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
