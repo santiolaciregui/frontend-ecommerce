@@ -10,8 +10,8 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'store.verdemanzanamuebles.com.ar/api',
-        pathname: '/uploads/**',
+        hostname: 'store.verdemanzanamuebles.com.ar',
+        pathname: '/api/uploads/**',
       }
     ],
   },
