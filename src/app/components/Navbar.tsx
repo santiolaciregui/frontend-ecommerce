@@ -23,7 +23,8 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="relative">
+    // Added shadow-sm class for subtle shadow and border-b for a bottom line
+    <div className="relative shadow-sm border-b border-gray-200">
       {/* Navbar */}
       <div className="h-20 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 z-20">
         {/* MOBILE */}
