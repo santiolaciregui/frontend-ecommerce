@@ -2,34 +2,51 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { refreshToken } from '../pages/api/authService';
-import jwt from 'jsonwebtoken'; // Import jsonwebtoken
+import { refreshToken, logout as authLogout } from '../pages/api/authService';
+import jwt from 'jsonwebtoken';
+import { useUser } from '../context/UserContext';
 
 // Función para verificar si el token ha expirado
 const isTokenExpired = (token: string) => {
-    const decodedToken = jwt.decode(token) as { exp: number }; // Use jwt.decode
+  try {
+    const decodedToken = jwt.decode(token) as { exp: number };
+    if (!decodedToken || !decodedToken.exp) return true;
+    
     const currentTime = Date.now() / 1000; // Tiempo en segundos
     return decodedToken.exp < currentTime;
+  } catch (error) {
+    console.error('Error al verificar expiración del token:', error);
+    return true; // Si hay error, consideramos que el token ha expirado
+  }
 };
 
 // Lista de rutas privadas que requieren autenticación
-const privateRoutes = [/^\/admin/]; // Usar una expresión regular para capturar cualquier ruta que comience con '/admin'
+const privateRoutes = [/^\/admin/]; // Captura cualquier ruta que comience con '/admin'
 
 const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, setUser, logout: contextLogout } = useUser();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  // Función para cerrar sesión y redirigir al login
+  const logout = () => {
+    authLogout(); // Limpia localStorage
+    contextLogout(); // Actualiza el contexto
+    router.push('/login');
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
       const accessToken = localStorage.getItem('accessToken');
       const currentPath = window.location.pathname;
 
-      // Verificamos si la ruta actual es privada (comienza con '/admin')
-      if (privateRoutes.some(route => route.test(currentPath))) {
+      // Verificamos si la ruta actual es privada
+      const isPrivateRoute = privateRoutes.some(route => route.test(currentPath));
+      
+      if (isPrivateRoute) {
+        // Si no hay token, redirigir al login
         if (!accessToken) {
-          // Si no hay token, redirigir al login
-          router.push('/login');
+          logout();
           setIsLoading(false);
           return;
         }
@@ -40,29 +57,36 @@ const useAuth = () => {
             // Intentar renovar el token con el refreshToken
             const newAccessToken = await refreshToken();
             if (!newAccessToken) {
-              router.push('/login');
+              logout();
               setIsLoading(false);
               return;
             }
+            
+            // Decodificar el nuevo token para actualizar el usuario en el contexto
+            const decodedToken = jwt.decode(newAccessToken) as any;
+            if (decodedToken && decodedToken.user) {
+              setUser(decodedToken.user);
+            }
           } catch (error) {
             console.error('Error al renovar el token:', error);
-            router.push('/login');
+            logout();
             setIsLoading(false);
             return;
           }
         }
-
-        // Si todo está bien, el usuario está autenticado
-        setIsAuthenticated(true);
       }
 
       setIsLoading(false);
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, setUser]);
 
-  return { isAuthenticated, isLoading };
+  return { 
+    isAuthenticated: !!user, 
+    isLoading,
+    logout
+  };
 };
 
 export default useAuth;

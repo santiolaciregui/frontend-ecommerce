@@ -1,18 +1,22 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import jwt from 'jsonwebtoken';
 
 // Define user context types
 interface User {
   id: string;
-  name: string;
-  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
 }
 
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   isAuthenticated: boolean;
+  logout: () => void;
 }
 
 // Create the context
@@ -23,21 +27,37 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Simulate loading user data from a backend or localStorage
+    // Load user data from token in localStorage
     const fetchUser = async () => {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        try {
+          // Decode the token to get user information
+          const decodedToken = jwt.decode(accessToken) as any;
+          if (decodedToken && decodedToken.user) {
+            setUser(decodedToken.user);
+          }
+        } catch (error) {
+          console.error('Error decoding token:', error);
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
       }
     };
 
     fetchUser();
   }, []);
 
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setUser(null);
+  };
+
   const isAuthenticated = !!user;
 
   return (
-    <UserContext.Provider value={{ user, setUser, isAuthenticated }}>
+    <UserContext.Provider value={{ user, setUser, isAuthenticated, logout }}>
       {children}
     </UserContext.Provider>
   );

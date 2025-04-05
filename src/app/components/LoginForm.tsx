@@ -2,21 +2,33 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '../pages/api/authService';
+import { useUser } from '../context/UserContext';
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { setUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      await login(username, password);
+      const response = await login(username, password);
       setError(null);
+      
+      // Actualizar el contexto del usuario con la información del usuario
+      if (response && response.user) {
+        setUser(response.user);
+      }
+      
       router.push('/admin'); // Redirect user after successful login
     } catch (err: any) {
-      setError('Invalid credentials');
+      setError('Credenciales inválidas');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -54,9 +66,15 @@ const LoginForm: React.FC = () => {
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            disabled={isLoading}
+            className={`w-full ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium py-2 px-4 rounded-md transition-colors flex justify-center items-center`}
           >
-            Login
+            {isLoading ? (
+              <>
+                <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></span>
+                Cargando...
+              </>
+            ) : 'Iniciar Sesión'}
           </button>
         </form>
       </div>

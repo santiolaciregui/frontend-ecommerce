@@ -10,11 +10,12 @@ export const login = async (username, password) => {
       username,
       password,
     });
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken, user } = response.data;
 
-    // Guardar los tokens en localStorage
+    // Guardar los tokens y la información del usuario en localStorage
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('user', JSON.stringify(user));
 
     return response.data;
   } catch (error) {
@@ -27,6 +28,7 @@ export const login = async (username, password) => {
 export const logout = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
 };
 
 // Renovar el token

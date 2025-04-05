@@ -122,6 +122,66 @@ export const updateProduct = async (id, productData) => {
   }
 };
 
+// Mover un producto hacia arriba en el orden
+export const moveProductUp = async (id) => {
+  const token = localStorage.getItem('accessToken');
+
+  try {
+    const response = await axios.put(`${API_BASE_URL}/products/${id}/move-up`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al mover el producto hacia arriba:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
+    throw error;
+  }
+};
+
+// Mover un producto hacia abajo en el orden
+export const moveProductDown = async (id) => {
+  const token = localStorage.getItem('accessToken');
+
+  try {
+    const response = await axios.put(`${API_BASE_URL}/products/${id}/move-down`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al mover el producto hacia abajo:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
+    throw error;
+  }
+};
+
+// Actualizar el orden de los productos mediante arrastrar y soltar
+export const updateProductsOrder = async (productIds) => {
+  const token = localStorage.getItem('accessToken');
+
+  try {
+    const response = await axios.put(`${API_BASE_URL}/products/reorder`, { productIds }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar el orden de productos:', error);
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      window.location.href = '/login';
+    }
+    throw error;
+  }
+};
+
 export default {
   fetchProductsByCategory,
   fetchProducts,
@@ -129,5 +189,8 @@ export default {
   fetchProductByID,
   createProduct,
   deleteProductByID,
-  updateProduct
+  updateProduct,
+  moveProductUp,
+  moveProductDown,
+  updateProductsOrder
 };
