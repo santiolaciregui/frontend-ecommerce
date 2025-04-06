@@ -8,6 +8,7 @@ import Loading from "../components/Loading";
 import { Product, Category } from "../context/types";
 import apiService from "../pages/api/products"; // tu servicio de fetch
 import { fetchParentCategories, fetchSubcategoriesByParent } from "../pages/api/category";
+import { useSearchParams } from "next/navigation";
 
 // Componente para el Filtro en versión móvil
 interface MobileFilterProps {
@@ -63,11 +64,14 @@ const ListPage = () => {
   const [subcategories, setSubcategories] = useState<Category[]>([]);
 
   // Estado de los filtros seleccionados
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+
   const [filters, setFilters] = useState<{
     parentCategory: number | null;
     subcategory: number | null;
   }>({
-    parentCategory: null,
+    parentCategory: categoryFromUrl ? parseInt(categoryFromUrl) : null,
     subcategory: null,
   });
 

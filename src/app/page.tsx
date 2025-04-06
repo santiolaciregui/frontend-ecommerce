@@ -1,4 +1,4 @@
-// page.tsx
+// app/page.tsx
 'use client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -13,7 +13,6 @@ const HomePage = () => {
   const [carouselImages, setCarouselImages] = useState<string[]>([]);
 
   useEffect(() => {
-    // Cargar categorías
     const loadParentCategories = async () => {
       try {
         const categoriesData = await fetchCategoriesDashboard();
@@ -23,7 +22,6 @@ const HomePage = () => {
       }
     };
 
-    // Cargar imágenes del carrusel desde la API
     const loadCarouselImages = async () => {
       try {
         const imagesData = await fetchCarouselImages();
@@ -37,21 +35,23 @@ const HomePage = () => {
     loadCarouselImages();
   }, []);
 
+  // Este callback se pasa al CategoriesMenu
   const handleCategoryClick = (categoryId: number) => {
-    router.push(`/products?page=&category=${categoryId}`);
+    // Mandar al usuario a /products con el query param ?category=ID
+    router.push(`/products?category=${categoryId}`);
   };
+  
 
   return (
     <div className="text-center">
-      {/* Promo Carousel */}
       {carouselImages.length > 0 ? (
         <PromoCarousel images={carouselImages} />
       ) : (
         <div>Cargando imágenes...</div>
       )}
+
       <br />
 
-      {/* Sección de categorías */}
       <div>
         <h1 className="text-2xl font-bold my-2">Nuestros Productos</h1>
         <CategoriesMenu 
