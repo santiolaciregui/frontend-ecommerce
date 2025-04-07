@@ -1,14 +1,15 @@
 // app/products/page.tsx
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import Filter from "../components/Filter";
 import ProductList from "../components/ProductList";
 import Loading from "../components/Loading";
 import { Product, Category } from "../context/types";
-import apiService from "../pages/api/products"; // tu servicio de fetch
+import apiService from "../pages/api/products";
 import { fetchParentCategories, fetchSubcategoriesByParent } from "../pages/api/category";
 import { useSearchParams } from "next/navigation";
+export const dynamic = 'force-dynamic';
 
 // Componente para el Filtro en versión móvil
 interface MobileFilterProps {
@@ -53,7 +54,8 @@ const MobileFilter: React.FC<MobileFilterProps> = ({ isOpen, onClose, children }
   );
 };
 
-const ListPage = () => {
+// Componente interno que usa useSearchParams
+const ProductsContent = () => {
   // Control del panel de filtro móvil
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -279,6 +281,15 @@ const ListPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Componente principal que envuelve el componente interno en un Suspense
+const ListPage = () => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ProductsContent />
+    </Suspense>
   );
 };
 
