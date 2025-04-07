@@ -71,7 +71,15 @@ const Navbar = () => {
             <Link href="/">Inicio</Link>
           </div>
           <div className="px-10 cursor-pointer">
-            <Link href="/products">Productos</Link>
+            <Link 
+              href="#" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/products';
+              }}
+            >
+              Productos
+            </Link>
           </div>
           <div className="px-10 cursor-pointer">
             <Link href="/empresa/contacto">Contacto</Link>

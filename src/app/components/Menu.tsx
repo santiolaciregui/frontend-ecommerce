@@ -51,7 +51,15 @@ const Menu = () => {
 
                 {/* Enlaces del menú */}
                 <Link href='/' onClick={handleLinkClick}>Inicio</Link>
-                <Link href='/products' onClick={handleLinkClick}>Productos</Link>
+                <Link 
+              href="#" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/products';
+              }}
+            >
+              Productos
+            </Link>
                 <Link href="/empresa/contacto" onClick={handleLinkClick}>Contacto</Link>
                 <Link href="/empresa/sobre-nosotros" onClick={handleLinkClick}>Sobre nosotros</Link>
 {/*                 <Link href="/reviews" onClick={handleLinkClick}>Reseñas</Link>

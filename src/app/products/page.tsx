@@ -19,6 +19,13 @@ interface MobileFilterProps {
 }
 
 const MobileFilter: React.FC<MobileFilterProps> = ({ isOpen, onClose, children }) => {
+  // Función para manejar la navegación a la página de productos
+  const handleProductsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = '/products';
+    onClose();
+  };
+
   return (
     <div
       className={`
@@ -33,6 +40,11 @@ const MobileFilter: React.FC<MobileFilterProps> = ({ isOpen, onClose, children }
           <button onClick={onClose} className="p-1">
             <X className="w-6 h-6" />
           </button>
+        </div>
+
+        {/* Enlace a Productos sin parámetros */}
+        <div className="px-4 py-2 border-b">
+          <a href="/products" onClick={handleProductsClick} className="text-blue-600 font-medium">Ver todos los productos</a>
         </div>
 
         {/* Contenido (el <Filter /> en sí) */}
