@@ -87,7 +87,6 @@ const AdminList = () => {
       setLoading(true);
       // Extraer solo los IDs de los productos en el nuevo orden actualizado
       const productIds = products.map(product => product.id!);
-      console.log(productIds)
       // Enviar el nuevo orden al servidor
       await apiService.updateProductsOrder(productIds);
       setNotification('Orden de productos actualizado con éxito');

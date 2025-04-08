@@ -49,11 +49,11 @@ const Checkout: React.FC = () => {
       if (formData.deliveryOption.option !== DELIVERY_OPTIONS.PICKUP) {
         basePrice;
       }
-      const interestRate = installment.interestRate || 0;
-      basePrice *= 1 + interestRate / 100;
+      const interestRate = (installment.interestRate || 0) + 1;
+      basePrice *= interestRate;
       return basePrice;
     },
-    [cart, formData.deliveryOption.option]
+    [cart, formData.deliveryOption.option, selectedBank]
   );
 
   // Force a different payment option if user selects Delivery + Cash
