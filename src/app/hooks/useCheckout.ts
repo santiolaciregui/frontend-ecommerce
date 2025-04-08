@@ -135,7 +135,7 @@ export const useCheckout = () => {
       case PAYMENT_FORMATS.CREDIT_CARD: {
         if (formData.paymentInstallments) {
           const interestRate = formData.paymentInstallments.interestRate || 0;
-          multiplier = 1 + interestRate / 100;
+          multiplier = 1 + interestRate;
         }
         break;
       }

@@ -102,7 +102,7 @@ const OrderDetails: React.FC = () => {
             paymentDetails?.installments
               ? `${paymentDetails.installments.numberOfInstallments} cuota(s) ${
                   paymentDetails.installments.interestRate > 0
-                    ? `con ${paymentDetails.installments.interestRate}% de interés`
+                    ? `con ${(paymentDetails.installments.interestRate)*100}% de interés`
                     : 'sin interés'
                 }`
               : 'Pago en una cuota',
