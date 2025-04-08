@@ -31,13 +31,13 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   // Si la configuración no existe, se usan valores por defecto
   const transferMultiplier = transferConfig
     ? 1 + Number(transferConfig.percentage)
-    : 2.10;
+    : 1.10;
   const threeInstallmentMultiplier = threeInstallmentsConfig
     ? 1 + Number(threeInstallmentsConfig.percentage)
-    : 2.30;
+    : 1.25;
   const sixInstallmentMultiplier = sixInstallmentsConfig
     ? 1 + Number(sixInstallmentsConfig.percentage)
-    : 2.45;
+    : 1.35;
 
   const transferPrice = finalPrice * transferMultiplier;
   const formattedTransferPrice = transferPrice.toFixed(2);
