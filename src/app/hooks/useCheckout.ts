@@ -289,13 +289,20 @@ export const useCheckout = () => {
         installments: installment,
       },
     }));
+  
+    const basePrice = cart?.reduce(
+      (total, item) => total + item.Product.finalPrice * item.quantity,
+      0
+    );
     
-    // Recalculate total price when installment is selected
-    const basePrice = cart?.reduce((total, item) => total + item.Product.finalPrice * item.quantity, 0) || 0;
-    const interestRate = installment.interestRate || 0;
-    const multiplier = 1 + interestRate / 100;
-    setTotalPrice(basePrice * multiplier);
+    // Compound the monthly (or per-period) interest
+    const interestRate = (installment.interestRate || 0) + 1;
+    const finalPriceWithInstallment = basePrice! * interestRate;
+    setTotalPrice(finalPriceWithInstallment);
   };
+  
+
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

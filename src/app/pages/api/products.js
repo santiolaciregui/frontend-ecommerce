@@ -102,11 +102,6 @@ export const updateProduct = async (id, productData) => {
   const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
 
   try {
-    // Inspect FormData for debugging
-    for (const pair of productData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
-
     const response = await axios.put(`${API_BASE_URL}/products/${id}`, productData, {
       headers: {
         Authorization: `Bearer ${token}`, // Add Authorization header

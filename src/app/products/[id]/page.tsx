@@ -91,13 +91,13 @@ const SinglePage = () => {
 
   // Obtención de la configuración de medios de pago
   const transferConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER);
-  const threeInstallmentsConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER);
+  const threeInstallmentsConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_3);
   const sixInstallmentsConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_6);
 
   // Uso de la configuración o valores por defecto
   const transferMultiplier = transferConfig ? 1 + Number(transferConfig.percentage) : 1.10;
-  const threeInstallmentMultiplier = threeInstallmentsConfig ? 1 + Number(threeInstallmentsConfig.percentage) : 1.30;
-  const sixInstallmentMultiplier = sixInstallmentsConfig ? 1 + Number(sixInstallmentsConfig.percentage) : 1.45;
+  const threeInstallmentMultiplier = threeInstallmentsConfig ? 1 + Number(threeInstallmentsConfig.percentage) : 1.25;
+  const sixInstallmentMultiplier = sixInstallmentsConfig ? 1 + Number(sixInstallmentsConfig.percentage) : 1.35;
 
   // Cálculos de opciones de pago
   const formattedTransferPrice = (numericFinalPrice * transferMultiplier).toFixed(2);
