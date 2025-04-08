@@ -301,12 +301,16 @@ const UpdateProduct = () => {
       // Append the removed image IDs (as a JSON string).
       data.append('removedImageIds', JSON.stringify(removedImageIds));
       
-      // Append new images with their color IDs
+      // First collect all color IDs in an array
+      const colorIds = uploadedImages.map(img => String(img.colorId ?? 0));
+      
+      // Append each image file
       uploadedImages.forEach((img, index) => {
         data.append('images', img.file, img.file.name);
-        const cId = img.colorId ?? 0; 
-        data.append('imageColorIds', String(cId));
       });
+      
+      // Append color IDs as array elements to ensure they're always sent as an array
+      data.append('imageColorIds', JSON.stringify(colorIds));
       
       await apiServiceProducts.updateProduct(Number(id), data);
       alert('Producto actualizado con éxito');

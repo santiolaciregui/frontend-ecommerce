@@ -269,10 +269,17 @@ const CreateProduct = () => {
        * Append each uploaded image. We'll store its color ID in a separate field
        * so the backend knows which color is associated with the file (if any).
        */
+      // First collect all color IDs in an array
+      const colorIds = uploadedImages.map(img => String(img.colorId ?? 0));
+      
+      // Append each image file
       uploadedImages.forEach((img, index) => {
         data.append('images', img.file, img.file.name);
-        const cId = img.colorId ?? 0; 
-        data.append('imageColorIds', String(cId));
+      });
+      
+      // Append color IDs as array elements to ensure they're always sent as an array
+      colorIds.forEach(colorId => {
+        data.append('imageColorIds', colorId);
       });
 
       // Send to your backend
