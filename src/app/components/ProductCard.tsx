@@ -34,10 +34,10 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
     : 2.10;
   const threeInstallmentMultiplier = threeInstallmentsConfig
     ? 1 + Number(threeInstallmentsConfig.percentage)
-    : 2.25;
+    : 2.30;
   const sixInstallmentMultiplier = sixInstallmentsConfig
     ? 1 + Number(sixInstallmentsConfig.percentage)
-    : 2.35;
+    : 2.45;
 
   const transferPrice = finalPrice * transferMultiplier;
   const formattedTransferPrice = transferPrice.toFixed(2);
