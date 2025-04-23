@@ -20,6 +20,8 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   const transferConfig = paymentFormats.find(
     (config) => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER
   );
+  console.log("paymentFormats: ",paymentFormats)
+  console.log("PAYMENT_FORMATS_ES.CUOTAS_3: ",PAYMENT_FORMATS_ES.CUOTAS_3)
   const threeInstallmentsConfig = paymentFormats.find(
     (config) => {
       config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_3}

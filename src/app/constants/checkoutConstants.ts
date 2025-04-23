@@ -12,8 +12,8 @@ export const DELIVERY_OPTIONS = {
   } as const;
 
   export const PAYMENT_FORMATS_ES = {
-    CUOTAS_3: '3 cuotas',
-    CUOTAS_6: '6 cuotas',
+    CUOTAS_3: '3 Cuotas',
+    CUOTAS_6: '6 Cuotas',
     DEBIT_CARD: 'Débito', 
     CASH: 'Efectivo',
     TRANSFER: 'Transferencia',
