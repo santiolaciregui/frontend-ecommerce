@@ -20,11 +20,9 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
   const transferConfig = paymentFormats.find(
     (config) => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER
   );
-  console.log("paymentFormats: ",paymentFormats)
-  console.log("PAYMENT_FORMATS_ES.CUOTAS_3: ",PAYMENT_FORMATS_ES.CUOTAS_3)
+  
   const threeInstallmentsConfig = paymentFormats.find(
-    (config) => {
-      config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_3}
+    (config) => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_3
   );
   const sixInstallmentsConfig = paymentFormats.find(
     (config) => config.paymentMethod === PAYMENT_FORMATS_ES.CUOTAS_6
@@ -36,10 +34,10 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
     : 1.10;
   const threeInstallmentMultiplier = threeInstallmentsConfig
     ? 1 + Number(threeInstallmentsConfig.percentage)
-    : 1.25;
+    : 1.3;
   const sixInstallmentMultiplier = sixInstallmentsConfig
     ? 1 + Number(sixInstallmentsConfig.percentage)
-    : 1.35;
+    : 1.45;
 
   const transferPrice = finalPrice * transferMultiplier;
   const formattedTransferPrice = transferPrice.toFixed(2);
