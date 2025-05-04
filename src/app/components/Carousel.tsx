@@ -19,11 +19,11 @@ interface Store {
 
 // Fallback static images and links in case the DB store doesn't have them.
 const staticStores: Store[] = [
-  { id: 1, address: 'Sarmiento 275', imgSrc: '/stores/Suarez.jpeg', link: 'https://wa.link/a4h9qa' },
-  { id: 2, address: 'Neuquen 1544', imgSrc: '/stores/Roca.jpeg', link: 'https://wa.link/a4h9qa' },
-  { id: 3, address: 'Lainez 267', imgSrc: '/stores/Lainez.jpeg', link: 'https://wa.link/a4h9qa' },
-  { id: 4, address: 'Perú 58', imgSrc: '/stores/Centenario.jpeg', link: 'https://wa.link/a4h9qa' },
-  { id: 5, address: 'Amancio Alcorta 533', imgSrc: '/stores/Alcorta.jpeg', link: 'https://wa.link/a4h9qa' },
+  { id: 1, address: 'Sarmiento 275', imgSrc: '/stores/Suarez.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
+  { id: 2, address: 'Neuquen 1544', imgSrc: '/stores/Roca.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
+  { id: 3, address: 'Lainez 267', imgSrc: '/stores/Lainez.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
+  { id: 4, address: 'Perú 58', imgSrc: '/stores/Centenario.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
+  { id: 5, address: 'Amancio Alcorta 533', imgSrc: '/stores/Alcorta.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
 ];
 
 const StoreCards: React.FC = () => {
