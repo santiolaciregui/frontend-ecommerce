@@ -9,10 +9,12 @@ import { Category, Discount, Option } from '@/app/context/types';
 import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Dropdown } from 'primereact/dropdown';  // <-- IMPORT DROPDOWN
+import { Dropdown } from 'primereact/dropdown';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { useRouter } from 'next/navigation';
 import BackButton from '@/app/components/BackButton';
+// Import React Sortable JS
+import { ReactSortable } from "react-sortablejs";
 
 /** Product form data without the images (we'll handle images separately) */
 interface ProductForm {
@@ -28,11 +30,12 @@ interface ProductForm {
   optionIds: number[];
 }
 
-/** We keep track of each uploaded image in an array:
- *  { file: File; colorId?: number } 
- *  colorId is optional if the user doesn't want to associate it with a color.
+/** 
+ * We keep track of each uploaded image in an array:
+ * We add an id property to make ReactSortable work properly
  */
 interface UploadedImage {
+  id: string; // Unique ID for ReactSortable
   file: File;
   colorId?: number;  // which color this image belongs to, if any
 }
@@ -55,6 +58,7 @@ const CreateProduct = () => {
   });
 
   // We'll store all images (generic or color-specific) in this single array
+  // Now each image object has a unique ID for ReactSortable
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
   // Category, subcategory, discount, option data from your APIs
@@ -195,10 +199,12 @@ const CreateProduct = () => {
   /**
    * SINGLE file input for all product images.
    * We store them in `uploadedImages`, each with an optional colorId (null by default).
+   * Now we generate a unique ID for each image for ReactSortable
    */
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const newFiles = Array.from(e.target.files).map(file => ({
+      id: Math.random().toString(36).substring(2, 9), // Generate a unique ID
       file,
       colorId: undefined, // no color assigned initially
     }));
@@ -220,7 +226,7 @@ const CreateProduct = () => {
   };
 
   // Custom template to show a circle + color name
-  // If your color options don’t have an actual color code (e.g. hexCode),
+  // If your color options don't have an actual color code (e.g. hexCode),
   // adjust or remove the circle logic as needed.
   const colorOptionTemplate = (option: Option) => {
     if (!option || !option.name) {
@@ -268,6 +274,7 @@ const CreateProduct = () => {
       /**
        * Append each uploaded image. We'll store its color ID in a separate field
        * so the backend knows which color is associated with the file (if any).
+       * Images are now in the order set by the user through drag and drop
        */
       // First collect all color IDs in an array
       const colorIds = uploadedImages.map(img => String(img.colorId ?? 0));
@@ -461,52 +468,84 @@ const CreateProduct = () => {
             />
           </div>
 
-          {/* Display each uploaded file with a color dropdown */}
+          {/* Display each uploaded file with a color dropdown - NOW WITH DRAG AND DROP */}
           {uploadedImages.length > 0 && (
-            <div className="mt-4 space-y-4">
-              {uploadedImages.map((imgObj, index) => {
-                const previewUrl = URL.createObjectURL(imgObj.file);
-                return (
-                  <div
-                    key={index}
-                    className="p-4 border rounded-md flex items-start gap-4 relative"
-                  >
-                    <img
-                      src={previewUrl}
-                      alt={`Uploaded ${index}`}
-                      className="w-24 h-24 object-cover border rounded-md"
-                    />
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1">
-                        Asignar color (opcional)
-                      </label>
-                      <Dropdown
-                        value={imgObj.colorId ?? null}
-                        options={colorOptions}
-                        onChange={(e) => {
-                          // e.value is the 'id' if optionValue="id"
-                          const newColorId = e.value || 0;
-                          handleSetColorForImage(index, newColorId === 0 ? undefined : newColorId);
-                        }}
-                        optionValue="id"
-                        optionLabel="name"
-                        placeholder="Sin color específico"
-                        className="border p-2 rounded-md w-full md:w-60"
-                        itemTemplate={colorOptionTemplate}
-                        valueTemplate={colorOptionTemplate}
-                      />
-                    </div>
-                    {/* Remove button */}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveUploadedImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+            <div className="mt-4">
+              <h3 className="text-sm font-medium mb-2">
+                Arrastra las imágenes para cambiar el orden
+              </h3>
+              
+              <ReactSortable
+                list={uploadedImages}
+                setList={setUploadedImages}
+                className="space-y-4"
+                animation={200}
+                ghostClass="opacity-50"
+                handle=".drag-handle"
+              >
+                {uploadedImages.map((imgObj, index) => {
+                  const previewUrl = URL.createObjectURL(imgObj.file);
+                  return (
+                    <div
+                      key={imgObj.id}
+                      className="p-4 border rounded-md flex items-start gap-4 relative bg-white"
                     >
-                      &times;
-                    </button>
-                  </div>
-                );
-              })}
+                      {/* Drag handle */}
+                      <div 
+                        className="drag-handle cursor-move flex items-center justify-center p-2"
+                        title="Arrastrar para cambiar orden"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M4 4h2v2H4V4zm0 6h2v2H4v-2zm0-3h2v2H4V7zm5-3h2v2H9V4zm0 6h2v2H9v-2zm0-3h2v2H9V7z"/>
+                        </svg>
+                      </div>
+                      
+                      {/* Image preview */}
+                      <img
+                        src={previewUrl}
+                        alt={`Uploaded ${index + 1}`}
+                        className="w-24 h-24 object-cover border rounded-md"
+                      />
+                      
+                      {/* Color dropdown */}
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium mb-1">
+                          Asignar color (opcional)
+                        </label>
+                        <Dropdown
+                          value={imgObj.colorId ?? null}
+                          options={colorOptions}
+                          onChange={(e) => {
+                            // e.value is the 'id' if optionValue="id"
+                            const newColorId = e.value || 0;
+                            handleSetColorForImage(index, newColorId === 0 ? undefined : newColorId);
+                          }}
+                          optionValue="id"
+                          optionLabel="name"
+                          placeholder="Sin color específico"
+                          className="border p-2 rounded-md w-full md:w-60"
+                          itemTemplate={colorOptionTemplate}
+                          valueTemplate={colorOptionTemplate}
+                        />
+                      </div>
+                      
+                      {/* Order indicator */}
+                      <div className="absolute top-2 right-10 bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">
+                        {index + 1}
+                      </div>
+                      
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveUploadedImage(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  );
+                })}
+              </ReactSortable>
             </div>
           )}
 

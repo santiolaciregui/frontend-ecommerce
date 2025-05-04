@@ -5,7 +5,6 @@ import { Product } from '@/app/context/types';
 import Link from 'next/link';
 import BackButton from '@/app/components/BackButton';
 import { ReactSortable } from 'react-sortablejs';
-import Sortable from 'sortablejs';
 
 const AdminList = () => {
   const [products, setProducts] = useState<Product[]>([]);

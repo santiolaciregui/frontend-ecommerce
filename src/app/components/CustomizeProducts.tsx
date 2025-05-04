@@ -6,9 +6,10 @@ import { useCart } from '../context/CartContext';
 interface CustomizeProductsProps {
   product: Product;
   onColorSelect?: (colorId: number) => void;
+  initialSelectedColorId?: number | null;
 }
 
-const CustomizeProducts = ({ product, onColorSelect }: CustomizeProductsProps) => {
+const CustomizeProducts = ({ product, onColorSelect, initialSelectedColorId }: CustomizeProductsProps) => {
   const { addToCart } = useCart();  
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
@@ -25,6 +26,22 @@ const CustomizeProducts = ({ product, onColorSelect }: CustomizeProductsProps) =
     };
     fetchProductOptions();
   }, [product]);
+
+  // Establecer el color inicial desde la URL si está disponible
+  useEffect(() => {
+    if (initialSelectedColorId && options.length > 0) {
+      const colorOption = options.find(option => 
+        option.type === 0 && option.id === initialSelectedColorId
+      );
+      
+      if (colorOption) {
+        setSelectedOptions(prev => ({
+          ...prev,
+          'Color': colorOption.name
+        }));
+      }
+    }
+  }, [initialSelectedColorId, options]);
 
   const handleOptionSelect = (optionType: string, choice: string, optionId?: number) => {
     setSelectedOptions((prev) => ({

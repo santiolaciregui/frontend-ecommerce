@@ -4,7 +4,7 @@ import ProductImages from "@/app/components/ProductImages";
 import CustomizeProducts from "@/app/components/CustomizeProducts";
 import { fetchProductByID } from "../../pages/api/products";
 import { fetchStores } from "../../pages/api/stores";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Product, Store } from '@/app/context/types';
 import Loading from '@/app/components/Loading';
 import PaymentModal from '@/app/components/modalPayments';
@@ -14,6 +14,9 @@ import BackButton from '@/app/components/BackButton';
 
 const SinglePage = () => {
   const { id } = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [product, setProduct] = useState<Product | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
   const [paymentFormats, setPaymentFormats] = useState<any[]>([]);
@@ -34,6 +37,19 @@ const SinglePage = () => {
             throw new Error('Product not found');
           }
           setProduct(fetchedProduct);
+          
+          // Verificar si hay un color en la URL y si existe en el producto
+          const colorIdFromUrl = searchParams.get('color');
+          if (colorIdFromUrl && fetchedProduct.Options) {
+            const colorId = parseInt(colorIdFromUrl);
+            const colorExists = fetchedProduct.Options.some(
+              (option: { type: number; id: number }) => option.type === 0 && option.id === colorId
+            );
+            
+            if (colorExists) {
+              setSelectedColorId(colorId);
+            }
+          }
         } catch (err) {
           setError('Error loading product');
         } finally {
@@ -42,7 +58,7 @@ const SinglePage = () => {
       };
       fetchProduct();
     }
-  }, [id]);
+  }, [id, searchParams]);
 
   // Cargar los locales
   useEffect(() => {
@@ -106,6 +122,15 @@ const SinglePage = () => {
 
   const handleColorSelect = (colorId: number) => {
     setSelectedColorId(colorId);
+    
+    // Crear un nuevo objeto URLSearchParams basado en los parámetros actuales
+    const newParams = new URLSearchParams(searchParams.toString());
+    
+    // Actualizar el parámetro de color
+    newParams.set('color', colorId.toString());
+    
+    // Actualizar la URL sin recargar la página
+    router.push(`/products/${id}?${newParams.toString()}`, { scroll: false });
   };
 
   return (
@@ -162,7 +187,11 @@ const SinglePage = () => {
         <div className="h-[2px] bg-gray-200 my-4" />
 
         {product.stock ? (
-          <CustomizeProducts product={product} onColorSelect={handleColorSelect} />
+          <CustomizeProducts 
+            product={product} 
+            onColorSelect={handleColorSelect} 
+            initialSelectedColorId={selectedColorId}
+          />
         ) : (
           <button className="w-36 text-sm rounded-2xl ring-1 ring-gray-400 text-gray-400 py-2 px-4 cursor-default bg-gray-200">
             No disponible
