@@ -137,7 +137,7 @@ const SinglePage = () => {
     <div className='px-4 mt-12 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16'>
       {/* Back button in the upper left corner */}
       <div className="absolute top-[-40px] left-4 md:left-8 lg:left-16 xl:left-32 2xl:left-64">
-        <BackButton />
+        <BackButton destination="/products" />
       </div>
       
       {/* Imágenes del producto */}

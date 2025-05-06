@@ -36,21 +36,21 @@ const ProductImages = ({ items, selectedColorId }: ProductImagesProps) => {
   }, [selectedColorId, items]);
 
   return (
-    <div>
-      <div className="h-[800px] relative">
+    <div className="flex flex-col gap-4">
+      <div className="relative h-[400px] md:h-[550px] lg:h-[700px] w-full">
         <Image
           src={getImageUrl(items[index]?.url)}
           alt={items[index]?.altText || 'Product Image'}
           fill
-          sizes="50vw"
+          sizes="(max-width: 768px) 100vw, 50vw"
           className="object-contain rounded-sm"
           unoptimized
         />
       </div>
-      <div className="flex justify-between gap-4">
+      <div className="flex justify-between gap-2 md:gap-4">
         {items.map((item: ProductImage, i: number) => (
           <div
-            className="w-1/4 h-32 relative cursor-pointer"
+            className="w-1/4 h-20 md:h-24 lg:h-32 relative cursor-pointer border rounded-sm"
             key={item.id}
             onClick={() => setIndex(i)}
           >
@@ -58,8 +58,8 @@ const ProductImages = ({ items, selectedColorId }: ProductImagesProps) => {
               src={getImageUrl(item.url)}
               alt={item.altText || 'Product Thumbnail'}
               fill
-              sizes="30vw"
-              className="object-contain rounded-sm"
+              sizes="(max-width: 768px) 25vw, 15vw"
+              className="object-contain p-1"
               unoptimized
             />
           </div>

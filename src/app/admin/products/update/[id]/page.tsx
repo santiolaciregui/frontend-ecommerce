@@ -10,10 +10,12 @@ import { Category, Discount, Option } from '@/app/context/types';
 import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Dropdown } from 'primereact/dropdown'; // Added Dropdown import
+import { Dropdown } from 'primereact/dropdown';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { getImageUrl } from '@/app/utils/getImageURL';
 import BackButton from '@/app/components/BackButton';
+// Importamos ReactSortable para el reordenamiento por arrastre
+import { ReactSortable } from "react-sortablejs";
 
 // Interface for product form data.
 interface ProductForm {
@@ -34,6 +36,7 @@ interface ProductImage {
   id: number;
   url: string;
   altText?: string;
+  order?: number; // Añadimos orden para el sorting
   ProductImage: {
     id: number;
     productId: number;
@@ -42,10 +45,12 @@ interface ProductImage {
   };
 }
 
-// Interface for uploaded images with color assignment
+// Interface for uploaded images with color assignment and sorting
 interface UploadedImage {
+  id: string; // ID único temporal para ReactSortable
   file: File;
-  colorId?: number;  // which color this image belongs to, if any
+  colorId?: number;
+  order?: number; // Añadimos orden para el sorting
 }
 
 const UpdateProduct = () => {
@@ -60,7 +65,7 @@ const UpdateProduct = () => {
   const [colorOptions, setColorOptions] = useState<Option[]>([]);
   const [sizeOptions, setSizeOptions] = useState<Option[]>([]);
   
-  // For creating a new size option on the fly.
+  // Para crear una nueva talla
   const [newSizeName, setNewSizeName] = useState('');
   const [creatingSize, setCreatingSize] = useState(false);
 
@@ -102,14 +107,18 @@ const UpdateProduct = () => {
           price: product.price,
           stock: product.stock,
           weight: product.weight,
-          // Assuming product.Categories is an array where the first element holds category info:
           categoryId: product.Categories[0]?.parentId || 0,
           subcategoryId: product.Categories[0]?.id || 0,
           discountId: product.discountId || 0,
           optionIds: (product.Options as Option[]).map((option: Option) => option.id)
         });
-        // Set the existing images from the product.
-        setExistingImages(product.Images);
+        
+        // Configuramos el orden inicial para las imágenes existentes
+        const imagesWithOrder = product.Images.map((img: ProductImage, index: number) => ({
+          ...img,
+          order: index
+        }));
+        setExistingImages(imagesWithOrder);
         
         // Fetch parent categories, options, and discounts concurrently.
         const [fetchedCategories, fetchedOptions, fetchedDiscounts] = await Promise.all([
@@ -204,16 +213,19 @@ const UpdateProduct = () => {
   // Handle file input changes for new images.
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
+    // Crear un array con las nuevas imágenes con IDs únicos para ReactSortable
     const newFiles = Array.from(e.target.files).map(file => ({
+      id: Math.random().toString(36).substring(2, 11), // ID único temporal
       file,
-      colorId: undefined, // no color assigned initially
+      colorId: undefined,
+      order: uploadedImages.length + existingImages.length // Establecer orden inicial
     }));
     setUploadedImages(prev => [...prev, ...newFiles]);
   };
 
   // Remove a new image before upload.
-  const handleRemoveUploadedImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveUploadedImage = (tempId: string) => {
+    setUploadedImages(prev => prev.filter(img => img.id !== tempId));
   };
 
   // Mark an existing image as removed.
@@ -223,12 +235,29 @@ const UpdateProduct = () => {
   };
 
   // Set color for an uploaded image
-  const handleSetColorForImage = (imageIndex: number, colorId: number | undefined) => {
+  const handleSetColorForImage = (imageId: string, colorId: number | undefined) => {
     setUploadedImages(prev => {
-      const updated = [...prev];
-      updated[imageIndex] = { ...updated[imageIndex], colorId };
-      return updated;
+      return prev.map(img => 
+        img.id === imageId ? { ...img, colorId } : img
+      );
     });
+  };
+
+  // Manejadores para ReactSortable
+  const handleSortExistingImages = (newOrder: ProductImage[]) => {
+    // Actualizar el orden de las imágenes existentes
+    setExistingImages(newOrder.map((item, index) => ({
+      ...item,
+      order: index
+    })));
+  };
+
+  const handleSortUploadedImages = (newOrder: UploadedImage[]) => {
+    // Actualizar el orden de las imágenes nuevas
+    setUploadedImages(newOrder.map((item, index) => ({
+      ...item,
+      order: existingImages.length + index
+    })));
   };
 
   // Custom template to show a circle + color name
@@ -301,12 +330,23 @@ const UpdateProduct = () => {
       // Append the removed image IDs (as a JSON string).
       data.append('removedImageIds', JSON.stringify(removedImageIds));
       
-      // Append new images with their color IDs
-      uploadedImages.forEach((img, index) => {
+      // Enviar el orden de las imágenes existentes
+      data.append('existingImagesOrder', JSON.stringify(
+        existingImages.map(img => ({ id: img.id, order: img.order }))
+      ));
+      
+      // Recopilar la información de las nuevas imágenes
+      const colorIds = uploadedImages.map(img => String(img.colorId ?? 0));
+      const imageOrders = uploadedImages.map(img => String(img.order ?? 0));
+      
+      // Append each image file
+      uploadedImages.forEach((img) => {
         data.append('images', img.file, img.file.name);
-        const cId = img.colorId ?? 0; 
-        data.append('imageColorIds', String(cId));
       });
+      
+      // Enviar color IDs y órdenes como arrays JSON
+      data.append('imageColorIds', JSON.stringify(colorIds));
+      data.append('imageOrders', JSON.stringify(imageOrders));
       
       await apiServiceProducts.updateProduct(Number(id), data);
       alert('Producto actualizado con éxito');
@@ -470,40 +510,58 @@ const UpdateProduct = () => {
             </div>
           </div>
 
-          {/* Existing Images */}
+          {/* Existing Images Section with ReactSortable */}
           {existingImages.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-lg font-medium mb-2">Imágenes Existentes</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {existingImages.map((image) => (
-                  <div key={image.id} className="relative">
-                    <img
-                      src={getImageUrl(image.url)}
-                      alt={image.altText || 'Product Image'}
-                      className="w-full h-32 object-cover border rounded-md"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleExistingImageRemove(image.id)}
-                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
+            <div className="mt-6">
+              <h3 className="text-lg font-medium mb-2">Imágenes Existentes (arrastre para reordenar)</h3>
+              <div className="p-2 border border-dashed border-gray-300 rounded-md bg-gray-50">
+                <ReactSortable
+                  list={existingImages}
+                  setList={handleSortExistingImages}
+                  animation={200}
+                  delay={2}
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                >
+                  {existingImages.map((image) => (
+                    <div 
+                      key={image.id} 
+                      className="relative bg-white p-2 rounded-md shadow-sm cursor-move hover:shadow-md transition-shadow"
                     >
-                      &times;
-                    </button>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {image.ProductImage?.colorId ? 
-                        `Color: ${colorOptions.find(c => c.id === image.ProductImage.colorId)?.name || 'Unknown'}` : 
-                        'Sin color específico'}
+                      <div className="relative">
+                        <img
+                          src={getImageUrl(image.url)}
+                          alt={image.altText || 'Product Image'}
+                          className="w-full h-32 object-cover border rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleExistingImageRemove(image.id)}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                      <div className="mt-2 flex justify-between items-center">
+                        <span className="text-xs text-gray-500">
+                          {image.ProductImage?.colorId ? 
+                            `Color: ${colorOptions.find(c => c.id === image.ProductImage.colorId)?.name || 'Unknown'}` : 
+                            'Sin color'}
+                        </span>
+                        <span className="text-xs font-medium bg-gray-200 px-2 py-1 rounded-full">
+                          Orden: {image.order !== undefined ? image.order + 1 : '?'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </ReactSortable>
               </div>
             </div>
           )}
 
           {/* Single file input for all new images */}
-          <div className="mt-4">
+          <div className="mt-6">
             <label className="block text-sm font-medium mb-2" htmlFor="allImages">
-              Nuevas Imágenes (asignar color después)
+              Nuevas Imágenes
             </label>
             <input
               type="file"
@@ -511,55 +569,70 @@ const UpdateProduct = () => {
               multiple
               accept=".png,.jpg,.jpeg"
               onChange={handleFileInputChange}
-              className="border p-2 rounded-md"
+              className="border p-2 rounded-md w-full"
             />
           </div>
 
-          {/* Display each uploaded file with a color dropdown */}
+          {/* New Images Section with ReactSortable */}
           {uploadedImages.length > 0 && (
-            <div className="mt-4 space-y-4">
-              {uploadedImages.map((imgObj, index) => {
-                const previewUrl = URL.createObjectURL(imgObj.file);
-                return (
-                  <div
-                    key={index}
-                    className="p-4 border rounded-md flex items-start gap-4 relative"
-                  >
-                    <img
-                      src={previewUrl}
-                      alt={`Uploaded ${index}`}
-                      className="w-24 h-24 object-cover border rounded-md"
-                    />
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1">
-                        Asignar color (opcional)
-                      </label>
-                      <Dropdown
-                        value={imgObj.colorId ?? null}
-                        options={colorOptions}
-                        onChange={(e) => {
-                          const newColorId = e.value || 0;
-                          handleSetColorForImage(index, newColorId === 0 ? undefined : newColorId);
-                        }}
-                        optionValue="id"
-                        optionLabel="name"
-                        placeholder="Sin color específico"
-                        className="border p-2 rounded-md w-full md:w-60"
-                        itemTemplate={colorOptionTemplate}
-                        valueTemplate={colorOptionTemplate}
-                      />
-                    </div>
-                    {/* Remove button */}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveUploadedImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                );
-              })}
+            <div className="mt-4">
+              <h3 className="text-lg font-medium mb-2">Nuevas Imágenes (arrastre para reordenar)</h3>
+              <div className="p-2 border border-dashed border-gray-300 rounded-md bg-gray-50">
+                <ReactSortable
+                  list={uploadedImages}
+                  setList={handleSortUploadedImages}
+                  animation={200}
+                  delay={2}
+                  className="space-y-4"
+                >
+                  {uploadedImages.map((imgObj) => {
+                    const previewUrl = URL.createObjectURL(imgObj.file);
+                    return (
+                      <div
+                        key={imgObj.id}
+                        className="p-4 border rounded-md flex items-start gap-4 relative bg-white cursor-move hover:shadow-md transition-shadow"
+                      >
+                        <img
+                          src={previewUrl}
+                          alt={`Uploaded ${imgObj.id}`}
+                          className="w-24 h-24 object-cover border rounded-md"
+                        />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium mb-1">
+                            Asignar color (opcional)
+                          </label>
+                          <Dropdown
+                            value={imgObj.colorId ?? null}
+                            options={colorOptions}
+                            onChange={(e) => {
+                              const newColorId = e.value || 0;
+                              handleSetColorForImage(imgObj.id, newColorId === 0 ? undefined : newColorId);
+                            }}
+                            optionValue="id"
+                            optionLabel="name"
+                            placeholder="Sin color específico"
+                            className="border p-2 rounded-md w-full md:w-60"
+                            itemTemplate={colorOptionTemplate}
+                            valueTemplate={colorOptionTemplate}
+                          />
+                        </div>
+                        {/* Orden de imagen */}
+                        <div className="text-xs font-medium bg-gray-200 px-2 py-1 rounded-full absolute top-4 right-12">
+                          Orden: {imgObj.order !== undefined ? imgObj.order + 1 : '?'}
+                        </div>
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveUploadedImage(imgObj.id)}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    );
+                  })}
+                </ReactSortable>
+              </div>
             </div>
           )}
 
