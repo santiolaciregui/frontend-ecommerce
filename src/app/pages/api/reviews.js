@@ -37,9 +37,13 @@ export const uploadReviewImages = async (formData) => {
 };
 
 // Delete review image (admin only)
-export const deleteReviewImage = async (filename) => {
+export const deleteReviewImage = async (imageUrl) => {
   try {
     const token = localStorage.getItem('accessToken');
+    
+    // Extraer el nombre del archivo de la URL completa
+    const filename = imageUrl.split('/').pop();
+    
     const response = await axios.delete(`${API_BASE_URL}/reviews/images/${filename}`, {
       headers: {
         Authorization: `Bearer ${token}`

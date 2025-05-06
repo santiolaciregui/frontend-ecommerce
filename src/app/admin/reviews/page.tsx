@@ -82,24 +82,13 @@ const ReviewsManager = () => {
     ));
   };
 
-  const handleDeleteImage = async (id: string) => {
-    const confirmDelete = window.confirm('¿Estás seguro de que quieres eliminar esta imagen?');
-    if (confirmDelete) {
-      try {
-        const image = reviewImages.find(img => img.id === id);
-        if (image) {
-          // Extract filename from the URL
-          const filename = image.imageUrl.split('/').pop();
-          if (filename) {
-            await deleteReviewImage(filename);
-            // Update local state after successful deletion
-            setReviewImages(reviewImages.filter(image => image.id !== id));
-          }
-        }
-      } catch (error) {
-        console.error('Error deleting image:', error);
-        setError('Error al eliminar la imagen');
-      }
+  const handleDeleteImage = async (imageUrl: string) => {
+    try {
+      await deleteReviewImage(imageUrl);
+      setReviewImages(reviewImages.filter(img => img !== imageUrl));
+    } catch (error) {
+      console.error('Error al eliminar la imagen:', error);
+      setError('Error al eliminar la imagen');
     }
   };
 
@@ -193,8 +182,8 @@ const ReviewsManager = () => {
                 >
                   <div className="aspect-square overflow-hidden rounded-lg border border-gray-200">
                     <img 
-                      src={getImageUrl(image.imageUrl)} 
-                      alt={`Reseña de cliente ${image.id}`}
+                      src={getImageUrl(image)} 
+                      alt={`Reseña de cliente`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -217,7 +206,7 @@ const ReviewsManager = () => {
                       </svg>
                     </button>
                     <button
-                      onClick={() => handleDeleteImage(image.id)}
+                      onClick={() => handleDeleteImage(image)}
                       className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
                       title="Eliminar"
                     >
