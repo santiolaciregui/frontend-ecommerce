@@ -66,7 +66,7 @@ const Navbar = () => {
       </div>
       {/* Menu Links para pantallas grandes */}
       {isLargeScreen && (
-        <div className="flex mt-4 mb-4 justify-center divide-x divide-gray-200 rounded-xl">
+        <div className="flex mt-4 mb-4 justify-center divide-x divide-gray-200 rounded-xl text-sm">
           <div className="px-10 cursor-pointer">
             <Link href="/">Inicio</Link>
           </div>
@@ -85,7 +85,10 @@ const Navbar = () => {
             <Link href="/empresa/contacto">Contacto</Link>
           </div>
           <div className="px-10 cursor-pointer">
-            <Link href="/empresa/sobre-nosotros">Sobre nosotros</Link>
+            <Link href="/empresa/sobre-nosotros">Sobre Nosotros</Link>
+          </div>
+          <div className="px-10 cursor-pointer">
+            <Link href="/reviews">Clientes Felices</Link>
           </div>
           <div className="px-10 cursor-pointer">
             <Link href="/order-tracking">Seguir mi pedido</Link>
