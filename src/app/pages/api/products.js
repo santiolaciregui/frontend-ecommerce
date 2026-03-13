@@ -45,9 +45,10 @@ export const createProduct = async (productData) => {
 };
 
 // Fetch all products
-export const fetchAllProducts = async () => {
+export const fetchAllProducts = async (all = false) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products`);
+    const url = all ? `${API_BASE_URL}/products?all=true` : `${API_BASE_URL}/products`;
+    const response = await axios.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);

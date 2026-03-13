@@ -1,40 +1,41 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import apiServiceProduct from "../../../pages/api/products";
-import apiServiceCategory from "../../../pages/api/category";
+import apiServiceProduct from "../../../../pages/api/products";
+import apiServiceCategory from "../../../../pages/api/category";
 import Image from 'next/image';
 import { Category, Product } from '@/app/context/types';
-import { createDiscount } from "../../../pages/api/discount";
+import { fetchDiscountById, updateDiscount } from "../../../../pages/api/discount";
 import { getImageUrl } from '@/app/utils/getImageURL';
 import BackButton from '@/app/components/BackButton';
+import { useRouter } from 'next/navigation';
 
 interface DiscountForm {
   name: string;
   discount_percent: number;
   description: string;
-  active: string;  // Cambio a string para manejar el select
+  active: string;
   category_id?: number;
   selectedProducts: number[];
   start_date: string;
   end_date: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Ensure the backend URL is set
-
-const DiscountForm = () => {
+const DiscountUpdateForm = ({ params }: { params: { id: string } }) => {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [formData, setFormData] = useState<DiscountForm>({
     name: '',
     discount_percent: 0,
     description: '',
-    active: 'true', // Valor por defecto como string
+    active: 'true',
     category_id: undefined,
     selectedProducts: [],
     start_date: '',
     end_date: '',
   });
 
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -63,23 +64,47 @@ const DiscountForm = () => {
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      setLoading(true);
+      setLoadingInitial(true);
       try {
-        const fetchedCategories = await apiServiceCategory.fetchParentCategories();
+        const [fetchedCategories, fetchedProducts, fetchedDiscount] = await Promise.all([
+          apiServiceCategory.fetchParentCategories(),
+          apiServiceProduct.fetchAllProducts(true),
+          fetchDiscountById(params.id)
+        ]);
+        
         setCategories(fetchedCategories);
-
-        const fetchedProducts = await apiServiceProduct.fetchAllProducts(true);
         setProducts(fetchedProducts);
+
+        const startDateFormatted = fetchedDiscount.start_date ? new Date(fetchedDiscount.start_date).toISOString().split('T')[0] : '';
+        const endDateFormatted = fetchedDiscount.end_date ? new Date(fetchedDiscount.end_date).toISOString().split('T')[0] : '';
+
+        // Extract selected products if available in the API response format
+        // Backend models might differ, assuming typical association
+        const selectedProdIds = fetchedDiscount.Products ? fetchedDiscount.Products.map((p: any) => p.id) : [];
+
+        setFormData({
+          name: fetchedDiscount.name || '',
+          discount_percent: fetchedDiscount.percentage || 0,
+          description: fetchedDiscount.description || '',
+          active: fetchedDiscount.active ? 'true' : 'false',
+          category_id: fetchedDiscount.categoryId || undefined, // Adjust based on your backend Category connection
+          selectedProducts: selectedProdIds,
+          start_date: startDateFormatted,
+          end_date: endDateFormatted,
+        });
+
       } catch (err) {
-        setError('Error fetching data');
+        setError('Error fetching discount data');
         console.error(err);
       } finally {
-        setLoading(false);
+        setLoadingInitial(false);
       }
     };
 
-    fetchInitialData();
-  }, []);
+    if (params.id) {
+        fetchInitialData();
+    }
+  }, [params.id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -110,35 +135,34 @@ const DiscountForm = () => {
         name: formData.name,
         percentage: formData.discount_percent,
         description: formData.description,
-        active: formData.active === 'true', // Convertimos el string a booleano
+        active: formData.active === 'true',
         selectedProducts: formData.selectedProducts,
         start_date: formData.start_date,
         end_date: formData.end_date,
       };
-      await createDiscount(discountData);
-      setSuccessMessage('Descuento creado con éxito');
-      setFormData({
-        name: '',
-        discount_percent: 0,
-        description: '',
-        active: 'true',
-        category_id: undefined,
-        selectedProducts: [],
-        start_date: '',
-        end_date: '',
-      });
+      await updateDiscount(params.id, discountData);
+      setSuccessMessage('Descuento actualizado con éxito');
+      router.push('/admin/discount');
     } catch (err) {
-      setError('Error al crear el descuento');
+      setError('Error al actualizar el descuento');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  if (loadingInitial) {
+      return (
+        <div className="min-h-screen flex justify-center items-center bg-gray-100">
+            Cargando...
+        </div>
+      );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded mt-10">
       <BackButton destination="/admin/discount" />
-      <h2 className="text-2xl font-semibold mb-4">Crear Nuevo Descuento</h2>
+      <h2 className="text-2xl font-semibold mb-4">Editar Descuento</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Nombre del Descuento</label>
@@ -192,7 +216,7 @@ const DiscountForm = () => {
           <label className="block text-sm font-medium text-gray-700">Seleccionar Categoría</label>
           <select
             name="category_id"
-            value={formData.category_id}
+            value={formData.category_id || ''}
             onChange={handleInputChange}
             className="mt-1 block w-full p-2 border border-gray-300 rounded"
           >
@@ -288,10 +312,10 @@ const DiscountForm = () => {
 
         <button
           type="submit"
-          className="w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+          className="w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
           disabled={loading}
         >
-          {loading ? 'Guardando...' : 'Guardar Descuento'}
+          {loading ? 'Guardando...' : 'Actualizar Descuento'}
         </button>
         {error && <p className="mt-4 text-red-500">{error}</p>}
         {successMessage && <p className="mt-4 text-green-500">{successMessage}</p>}
@@ -300,4 +324,4 @@ const DiscountForm = () => {
   );
 };
 
-export default DiscountForm;
+export default DiscountUpdateForm;

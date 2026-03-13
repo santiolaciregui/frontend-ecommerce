@@ -7,14 +7,7 @@ import BackButton from '@/app/components/BackButton';
 
 const DiscountAdminList = () => {
   const [discounts, setDiscounts] = useState<Discount[]>([]);
-  const [formData, setFormData] = useState<Discount>({
-    id: 0,
-    name: '',
-    percentage: 0,
-    description: '',
-    active: false
-  });
-  const [editMode, setEditMode] = useState<boolean>(false);
+  // Removed unused editMode and formData
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,15 +29,11 @@ const DiscountAdminList = () => {
     fetchDiscounts();
   }, []);
 
-  const handleEdit = (discount: Discount) => {
-    setFormData(discount);
-    setEditMode(true);
-  };
 
   const handleDelete = async (discountId: number) => {
     try {
       setLoading(true);
-      await apiServiceDiscount.deleteDiscountByID({ id: discountId });
+      await apiServiceDiscount.deleteDiscountByID(discountId);
       alert('Descuento eliminado con éxito');
       const fetchedDiscounts = await apiServiceDiscount.fetchDiscounts();
       setDiscounts(fetchedDiscounts);
@@ -91,13 +80,13 @@ const DiscountAdminList = () => {
                   <td className="px-6 py-4 border-b">{discount.percentage}%</td>
                   <td className="px-6 py-4 border-b">{discount.description}</td>
                   <td className="px-6 py-4 flex justify-center space-x-4">
-                    <button
-                      onClick={() => handleEdit(discount)}
+                    <Link
+                      href={`/admin/discount/update/${discount.id}`}
                       className="text-blue-500 hover:underline mr-4"
                     >
                       <i className="fas fa-edit mr-2"></i>
                       Editar
-                    </button>
+                    </Link>
                     <button
                       onClick={() => handleDelete(discount.id!)}
                       className="text-red-500 hover:underline"
