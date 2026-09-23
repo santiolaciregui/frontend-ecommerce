@@ -1,14 +1,14 @@
 'use client';
-import { Facebook, Instagram, MapPin, Phone } from 'lucide-react';
+import { Facebook, Instagram, MapPin, Phone, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRef } from 'react';
 import useFetchStores from '../hooks/useFetchStores';
-import { useSiteSettings } from '../hooks/useSiteSettings';
 import { whatsappUrl } from '../utils/whatsapp';
 
 const Footer = () => {
   const { stores } = useFetchStores();
-  const settings = useSiteSettings();
+  const instagramDialogRef = useRef<HTMLDialogElement>(null);
 
   return (
     <footer className="bg-gray-100 text-sm mt-10 py-8 px-6 md:px-12 lg:px-16 xl:px-32">
@@ -71,7 +71,14 @@ const Footer = () => {
               >
                 <Facebook className="w-6 h-6" aria-label="Facebook" />
               </a>
-              {settings.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-gray-600 hover:text-gray-800"><Instagram className="w-6 h-6" /></a>}
+              <button
+                type="button"
+                onClick={() => instagramDialogRef.current?.showModal()}
+                aria-label="Elegir cuenta de Instagram"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Instagram className="w-6 h-6" aria-hidden="true" />
+              </button>
             </div>
 
             <div className="mt-6">
@@ -91,6 +98,47 @@ const Footer = () => {
       <div className="border-t mt-10 pt-4 text-center text-gray-500">
         <span>© {new Date().getFullYear()} Verde Manzana. Todos los derechos reservados.</span>
       </div>
+
+      <dialog
+        ref={instagramDialogRef}
+        aria-labelledby="instagram-dialog-title"
+        className="w-[calc(100%-2rem)] max-w-sm rounded-xl bg-white p-6 text-gray-800 shadow-xl backdrop:bg-black/50"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) instagramDialogRef.current?.close();
+        }}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="instagram-dialog-title" className="text-lg font-semibold">Elegí una cuenta de Instagram</h2>
+            <p className="mt-1 text-sm text-gray-600">Seleccioná la sede que querés visitar.</p>
+          </div>
+          <form method="dialog">
+            <button type="submit" aria-label="Cerrar" className="rounded p-1 text-gray-600 hover:bg-gray-100 hover:text-gray-800">
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </form>
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
+          <a
+            href="https://www.instagram.com/fabricavm.bahia.suarez?stkn=MWt4dHk2aG5jYmtneA=="
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => instagramDialogRef.current?.close()}
+            className="rounded-lg border border-gray-300 px-4 py-3 text-center font-medium hover:border-gray-800 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800"
+          >
+            Neuquén
+          </a>
+          <a
+            href="https://www.instagram.com/fabrica_vm?stkn=ZnltaW9xeTcyMXoy"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => instagramDialogRef.current?.close()}
+            className="rounded-lg border border-gray-300 px-4 py-3 text-center font-medium hover:border-gray-800 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800"
+          >
+            Bahía Blanca - Coronel Suárez
+          </a>
+        </div>
+      </dialog>
     </footer>
   );
 };
