@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getImageUrl } from '../utils/getImageURL';
+import Image from 'next/image';
 
 interface PromoCarouselProps {
   images: string[];
@@ -118,7 +119,7 @@ const PromoCarousel: React.FC<PromoCarouselProps> = ({
     >
       <div 
         className="relative w-full overflow-hidden rounded-lg shadow-md"
-        style={{ height: `${dimensions.height}px` }}
+        style={{ height: `${dimensions.height || 320}px` }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -144,14 +145,16 @@ const PromoCarousel: React.FC<PromoCarouselProps> = ({
                 </div>
               )}
               
-              <img
+              <Image
                 src={getImageUrl(image)}
                 alt={`Slide ${idx + 1}`}
+                fill
                 className={`w-full h-full object-contain transition-opacity duration-300 ${isLoaded[idx] ? 'opacity-100' : 'opacity-0'}`}
                 onClick={() => router.push('/products')}
-                loading={idx === 0 || idx === currentSlide || idx === ((currentSlide + 1) % images.length) ? "eager" : "lazy"}
+                priority={idx === 0}
+                loading={idx === 0 ? 'eager' : 'lazy'}
                 onLoad={() => handleImageLoad(idx)}
-                sizes={`${dimensions.width}px`}
+                sizes="100vw"
               />
             </div>
           ))}

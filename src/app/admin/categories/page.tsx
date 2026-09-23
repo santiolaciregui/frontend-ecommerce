@@ -5,6 +5,35 @@ import { Category } from '@/app/context/types';
 import Link from 'next/link';
 import BackButton from '@/app/components/BackButton';
 
+type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
+
+const buildCategoryTree = (categories: Category[]): CategoryTreeNode[] => {
+  const childrenByParent = new Map<number, CategoryTreeNode[]>();
+  const nodes: CategoryTreeNode[] = categories.map(category => ({
+    ...category,
+    children: [],
+  }));
+  const knownIds = new Set(nodes.map(category => category.id));
+
+  nodes.forEach(category => {
+    if (category.parentId != null && knownIds.has(category.parentId)) {
+      const children = childrenByParent.get(category.parentId) ?? [];
+      children.push(category);
+      childrenByParent.set(category.parentId, children);
+    }
+  });
+
+  nodes.forEach(category => {
+    category.children = childrenByParent.get(category.id) ?? [];
+  });
+
+  // Treat orphaned records as roots so one malformed parent reference does not
+  // make a category disappear from the admin list.
+  return nodes.filter(category =>
+    category.parentId == null || !knownIds.has(category.parentId)
+  );
+};
+
 const CategoryAdminList = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,17 +71,28 @@ const CategoryAdminList = () => {
     }
   };
 
-  const renderCategories = (categories: Category[], parentId: number | null = null, level: number = 0) => {
-    return categories
-      .filter(category => category.parentId === parentId)
-      .map(category => (
+  const renderCategories = (
+    categories: CategoryTreeNode[],
+    level: number = 0,
+    ancestorIds: Set<number> = new Set()
+  ): React.ReactNode[] => {
+    return categories.flatMap(category => {
+      // Protect the renderer if bad data contains a parent cycle.
+      if (ancestorIds.has(category.id)) return [];
+
+      const nextAncestorIds = new Set(ancestorIds).add(category.id);
+
+      return [
         <React.Fragment key={category.id}>
           <tr className="hover:bg-gray-100">
             <td className="px-6 py-4 border-b text-gray-700">
               {category.id}
             </td>
-            <td className={`px-6 py-4 border-b text-gray-900 font-medium ${level > 0 ? 'pl-6' : ''}`}>
-              {level > 0 ? '— '.repeat(level) : ''}
+            <td
+              className="px-6 py-4 border-b text-gray-900 font-medium"
+              style={{ paddingLeft: `${24 + level * 28}px` }}
+            >
+              {level > 0 ? '↳ ' : ''}
               {category.name}
             </td>
             <td className="px-6 py-4 border-b text-gray-700">
@@ -76,9 +116,12 @@ const CategoryAdminList = () => {
             </button>
           </td>
           </tr>
-          {renderCategories(categories, category.id, level + 1)}
+          {category.children.length > 0 && (
+            <>{renderCategories(category.children, level + 1, nextAncestorIds)}</>
+          )}
         </React.Fragment>
-      ));
+      ];
+    });
   };
 
   return (
@@ -120,7 +163,7 @@ const CategoryAdminList = () => {
                   </td>
                 </tr>
               ) : categories.length > 0 ? (
-                renderCategories(categories)
+                renderCategories(buildCategoryTree(categories))
               ) : (
                 <tr>
                   <td colSpan={4} className="text-center py-4 text-gray-500">

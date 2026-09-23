@@ -1,6 +1,7 @@
 // components/CategoriesMenu.tsx
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface CategoriesProps {
   categories: any[];
@@ -33,14 +34,16 @@ const CategoriesMenu: React.FC<CategoriesProps> = ({
           onClick={() => handleCategoryClick(category.id)}
         >
           <h3 className="text-sm sm:text-base md:text-lg font-semibold">{category.name}</h3>
-          <div className="w-full aspect-w-16 aspect-h-9 mt-2 rounded-lg overflow-hidden">
-            <img
+          <div className="relative w-full aspect-video mt-2 rounded-lg overflow-hidden">
+            <Image
               src={
                 category.previewImage
                   ? `${API_URL}${category.previewImage}`
                   : '/logo-verde-manzana-gris.svg'
               }
               alt={category.name}
+              fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="w-full h-full object-cover"
             />
           </div>

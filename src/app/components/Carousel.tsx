@@ -6,6 +6,7 @@ import Link from 'next/link';
 import useFetchStores from '../hooks/useFetchStores';
 import { whatsappUrl } from '../utils/whatsapp';
 import { getImageUrl } from '../utils/getImageURL';
+import { googleMapsUrl } from '../utils/googleMaps';
 // If you use an icon similar to the Footer example, import it accordingly.
 // import { MapPin } from 'lucide-react'; // or any other icon library
 
@@ -69,9 +70,9 @@ const StoreCards: React.FC = () => {
               <div className="flex items-center gap-2">
                 {/* Uncomment the icon import and component if desired */}
                 {/* <MapPin className="w-4 h-4 text-gray-600" /> */}
-                <span className="text-gray-800 font-medium">
+                <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" className="text-gray-800 font-medium hover:underline">
                   {store.address} - {store.city}, {store.state}
-                </span>
+                </a>
               </div>
               {store.phone && <a href={store.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-zinc-800 underline underline-offset-4">WhatsApp: {store.phone}</a>}
             </div>

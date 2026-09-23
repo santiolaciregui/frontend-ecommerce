@@ -1,151 +1,110 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, EffectFlip } from 'swiper/modules';
-import { getImageUrl } from '../utils/getImageURL';
-import { fetchReviewImages } from '../pages/api/reviews';
 
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-flip';
+import { useEffect, useState } from 'react';
+import useFetchStores from '../hooks/useFetchStores';
 
-// Sample review data - in a real app, this could come from your backend
-const sampleReviews = [
-  { image: '' },
-  { image: '' },
-  { image: '' },
-  { image: '' },
-  { image: '' }
-];
+interface GoogleReview {
+  name: string;
+  text: string;
+  rating: number;
+  publishedAt: string;
+  relativePublishedAt?: string;
+  author: { displayName: string; uri?: string; photoUri?: string } | null;
+  url: string | null;
+}
 
-const ClientReviews: React.FC = () => {
-  const [reviewImages, setReviewImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+interface GoogleReviewsResponse {
+  storeId: number;
+  placeName: string;
+  placeAddress: string;
+  placeUrl: string;
+  rating: number | null;
+  ratingCount: number;
+  attributions: { provider: string; providerUri?: string }[];
+  reviews: GoogleReview[];
+}
+
+export default function ClientReviews() {
+  const { stores, loading: storesLoading, error: storesError } = useFetchStores();
+  const linkedStores = stores.filter(store => store.isActive && store.googlePlaceId);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [data, setData] = useState<GoogleReviewsResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const loadReviewImages = async () => {
-      try {
-        setLoading(true);
-        const images = await fetchReviewImages();
-        setReviewImages(images);
-      } catch (error) {
-        console.error('Error loading review images:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (linkedStores.length && !linkedStores.some(store => store.id === selectedId)) {
+      setSelectedId(linkedStores[0].id || null);
+    }
+  }, [linkedStores, selectedId]);
 
-    loadReviewImages();
-  }, []);
+  useEffect(() => {
+    if (!selectedId) return;
+    const controller = new AbortController();
+    setLoading(true);
+    setError(false);
+    setData(null);
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stores/${selectedId}/google-reviews`, {
+      signal: controller.signal,
+      cache: 'no-store'
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Google reviews unavailable');
+        return response.json();
+      })
+      .then(setData)
+      .catch(fetchError => {
+        if (fetchError.name !== 'AbortError') setError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [selectedId]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-pulse flex space-x-4">
-          <div className="rounded-full bg-gray-200 h-12 w-12"></div>
-          <div className="flex-1 space-y-4 py-1">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+  if (storesLoading) return <p className="text-center text-zinc-500">Cargando sucursales...</p>;
+  if (storesError) return <p className="text-center text-zinc-500">No se pudieron cargar las sucursales.</p>;
+  if (!linkedStores.length) return <p className="text-center text-zinc-500">Las reseñas de Google estarán disponibles próximamente.</p>;
+
+  return <section aria-label="Reseñas por sucursal">
+    <div className="flex flex-wrap justify-center gap-2 mb-8" role="group" aria-label="Elegí un local">
+      {linkedStores.map(store => <button
+        key={store.id}
+        type="button"
+        aria-pressed={store.id === selectedId}
+        onClick={() => setSelectedId(store.id || null)}
+        className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${store.id === selectedId ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}
+      >{store.name} · {store.city}</button>)}
+    </div>
+
+    {loading && <p className="text-center text-zinc-500">Cargando reseñas de Google...</p>}
+    {error && <p className="text-center text-zinc-500">No se pudieron cargar las reseñas de este local. Intentá de nuevo más tarde.</p>}
+    {data && <div>
+      <div className="mb-6 flex flex-col items-center gap-2">
+        <span translate="no" className="text-sm font-normal text-[#5e5e5e] whitespace-nowrap">Google Maps</span>
+        <p className="text-2xl font-semibold text-zinc-900">{data.placeName}</p>
+        {data.placeAddress && <p className="text-sm text-zinc-500">{data.placeAddress}</p>}
+        {data.rating !== null && <p className="text-zinc-700" aria-label={`${data.rating} de 5 estrellas, ${data.ratingCount} opiniones`}>
+          <span className="text-amber-500" aria-hidden="true">★</span> {data.rating.toFixed(1)} · {data.ratingCount} opiniones
+        </p>}
+        <a href={data.placeUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-700 underline underline-offset-4">Ver todas las reseñas de este local en Google Maps</a>
+      </div>
+      {data.reviews.length ? <div className="grid gap-5 md:grid-cols-2">
+        {data.reviews.map(review => <article key={review.name} className="rounded-xl border border-zinc-200 bg-white p-6 text-left shadow-sm">
+          <div className="mb-3 flex items-center gap-3">
+            {review.author?.photoUri && <img src={review.author.photoUri} alt="" className="h-10 w-10 rounded-full" referrerPolicy="no-referrer" />}
+            <div>
+              {review.author?.uri ? <a href={review.author.uri} target="_blank" rel="noopener noreferrer" className="font-semibold text-zinc-900 hover:underline">{review.author.displayName}</a> : <span className="font-semibold text-zinc-900">{review.author?.displayName || 'Cliente de Google'}</span>}
+              {review.relativePublishedAt && <p className="text-sm text-zinc-500">{review.relativePublishedAt}</p>}
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="py-8">
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay, EffectFlip]}
-        spaceBetween={30}
-        slidesPerView={1}
-        navigation
-        effect={'flip'}
-        flipEffect={{ slideShadows: false }}
-        pagination={{ 
-          clickable: true,
-          el: '.swiper-pagination',
-          type: 'bullets',
-        }}
-        autoplay={{ delay: 5000, disableOnInteraction: false }}
-        breakpoints={{
-          640: { slidesPerView: 1 },
-          768: { slidesPerView: 1 },
-          1024: { slidesPerView: 1 },
-        }}
-        className="review-swiper"
-      >
-        {reviewImages.length > 0 ? (
-          reviewImages.map((imageUrl, index) => (
-            <SwiperSlide key={index}>
-              <div className="bg-white rounded-lg p-6 h-full flex items-center justify-center">
-                <div className="w-full h-[500px] mx-auto overflow-hidden rounded-lg">
-                  <img 
-                    src={getImageUrl(imageUrl)} 
-                    alt="Client Review" 
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-            </SwiperSlide>
-          ))
-        ) : (
-          // Fallback to sample placeholders if no images are available
-          sampleReviews.map((_, index) => (
-            <SwiperSlide key={index}>
-              <div className="bg-white rounded-lg p-6 h-full flex items-center justify-center">
-                <div className="w-full h-[500px] mx-auto overflow-hidden rounded-lg">
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-lg">Image placeholder</span>
-                  </div>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))
-        )}
-      </Swiper>
-      
-      {/* Pagination dots container */}
-      <div className="swiper-pagination mt-4 flex justify-center"></div>
-
-      {/* Custom styles for Swiper */}
-      <style jsx global>{`
-        .review-swiper {
-          padding: 20px 10px 40px;
-        }
-        .swiper-button-next,
-        .swiper-button-prev {
-          color: #4a5568;
-        }
-        .swiper-pagination-bullet-active {
-          background: #4a5568;
-        }
-        .swiper-pagination {
-          position: relative;
-          bottom: 0;
-          margin-top: 15px;
-        }
-        .swiper-pagination-bullet {
-          margin: 0 4px;
-        }
-        .swiper-slide {
-          height: auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .swiper-slide img {
-          transition: transform 0.3s ease;
-          max-height: 500px;
-          width: auto;
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default ClientReviews;
+          <p className="mb-3 text-amber-500" aria-label={`${review.rating} de 5 estrellas`}>{'★'.repeat(Math.max(0, Math.min(5, review.rating)))}</p>
+          {review.text && <p className="text-lg leading-relaxed text-zinc-800 whitespace-pre-line">{review.text}</p>}
+          <a href={review.url!} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-blue-700 underline underline-offset-4">Ver reseña en Google Maps</a>
+        </article>)}
+      </div> : <p className="text-center text-zinc-500">Este local todavía no tiene reseñas disponibles en Google.</p>}
+      {data.attributions.map(attribution => <p key={attribution.provider} className="mt-4 text-center text-xs text-zinc-500">{attribution.providerUri ? <a href={attribution.providerUri} target="_blank" rel="noopener noreferrer" className="underline">{attribution.provider}</a> : attribution.provider}</p>)}
+      <p className="mt-6 text-center text-sm text-zinc-500">Google Maps muestra hasta cinco reseñas por local, ordenadas por relevancia. No aplicamos otros filtros. Google no verifica todas las opiniones, pero revisa y elimina contenido falso cuando lo detecta.</p>
+    </div>}
+  </section>;
+}

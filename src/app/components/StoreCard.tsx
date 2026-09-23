@@ -1,3 +1,5 @@
+import { googleMapsUrl } from '../utils/googleMaps';
+
 const StoreCard = ({ store, isSelected, onSelect }: { store: any, isSelected: any, onSelect: any }) => (
     <div
       className={`p-4 border rounded-md flex items-center space-x-4 cursor-pointer ${
@@ -10,7 +12,7 @@ const StoreCard = ({ store, isSelected, onSelect }: { store: any, isSelected: an
       </div>
       <div>
         <h4 className="text-sm font-medium">{store.name}</h4>
-        <p className="text-xs text-gray-500">{store.address} - {store.city}, {store.state}</p>
+        <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()} className="text-xs text-gray-500 hover:underline">{store.address} - {store.city}, {store.state}</a>
       </div>
     </div>
   );

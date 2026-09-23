@@ -22,6 +22,7 @@ const CreateEditStore = () => {
     phone: '',
     email: '',
     isActive: true,
+    googlePlaceId: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -171,6 +172,12 @@ const CreateEditStore = () => {
             {formData.imageUrl && <img src={getImageUrl(formData.imageUrl)} alt={`Foto actual de ${formData.name}`} className="mb-3 h-40 w-full rounded object-cover" />}
             <input id="store-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => setImage(event.target.files?.[0] || null)} className="block w-full text-sm" />
             <p className="mt-1 text-xs text-gray-500">JPG, PNG o WebP. Máximo 8 MB.</p>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="googlePlaceId">ID de la ficha en Google Maps</label>
+            <input type="text" id="googlePlaceId" name="googlePlaceId" value={formData.googlePlaceId || ''} onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="ChIJ..." />
+            <p className="mt-1 text-xs text-gray-500">Vinculá la ficha exacta de este local para mostrar sus reseñas en Clientes Felices. <a href="https://developers.google.com/maps/documentation/places/web-service/place-id#find-id" target="_blank" rel="noopener noreferrer" className="underline">Buscar ID del lugar</a>.</p>
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">

@@ -4,6 +4,7 @@ import { NextPage } from 'next';
 import Layout from '@/app/components/Layout';
 import Header from '@/app/components/Header';
 import useFetchStores from '@/app/hooks/useFetchStores';
+import { googleMapsUrl } from '@/app/utils/googleMaps';
 
 const Home: NextPage = () => {
   const { stores } = useFetchStores();
@@ -24,7 +25,7 @@ const Home: NextPage = () => {
             <section>
               <h2 className="text-xl font-semibold mb-3">Sucursales:</h2>
               <ul className="list-disc pl-6 text-gray-700">
-                {stores.filter(store => store.isActive).map(store => <li key={store.id}>{store.city}, {store.state}: {store.address}</li>)}
+                {stores.filter(store => store.isActive).map(store => <li key={store.id}><a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" className="hover:underline">{store.city}, {store.state}: {store.address}</a></li>)}
               </ul>
             </section>
 

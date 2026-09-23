@@ -107,6 +107,7 @@ export interface Store {
   email: string;
   isActive: boolean;
   imageUrl?: string;
+  googlePlaceId?: string;
 }
 
 export interface CardProvider {

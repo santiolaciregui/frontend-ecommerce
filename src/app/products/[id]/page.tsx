@@ -12,6 +12,7 @@ import paymentFormatsService from "../../pages/api/paymentFormat"; // Importa el
 import { PAYMENT_FORMATS_ES } from '@/app/constants/checkoutConstants';
 import BackButton from '@/app/components/BackButton';
 import { whatsappUrl } from '@/app/utils/whatsapp';
+import { googleMapsUrl } from '@/app/utils/googleMaps';
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -215,10 +216,10 @@ const SinglePage = () => {
                       <i className="fas fa-map-marker-alt mr-2"></i>
                       {store.name}
                     </p>
-                    <p className="text-gray-700">
+                    <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" className="block text-gray-700 hover:underline">
                       <i className="fas fa-map-pin mr-2"></i>
                       {store.address} - {store.city}, {store.state}
-                    </p>
+                    </a>
                     {store.phone && <a href={whatsappUrl(store.phone)} target="_blank" rel="noopener noreferrer" className="block text-gray-700 underline underline-offset-4">
                       <i className="fas fa-phone mr-2"></i>
                       {store.phone}
