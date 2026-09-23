@@ -58,6 +58,15 @@ export const updateStore = async (id, storeData) => {
   }
 };
 
+export const updateStoreImage = async (id, image) => {
+  const formData = new FormData();
+  formData.append('image', image);
+  const response = await axios.put(`${API_BASE_URL}/stores/${id}/image`, formData, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+  });
+  return response.data;
+};
+
 // Delete a store (requires admin authentication)
 export const deleteStore = async (id) => {
   const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
@@ -80,5 +89,6 @@ export default {
   createStore,
   fetchStoreById,
   updateStore,
+  updateStoreImage,
   deleteStore,
 };

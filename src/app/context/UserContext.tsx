@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import jwt from 'jsonwebtoken';
+import { jwtDecode } from 'jwt-decode';
 
 // Define user context types
 interface User {
@@ -33,7 +33,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (accessToken) {
         try {
           // Decode the token to get user information
-          const decodedToken = jwt.decode(accessToken) as any;
+          const decodedToken = jwtDecode<{ user?: User }>(accessToken);
           if (decodedToken && decodedToken.user) {
             setUser(decodedToken.user);
           }

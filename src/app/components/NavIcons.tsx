@@ -53,7 +53,7 @@ const NavIcons = () => {
           className='cursor-pointer'
           onClick={handleCartClick}
         />
-        <div className='absolute -top-4 -right-4 w-6 h-6 bg-green-500 rounded-full text-white text-sm flex items-center justify-center'>
+        <div className='absolute -top-4 -right-4 w-6 h-6 bg-zinc-900 rounded-full text-white text-sm flex items-center justify-center'>
           {cart?.length || 0}
         </div>
       </div>

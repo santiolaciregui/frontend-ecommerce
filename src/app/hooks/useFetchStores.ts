@@ -5,6 +5,7 @@ import { Store } from '../context/types';
 const useFetchStores = () => {
   const [stores, setStores] = useState<Store[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStores = async () => {
@@ -14,13 +15,15 @@ const useFetchStores = () => {
       } catch (err) {
         setError('Error fetching stores');
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadStores();
   }, []);
 
-  return { stores, error };
+  return { stores, error, loading };
 };
 
 export default useFetchStores;

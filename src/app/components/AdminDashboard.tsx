@@ -1,248 +1,72 @@
-// AdminDashboard.tsx
 'use client';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { logout } from '../pages/api/authService';
-import { getWhatsAppQRCode, deleteWhatsAppSession } from '../pages/api/whatsapp'; 
-import { useEffect, useState } from 'react';
-import BackButton from '../components/BackButton'; // Adjust the import path as needed
+import { getWhatsAppQRCode, deleteWhatsAppSession } from '../pages/api/whatsapp';
+import { ShoppingBag, ReceiptText, Tags, SlidersHorizontal, BadgePercent, Megaphone, Images, Store, CreditCard, Star, Settings2, ArrowUpRight, LogOut, QrCode, RotateCcw } from 'lucide-react';
 
-const AdminDashboard = () => {
+const sections = [
+  { title: 'Pedidos', caption: 'Ventas y seguimiento', href: '/admin/orders', icon: ReceiptText },
+  { title: 'Productos', caption: 'Catálogo y orden', href: '/admin/products', icon: ShoppingBag },
+  { title: 'Categorías', caption: 'Organización del catálogo', href: '/admin/categories', icon: Tags },
+  { title: 'Opciones', caption: 'Colores y tamaños', href: '/admin/options', icon: SlidersHorizontal },
+  { title: 'Descuentos', caption: 'Ofertas del catálogo', href: '/admin/discount', icon: BadgePercent },
+  { title: 'Promociones', caption: 'Beneficios de pago', href: '/admin/promotions', icon: Megaphone },
+  { title: 'Carrusel', caption: 'Imágenes de inicio', href: '/admin/dashboard', icon: Images },
+  { title: 'Sucursales', caption: 'Locales y contacto', href: '/admin/stores', icon: Store },
+  { title: 'Medios de pago', caption: 'Opciones disponibles', href: '/admin/paymentFormats', icon: CreditCard },
+  { title: 'Reseñas', caption: 'Opiniones de clientes', href: '/admin/reviews', icon: Star },
+  { title: 'Contenido y enlaces', caption: 'Contacto y redes', href: '/admin/site-settings', icon: Settings2 },
+];
+
+export default function AdminDashboard() {
   const router = useRouter();
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-  useEffect(() => {
-    // Any initialization code here...
-  }, []);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/login'); // Redirect to login page after logout
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    try { await logout(); router.push('/login'); }
+    catch (error) { console.error('Error logging out:', error); }
   };
 
   const handleGenerateQR = async () => {
-    const confirmGenerate = window.confirm('¿Estás seguro de generar el código QR de WhatsApp?');
-    if (!confirmGenerate) return;
-
-    try {
-      const data = await getWhatsAppQRCode();
-      setQrCode(data.qrCode);
-    } catch (error) {
-      alert('No se pudo generar el código QR. Verifica que el cliente de WhatsApp esté listo.');
-    }
+    if (!window.confirm('¿Estás seguro de generar el código QR de WhatsApp?')) return;
+    try { const data = await getWhatsAppQRCode(); setQrCode(data.qrCode); }
+    catch { alert('No se pudo generar el código QR. Verifica que el cliente de WhatsApp esté listo.'); }
   };
 
   const handleDeleteSession = async () => {
-    const confirmDelete = window.confirm('¿Estás seguro de eliminar la sesión de WhatsApp y generar un nuevo QR?');
-    if (!confirmDelete) return;
-
-    try {
-      await deleteWhatsAppSession();
-      alert('Sesión de WhatsApp eliminada. Por favor, genera un nuevo QR.');
-      setQrCode(null);
-    } catch (error) {
-      alert('Error eliminando la sesión de WhatsApp.');
-    }
+    if (!window.confirm('¿Estás seguro de eliminar la sesión de WhatsApp y generar un nuevo QR?')) return;
+    try { await deleteWhatsAppSession(); alert('Sesión de WhatsApp eliminada. Por favor, genera un nuevo QR.'); setQrCode(null); }
+    catch { alert('Error eliminando la sesión de WhatsApp.'); }
   };
 
-
-  return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-4xl mx-auto space-y-6 mx-4">
-
-        {/* Top Navigation Bar */}
-        <div className="flex justify-between items-center mb-6">
-          {/* Back Button: 
-              - If you want to always go back to a fixed route (e.g., '/home'), pass the destination prop:
-                <BackButton destination="/home" />
-              - Otherwise, just use the default behavior with no props */}
-          <BackButton />
-
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-          >
-            Cerrar Sesión
-          </button>
-        </div>
-
-        {/* Main Dashboard Options */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Administración de Inicio */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Inicio</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/dashboard"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Administrar Carrusel
-              </Link>
-            </div>
-          </div>
-        
-          {/* Administración de Productos */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Productos</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/products"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Productos
-              </Link>
-              <Link
-                href="/admin/products/create"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Añadir Producto
-              </Link>
-            </div>
-          </div>
-
-          {/* Administración de Categorías */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Categorías</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/categories"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Categorías
-              </Link>
-              <Link
-                href="/admin/categories/create"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Añadir Categoría
-              </Link>
-            </div>
-          </div>
-
-          {/* Administración de Opciones */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Opciones de Productos</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/options"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Opciones
-              </Link>
-            </div>
-          </div>
-
-          {/* Administración de Descuentos */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Descuentos</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/discount"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Descuentos
-              </Link>
-              <Link
-                href="/admin/discount/create"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Añadir Descuento
-              </Link>
-            </div>
-          </div>
-
-          {/* Administración de Órdenes */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Órdenes</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/orders"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Órdenes de Compra
-              </Link>
-            </div>
-          </div>
-
-          {/* Administración de Locales */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Locales</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/stores"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Locales
-              </Link>
-              <Link
-                href="/admin/stores/create"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Añadir Local
-              </Link>
-            </div>
-          </div>
-
-           {/* Administración de WhatsApp */}
-           <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de WhatsApp</h2>
-            <div className="space-y-4">
-              <button
-                onClick={handleGenerateQR}
-                className="block w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-              >
-                Generar QR
-              </button>
-              <button
-                onClick={handleDeleteSession}
-                className="block w-full text-center bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-              >
-                Eliminar Sesión
-              </button>
-              {qrCode && (
-                <div className="mt-4">
-                  <p className="mb-2 font-semibold">Código QR:</p>
-                  <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain border" />
-                </div>
-              )}
-            </div>
-          </div>
-          {/* Administración de Medios de Pago */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Administración de Medios de Pago</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/paymentFormats"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Ver Medios de Pago
-              </Link>
-              
-            </div>
-          </div>
-
-          {/* Administración de Reseñas de Clientes */}
-          <div className="border rounded-lg bg-white p-6 shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Reseñas de Clientes</h2>
-            <div className="space-y-4">
-              <Link
-                href="/admin/reviews"
-                className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Administrar Reseñas
-              </Link>
-            </div>
-          </div> 
-        </div>
-      </div>
+  return <div className="admin-home">
+    <p className="admin-eyebrow">PANEL DE CONTROL</p>
+    <h1>Tu tienda, en un solo lugar</h1>
+    <p className="admin-home-intro">Elegí una sección para gestionar el contenido y la operación de Verde Manzana.</p>
+    <div className="admin-quick-actions" aria-label="Acciones rápidas">
+      <Link href="/admin/products/create">Añadir producto</Link>
+      <Link href="/admin/categories/form">Añadir categoría</Link>
+      <Link href="/admin/discount/create">Añadir descuento</Link>
+      <Link href="/admin/stores/create">Añadir sucursal</Link>
     </div>
-  );
-};
-
-export default AdminDashboard;
+    <section className="admin-home-section" aria-labelledby="admin-sections-title">
+      <h2 id="admin-sections-title">Secciones</h2>
+      <div className="admin-home-grid">
+        {sections.map(({ title, caption, href, icon: Icon }) => <Link className="admin-home-card" href={href} key={href}>
+          <span className="admin-home-card-icon"><Icon size={18} strokeWidth={1.8} /></span>
+          <span className="admin-home-card-bottom"><span><strong>{title}</strong><small>{caption}</small></span><ArrowUpRight size={17} /></span>
+        </Link>)}
+      </div>
+    </section>
+    <section className="admin-home-tools" aria-labelledby="admin-tools-title">
+      <h2 id="admin-tools-title">Herramientas</h2>
+      <button type="button" onClick={handleGenerateQR}><QrCode size={16} className="inline mr-2" />Generar QR de WhatsApp</button>
+      <button type="button" onClick={handleDeleteSession}><RotateCcw size={16} className="inline mr-2" />Eliminar sesión de WhatsApp</button>
+      <button type="button" onClick={handleLogout}><LogOut size={16} className="inline mr-2" />Cerrar sesión</button>
+    </section>
+    {qrCode && <div className="admin-qr"><p className="mb-3 font-semibold">Código QR de WhatsApp</p><img src={qrCode} alt="Código QR para conectar WhatsApp" /></div>}
+  </div>;
+}

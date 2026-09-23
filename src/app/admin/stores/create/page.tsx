@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import apiService from "../../../pages/api/stores";
 import { Store } from '@/app/context/types';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import BackButton from '@/app/components/BackButton';
+import { getImageUrl } from '@/app/utils/getImageURL';
 
 const CreateEditStore = () => {
   const router = useRouter();
-  const params = useParams();
-  const id = params?.id ? Number(params.id) : undefined;
+  const params = useSearchParams();
+  const id = params.get('id') ? Number(params.get('id')) : undefined;
   const isEditMode = !!id;
 
   const [formData, setFormData] = useState<Store>({
@@ -25,6 +26,7 @@ const CreateEditStore = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -56,14 +58,16 @@ const CreateEditStore = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      let savedStore;
       if (isEditMode && id) {
-        await apiService.updateStore(id, formData);
+        savedStore = await apiService.updateStore(id, formData);
       } else {
-        await apiService.createStore(formData);
+        savedStore = await apiService.createStore(formData);
       }
+      if (image) await apiService.updateStoreImage(savedStore.id, image);
       router.push('/admin/stores');
     } catch (err) {
-      setError('Error saving store');
+      setError('No se pudo guardar la sucursal o su foto. Revisá los datos e intentá nuevamente.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -159,8 +163,14 @@ const CreateEditStore = () => {
               value={formData.phone}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
+              placeholder="Ej.: +54 9 299 123 4567"
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="store-image">Foto del local</label>
+            {formData.imageUrl && <img src={getImageUrl(formData.imageUrl)} alt={`Foto actual de ${formData.name}`} className="mb-3 h-40 w-full rounded object-cover" />}
+            <input id="store-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => setImage(event.target.files?.[0] || null)} className="block w-full text-sm" />
+            <p className="mt-1 text-xs text-gray-500">JPG, PNG o WebP. Máximo 8 MB.</p>
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
@@ -173,7 +183,6 @@ const CreateEditStore = () => {
               value={formData.email}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
             />
           </div>
           <div className="mb-4">
@@ -204,4 +213,6 @@ const CreateEditStore = () => {
   );
 };
 
-export default CreateEditStore;
+export default function StorePage() {
+  return <Suspense fallback={<div className="p-8">Cargando sucursal...</div>}><CreateEditStore /></Suspense>;
+}

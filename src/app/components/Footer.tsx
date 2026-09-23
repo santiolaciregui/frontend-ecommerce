@@ -3,9 +3,12 @@ import { Facebook, Instagram, MapPin, Phone } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import useFetchStores from '../hooks/useFetchStores';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { whatsappUrl } from '../utils/whatsapp';
 
 const Footer = () => {
   const { stores } = useFetchStores();
+  const settings = useSiteSettings();
 
   return (
     <footer className="bg-gray-100 text-sm mt-10 py-8 px-6 md:px-12 lg:px-16 xl:px-32">
@@ -18,23 +21,15 @@ const Footer = () => {
               VERDE MANZANA
             </Link>
             <div className="mt-4 space-y-2">
-              {stores.map((store) => (
-                <div key={store.id} className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-600" />
-                  <span>{store.address} - {store.city}, {store.state}</span>
+              {stores.filter(store => store.isActive).map((store) => (
+                <div key={store.id} className="space-y-1">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-gray-600 shrink-0" />
+                    <span>{store.address} - {store.city}, {store.state}</span>
+                  </div>
+                  {store.phone && <a href={whatsappUrl(store.phone)} target="_blank" rel="noopener noreferrer" className="ml-6 flex items-center gap-2 text-zinc-700 hover:underline"><Phone className="w-4 h-4" />{store.phone}</a>}
                 </div>
               ))}
-            </div>
-            <div className="mt-6 flex items-center gap-2">
-              <Phone className="w-4 h-4 text-green-600" />
-              <a
-                href="https://api.whatsapp.com/send?phone=%2B542914128292"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green-600 font-medium hover:underline"
-              >
-                +54 0291 412-8292
-              </a>
             </div>
           </div>
         </div>
@@ -66,7 +61,7 @@ const Footer = () => {
         {/* RIGHT SECTION */}
         <div className="lg:col-span-1 ">
           <div className="flex flex-col items-center lg:items-start">
-            <h2 className="text-lg font-semibold text-gray-800">SEGUINOS</h2>
+            <h2 className="text-lg font-semibold text-gray-800">ENCONTRANOS EN</h2>
             <div className="flex items-center gap-4 mt-4">
               <a
                 href="https://www.facebook.com/VERDEMANZANAMUEBLESARGENTINA"
@@ -74,16 +69,17 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-gray-800"
               >
-                <Facebook className="w-6 h-6" />
+                <Facebook className="w-6 h-6" aria-label="Facebook" />
               </a>
+              {settings.instagramUrl && <a href={settings.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-gray-600 hover:text-gray-800"><Instagram className="w-6 h-6" /></a>}
             </div>
 
             <div className="mt-6">
               <h2 className="text-lg font-semibold text-gray-800">MÉTODOS DE PAGO</h2>
               <div className="flex items-center gap-4 mt-2">
-                <Image src="/visa.png" alt="Visa" width={40} height={20} />
-                <Image src="/mastercard.png" alt="Mastercard" width={40} height={20} />
-                <Image src="/cabal.png" alt="Cabal" width={40} height={20} />
+                <Image src="/Visa.png" alt="Visa" width={40} height={20} />
+                <Image src="/Mastercard.png" alt="Mastercard" width={40} height={20} />
+                <Image src="/Cabal.png" alt="Cabal" width={40} height={20} />
                 <Image src="/American Express.png" alt="AmericanExpress" width={40} height={20} />
               </div>
             </div>

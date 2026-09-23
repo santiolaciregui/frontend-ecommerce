@@ -38,7 +38,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
       <p className="text-sm text-gray-500 mt-2">Parece que no tienes productos en tu carrito.</p>
       <Link
         href="/products" 
-        className="mt-4 py-3 px-6 bg-green-500 text-white rounded-md shadow-md hover:bg-green-600 transition-colors"
+        className="mt-4 py-3 px-6 bg-zinc-900 text-white rounded-md hover:bg-zinc-700 transition-colors"
       >
         Ir a comprar
       </Link>
@@ -46,7 +46,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
   ) : (
         <div>
           <div className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-green-600" />
+            <ShoppingCart className="w-5 h-5 text-zinc-800" />
             <h2 className="text-xl">Carrito</h2>
           </div>
           <br />
@@ -54,7 +54,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             {cart.map((item) => (
               <div className="flex gap-4" key={generateUniqueKey(item)}>
                 <Image
-                  src={item.Product.Images[0] ? getImageUrl(item.Product.Images[0].url) : '/logo-verde-manzana.svg'}
+                  src={item.Product.Images[0] ? getImageUrl(item.Product.Images[0].url) : '/logo-verde-manzana-gris.svg'}
                   alt={item.Product.name}
                   width={62}
                   height={96}
@@ -99,7 +99,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             <p className="text-gray-500 text-sm mt--2 mb-4">
             </p>
             <div className="flex justify-between text-sm">
-              <Link href='/checkout' className="rounded-md py-3 px-4 bg-green-500 text-white" onClick={onClose}>
+              <Link href='/checkout' className="rounded-md py-3 px-4 bg-zinc-900 text-white" onClick={onClose}>
                 Finalizar compra
               </Link>
             </div>

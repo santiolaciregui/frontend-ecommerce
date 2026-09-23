@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
 // Función para construir la URL de forma segura
 export const getImageUrl = (path: string) => {
-  if (!path) return '/logo-verde-manzana.svg'; // Imagen por defecto
+  if (!path) return '/logo-verde-manzana-gris.svg'; // Imagen por defecto
   try {
     return new URL(path, API_URL).toString(); // Combina la URL base y el path
   } catch (error) {

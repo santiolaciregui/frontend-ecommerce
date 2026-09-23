@@ -106,6 +106,7 @@ export interface Store {
   phone: string;
   email: string;
   isActive: boolean;
+  imageUrl?: string;
 }
 
 export interface CardProvider {

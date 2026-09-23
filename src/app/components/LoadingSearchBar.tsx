@@ -5,7 +5,7 @@ export default function LoadingSearchBar() {
     <div className="flex items-center justify-center">
       <div className="animate-pulse-slow">
         <Image 
-          src="/logo-verde-manzana.svg" 
+          src="/logo-verde-manzana-gris.svg"
           alt="Loading" 
           width={40} 
           height={40} 

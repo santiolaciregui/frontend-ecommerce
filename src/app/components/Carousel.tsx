@@ -4,6 +4,8 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import useFetchStores from '../hooks/useFetchStores';
+import { whatsappUrl } from '../utils/whatsapp';
+import { getImageUrl } from '../utils/getImageURL';
 // If you use an icon similar to the Footer example, import it accordingly.
 // import { MapPin } from 'lucide-react'; // or any other icon library
 
@@ -11,60 +13,57 @@ interface Store {
   id: number;
   imgSrc?: string;
   link?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  // ... any other properties from your DB
 }
 
-// Fallback static images and links in case the DB store doesn't have them.
+// Existing photos remain visible until an administrator uploads a replacement.
 const staticStores: Store[] = [
-  { id: 1, address: 'Sarmiento 275', imgSrc: '/stores/Suarez.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
-  { id: 2, address: 'Neuquen 1544', imgSrc: '/stores/Roca.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
-  { id: 3, address: 'Lainez 267', imgSrc: '/stores/Lainez.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
-  { id: 4, address: 'Perú 58', imgSrc: '/stores/Centenario.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
-  { id: 5, address: 'Amancio Alcorta 533', imgSrc: '/stores/Alcorta.jpeg', link: "https://api.whatsapp.com/send?phone=%2B542914128292" },
+  { id: 1, imgSrc: '/stores/Suarez.jpeg' },
+  { id: 2, imgSrc: '/stores/Roca.jpeg' },
+  { id: 3, imgSrc: '/stores/Lainez.jpeg' },
+  { id: 4, imgSrc: '/stores/Centenario.jpeg' },
+  { id: 5, imgSrc: '/stores/Alcorta.jpeg' },
 ];
 
 const StoreCards: React.FC = () => {
   // Fetch the store data from your DB.
-  const { stores: dbStores } = useFetchStores();
+  const { stores: dbStores, error, loading } = useFetchStores();
 
   // While waiting for the data, you can render a loading indicator.
-  if (!dbStores) {
-    return <p>Loading stores...</p>;
+  if (loading) {
+    return <p className="py-12 text-center text-zinc-500">Cargando sucursales...</p>;
+  }
+  if (error) {
+    return <p role="status" className="py-12 text-center text-zinc-600">No pudimos cargar las sucursales. Intentá nuevamente más tarde.</p>;
   }
 
   // Merge each DB store with the static fallback data (matching by id).
-  const mergedStores = dbStores.map((store) => {
-    const fallback = staticStores.find((s) => s.address === store.address);
+  const mergedStores = dbStores.filter(store => store.isActive).map((store) => {
+    const fallback = staticStores.find((s) => s.id === store.id);
     return {
       ...store,
-      imgSrc: fallback?.imgSrc,
-      link: fallback?.link,
+      imgSrc: store.imageUrl ? getImageUrl(store.imageUrl) : fallback?.imgSrc,
+      link: store.phone ? whatsappUrl(store.phone) : undefined,
     };
   });
 
   return (
     <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
       {mergedStores.map((store) => (
-        <Link
+        <div
           key={store.id}
-          href={store.link || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
           className="block"
         >
           <div className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
             {/* Fixed-size container (600x500 pixels) for the image */}
-            <div className="relative w-[600px] h-[500px]">
+            {store.imgSrc && <div className="relative w-full aspect-[6/5]">
               <Image
                 src={store.imgSrc!}
                 alt={`Tienda ${store.id}`}
                 fill
+                unoptimized
                 className="object-cover"
               />
-            </div>
+            </div>}
             {/* Store details (address, city, state) */}
             <div className="p-4">
               <div className="flex items-center gap-2">
@@ -74,9 +73,10 @@ const StoreCards: React.FC = () => {
                   {store.address} - {store.city}, {store.state}
                 </span>
               </div>
+              {store.phone && <a href={store.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-zinc-800 underline underline-offset-4">WhatsApp: {store.phone}</a>}
             </div>
           </div>
-        </Link>
+        </div>
       ))}
     </div>
   );

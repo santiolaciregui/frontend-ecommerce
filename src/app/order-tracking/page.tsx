@@ -36,9 +36,9 @@ const SeguimientoPedido: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-green-50 py-12">
+    <div className="min-h-screen bg-zinc-50 py-12">
     <div className="max-w-lg mx-auto bg-white p-8 shadow-xl rounded-lg">
-      <h2 className="text-2xl font-semibold text-center text-green-500 mb-6">Consulta el estado de tu pedido</h2>
+      <h2 className="text-2xl font-semibold text-center text-zinc-800 mb-6">Consulta el estado de tu pedido</h2>
       <p className="text-gray-700 mb-4 text-center">
         Para consultar el estado de tu pedido, ingresa el <strong>número de seguimiento</strong> que te enviamos por correo electrónico
         al momento de realizar la compra. Este número es único para tu pedido.
@@ -50,7 +50,7 @@ const SeguimientoPedido: React.FC = () => {
             type="text"
             value={trackingId}
             onChange={(e) => setTrackingId(e.target.value)}
-            className="w-full p-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full p-3 border-2 border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-700"
             placeholder="Ingresa tu número de seguimiento"
             required
           />
@@ -60,7 +60,7 @@ const SeguimientoPedido: React.FC = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
+          className="w-full bg-zinc-900 text-white p-3 rounded-lg hover:bg-zinc-700 flex items-center justify-center space-x-2"
         >
           <FaSearch className="text-xl" />
           <span>Buscar</span>

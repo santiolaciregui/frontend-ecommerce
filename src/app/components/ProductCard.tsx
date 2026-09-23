@@ -57,7 +57,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
             src={
               product.Images[0]
                 ? getImageUrl(product.Images[0].url)
-                : "/logo-verde-manzana.svg"
+                : "/logo-verde-manzana-gris.svg"
             }
             alt={product.name}
             fill
@@ -73,7 +73,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
         <div className="flex justify-between items-start">
           <span className="font-medium text-xs md:text-sm line-clamp-2 h-12">{product.name}</span>
           <div className="flex items-center space-x-2">
-            {product.Discounts && product.Discounts.length > 0 && (
+            {Number(product.finalPrice) < Number(product.price) - 0.005 && (
               <span className="text-gray-500 line-through text-xs md:text-xs">
                 ${product.price.toFixed(2)}
               </span>
@@ -102,7 +102,7 @@ const ProductCard = ({ product, paymentFormats }: Props) => {
       {/* Botón de acción - fixed height */}
       <div className="mt-auto pt-2 flex justify-center h-12">
         <Link href={`/products/${product.id}`} className="w-full">
-          <button className="w-full text-xs rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200 transition-colors">
+          <button className="w-full text-xs rounded-md ring-1 ring-zinc-800 text-zinc-800 py-2 px-4 hover:bg-zinc-900 hover:text-white disabled:cursor-not-allowed disabled:bg-zinc-200 transition-colors">
             Seleccionar opciones
           </button>
         </Link>

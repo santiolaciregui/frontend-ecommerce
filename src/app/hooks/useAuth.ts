@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { refreshToken, logout as authLogout } from '../pages/api/authService';
-import jwt from 'jsonwebtoken';
+import { jwtDecode } from 'jwt-decode';
 import { useUser } from '../context/UserContext';
 
 // Función para verificar si el token ha expirado
 const isTokenExpired = (token: string) => {
   try {
-    const decodedToken = jwt.decode(token) as { exp: number };
+    const decodedToken = jwtDecode<{ exp?: number }>(token);
     if (!decodedToken || !decodedToken.exp) return true;
     
     const currentTime = Date.now() / 1000; // Tiempo en segundos
@@ -63,7 +63,7 @@ const useAuth = () => {
             }
             
             // Decodificar el nuevo token para actualizar el usuario en el contexto
-            const decodedToken = jwt.decode(newAccessToken) as any;
+            const decodedToken = jwtDecode<{ user?: any }>(newAccessToken);
             if (decodedToken && decodedToken.user) {
               setUser(decodedToken.user);
             }

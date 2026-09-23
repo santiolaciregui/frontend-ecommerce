@@ -76,13 +76,15 @@ const StoreAdminList = () => {
             </Link>
         </div>
 
-        <table className="min-w-full bg-white border">
+        <div className="overflow-x-auto"><table className="min-w-full bg-white border">
           <thead>
             <tr>
               <th className="px-6 py-4 border-b">Nombre</th>
               <th className="px-6 py-4 border-b">Dirección</th>
               <th className="px-6 py-4 border-b">Ciudad</th>
               <th className="px-6 py-4 border-b">Provincia</th>
+              <th className="px-6 py-4 border-b">Teléfono / WhatsApp</th>
+              <th className="px-6 py-4 border-b">Estado</th>
               <th className="px-6 py-4 border-b">Acciones</th>
             </tr>
           </thead>
@@ -94,7 +96,10 @@ const StoreAdminList = () => {
                   <td className="px-6 py-4 border-b">{store.address}</td>
                   <td className="px-6 py-4 border-b">{store.city}</td>
                   <td className="px-6 py-4 border-b">{store.state}</td>
+                  <td className="px-6 py-4 border-b">{store.phone || 'Sin cargar'}</td>
+                  <td className="px-6 py-4 border-b">{store.isActive ? 'Visible' : 'Oculta'}</td>
                   <td className="px-6 py-4 flex justify-center space-x-4">
+                    <Link href={`/admin/stores/create?id=${store.id}`} className="text-zinc-800 underline" aria-label={`Editar ${store.name}`}>Editar</Link>
                     <button
                       onClick={() => handleDelete(store.id!)}
                       className="text-red-500 hover:text-red-700"
@@ -109,7 +114,7 @@ const StoreAdminList = () => {
             ) : (
               <tr>
                 <td 
-                  colSpan={5} 
+                  colSpan={7}
                   className="px-6 py-8 text-center text-gray-500 text-lg"
                 >
                   Aún no hay elementos
@@ -117,7 +122,7 @@ const StoreAdminList = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

@@ -62,14 +62,14 @@ const SearchBar = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar productos..."
-          className="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent text-sm"
+          className="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent text-sm"
         />
         <button 
           type="submit" 
           className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${query.length > 2 && results.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
           disabled={query.length > 2 && results.length === 0}
         >
-          <Search className="h-5 w-5 text-green-600" />
+          <Search className="h-5 w-5 text-zinc-700" />
         </button>
       </form>
 
@@ -90,7 +90,7 @@ const SearchBar = () => {
                 >
                 <div className="w-16 h-16 mr-4 relative flex-shrink-0">
                   <Image
-                    src={product.Images[0] ? getImageUrl(product.Images[0]?.url) : '/logo-verde-manzana.svg'}
+                    src={product.Images[0] ? getImageUrl(product.Images[0]?.url) : '/logo-verde-manzana-gris.svg'}
                     alt={product.name}
                     layout="fill"
                     objectFit="cover"

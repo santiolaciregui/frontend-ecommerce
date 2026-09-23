@@ -68,7 +68,7 @@ export default function OrderSummary() {
           <div className="mt-4">
             {/* Help Section */}
           <div className="text-gray-600 text-sm">
-            ¿Necesitás ayuda? <a href="/empresa/contacto" className="text-green-600 hover:underline">Comunicate con nosotros</a>
+            ¿Necesitás ayuda? <a href="/empresa/contacto" className="text-zinc-800 hover:underline">Comunicate con nosotros</a>
           </div>
           </div>
         </div>

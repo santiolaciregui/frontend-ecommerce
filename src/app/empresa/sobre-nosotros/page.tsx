@@ -1,9 +1,12 @@
+'use client';
 import React from 'react';
 import { NextPage } from 'next';
 import Layout from '@/app/components/Layout';
 import Header from '@/app/components/Header';
+import useFetchStores from '@/app/hooks/useFetchStores';
 
 const Home: NextPage = () => {
+  const { stores } = useFetchStores();
   return (
     <Layout>
       <Header />
@@ -21,11 +24,7 @@ const Home: NextPage = () => {
             <section>
               <h2 className="text-xl font-semibold mb-3">Sucursales:</h2>
               <ul className="list-disc pl-6 text-gray-700">
-                <li>Ciudad de Neuquén: Lainez 267</li>
-                <li>Ciudad de Neuquén: Alcorta 533</li>
-                <li>Coronel Suárez, Buenos Aires: Sarmiento 275</li>
-                <li>General Roca, Río Negro: Neuquén 1.544</li>
-                <li>Centenario, Neuquén: Perú 58</li>
+                {stores.filter(store => store.isActive).map(store => <li key={store.id}>{store.city}, {store.state}: {store.address}</li>)}
               </ul>
             </section>
 

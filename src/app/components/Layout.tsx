@@ -7,7 +7,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-cover bg-center py-10 font-montserrat text-green-700" style={{backgroundImage: "url('/bg.png')"}}>
+    <div className="min-h-screen bg-zinc-50 py-10 font-montserrat text-zinc-800">
       <Head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

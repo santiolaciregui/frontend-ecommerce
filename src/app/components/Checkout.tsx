@@ -132,7 +132,7 @@ const Checkout: React.FC = () => {
         </div>
 
         {error && <p className="text-red-500">{error}</p>}
-        {success && <p className="text-green-500">{success}</p>}
+        {success && <p className="text-zinc-800">{success}</p>}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* FORM SECTION */}
@@ -427,7 +427,7 @@ const Checkout: React.FC = () => {
                     src={
                       item.Product.Images[0]
                         ? getImageUrl(item.Product.Images[0]?.url)
-                        : '/logo-verde-manzana.svg'
+                        : '/logo-verde-manzana-gris.svg'
                     }
                     alt={item.Product.name}
                     width={62}

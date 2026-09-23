@@ -71,7 +71,7 @@ const PromotionAdminList = () => {
           </Link>
         </div>
 
-        <table className="min-w-full bg-white border">
+        <div className="overflow-x-auto"><table className="min-w-full bg-white border">
           <thead>
             <tr>
               <th className="px-6 py-4 border-b">Nombre</th>
@@ -120,7 +120,7 @@ const PromotionAdminList = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

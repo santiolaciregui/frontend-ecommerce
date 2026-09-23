@@ -128,7 +128,7 @@ const CustomizeProducts = ({ product, onColorSelect, initialSelectedColorId }: C
             {sizeOptions.map((option) => (
               <li
                 key={option.id}
-                className="ring-1 ring-green-400 rounded-md py-1 px-4 text-sm cursor-pointer"
+                className="ring-1 ring-zinc-600 rounded-md py-1 px-4 text-sm cursor-pointer"
                 style={{
                   cursor: 'pointer',  
                   backgroundColor: selectedOptions['Size'] === option.name ? '#4ade80' : 'white',
@@ -159,7 +159,7 @@ const CustomizeProducts = ({ product, onColorSelect, initialSelectedColorId }: C
       {/* Botón para agregar al carrito */}
       <button 
         onClick={handleAddToCart} 
-        className={`rounded-md py-3 px-4 ${allOptionsSelected ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+        className={`rounded-md py-3 px-4 ${allOptionsSelected ? 'bg-zinc-900 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
         disabled={!allOptionsSelected || quantity > stockNumber || stockNumber === 0}
       >
         {allOptionsSelected ? 'Agregar al carrito' : 'Selecciona todas las opciones'}

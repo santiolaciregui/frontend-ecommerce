@@ -289,7 +289,7 @@ const OrderDetails: React.FC = () => {
             <div className="flex justify-center">
               <button
                 onClick={() => router.push('/order-tracking')}
-                className="px-8 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition-all"
+                className="px-8 py-3 bg-zinc-900 text-white font-semibold rounded-lg hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-700 transition-all"
               >
                 Seguir pedido
               </button>
@@ -298,7 +298,7 @@ const OrderDetails: React.FC = () => {
 
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all">
             <h3 className="font-semibold mb-4 text-lg text-gray-800 flex items-center space-x-3">
-              <User className="w-5 h-5 text-green-500" />
+              <User className="w-5 h-5 text-zinc-700" />
               <span>Información del pedido</span>
             </h3>
             <div className="space-y-4">
@@ -389,7 +389,7 @@ const OrderDetails: React.FC = () => {
             )}
             <div className="flex justify-between mt-2">
               <p>Envío</p>
-              <p className="text-green-600 font-medium">A coordinar</p>
+              <p className="text-zinc-700 font-medium">A coordinar</p>
             </div>
           </div>
 

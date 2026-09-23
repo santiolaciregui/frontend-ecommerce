@@ -6,7 +6,7 @@ const StorePickup = ({ stores, formData, handleStoreSelect }: { stores: any, for
         Selecciona la tienda donde retirará sus productos
       </label>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
-        {stores.map((store: any) => (
+        {stores.filter((store: any) => store.isActive).map((store: any) => (
           <StoreCard 
             key={store.id}
             store={store}

@@ -54,7 +54,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
               {/* Cash */}
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
-                  <i className="fas fa-money-bill-wave text-green-500 text-xl"></i>
+                  <i className="fas fa-money-bill-wave text-zinc-700 text-xl"></i>
                   <h3 className="font-semibold text-lg">Efectivo</h3>
                 </div>
                 <ul className="space-y-2 text-sm text-gray-600">

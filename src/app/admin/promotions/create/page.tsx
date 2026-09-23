@@ -215,14 +215,14 @@ const CreatePromotion = () => {
                    src={
                      product.Images[0]
                        ? `${API_URL}${product.Images[0].url}`
-                       : "/logo-verde-manzana.svg"
+                       : "/logo-verde-manzana-gris.svg"
                    }
                    alt={product.name}
                    width={50} height={50}
                    className="rounded"
                    />         
                 ) : (
-                    <Image src={'/logo-verde-manzana.svg'} alt={product.name} width={50} height={50} className="rounded" />
+                    <Image src={'/logo-verde-manzana-gris.svg'} alt={product.name} width={50} height={50} className="rounded" />
                   )}
                   <div>
                     <h4 className="text-sm font-medium">{product.name}</h4>

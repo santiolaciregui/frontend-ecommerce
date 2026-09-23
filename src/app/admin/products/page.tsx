@@ -53,6 +53,8 @@ const AdminList = () => {
 
   // Manejador para eliminación de productos (sin cambios)
   const handleDelete = async (product_id: number) => {
+    const product = products.find(item => item.id === product_id);
+    if (!window.confirm(`¿Eliminar definitivamente "${product?.name || 'este producto'}"?`)) return;
     try {
       setLoading(true);
       await apiService.deleteProductByID({ id: product_id });
@@ -61,7 +63,7 @@ const AdminList = () => {
       setTimeout(() => setNotification(null), 3000);
     } catch (err) {
       console.error('Error al eliminar el producto:', err);
-      setNotification('Error al eliminar el producto');
+      setNotification((err as any)?.response?.data?.error || 'No se pudo eliminar el producto.');
       setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoading(false);

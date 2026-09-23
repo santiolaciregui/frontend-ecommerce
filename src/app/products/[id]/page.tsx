@@ -11,6 +11,7 @@ import PaymentModal from '@/app/components/modalPayments';
 import paymentFormatsService from "../../pages/api/paymentFormat"; // Importa el API para paymentFormats
 import { PAYMENT_FORMATS_ES } from '@/app/constants/checkoutConstants';
 import BackButton from '@/app/components/BackButton';
+import { whatsappUrl } from '@/app/utils/whatsapp';
 
 const SinglePage = () => {
   const { id } = useParams();
@@ -92,18 +93,11 @@ const SinglePage = () => {
   if (error) return <div>Error: {error}</div>;
   if (!product) return <h1>Product not found</h1>;
 
-  // Calcular precio final aplicando descuento (si existe)
+  // El backend calcula el precio con descuentos activos y vigentes.
   const currentPrice = product.price;
-  const activeDiscounts = product.Discounts?.filter(discount => discount.active);
-  const bestDiscount = activeDiscounts?.reduce((max, discount) =>
-    discount.percentage > max.percentage ? discount : max, activeDiscounts[0]);
-
-  // Precio final numérico
-  const numericFinalPrice = bestDiscount
-    ? currentPrice * (1 - bestDiscount.percentage / 100)
-    : currentPrice;
+  const numericFinalPrice = product.finalPrice;
   const finalPriceString = numericFinalPrice.toFixed(2);
-  const discountPercentage = bestDiscount?.percentage || null;
+  const hasDiscount = numericFinalPrice < currentPrice - 0.005;
 
   // Obtención de la configuración de medios de pago
   const transferConfig = paymentFormats.find(config => config.paymentMethod === PAYMENT_FORMATS_ES.TRANSFER);
@@ -150,7 +144,7 @@ const SinglePage = () => {
         <h1 className="text-4xl font-medium text-gray-800">{product.name}</h1>
 
         <div className="flex items-center gap-4">
-          {discountPercentage && (
+          {hasDiscount && (
             <h3 className="text-xl text-gray-500 line-through">
               ${currentPrice.toFixed(2)}
             </h3>
@@ -214,8 +208,8 @@ const SinglePage = () => {
 
           {isStoresOpen && (
             <div className="local-stores mt-2">
-              {stores.length > 0 ? (
-                stores.map(store => (
+              {stores.some(store => store.isActive) ? (
+                stores.filter(store => store.isActive).map(store => (
                   <div key={store.id} className="bg-gray-100 p-4 rounded mt-2 shadow-md">
                     <p className="font-semibold text-lg text-gray-800">
                       <i className="fas fa-map-marker-alt mr-2"></i>
@@ -225,10 +219,10 @@ const SinglePage = () => {
                       <i className="fas fa-map-pin mr-2"></i>
                       {store.address} - {store.city}, {store.state}
                     </p>
-                    <p className="text-gray-700">
+                    {store.phone && <a href={whatsappUrl(store.phone)} target="_blank" rel="noopener noreferrer" className="block text-gray-700 underline underline-offset-4">
                       <i className="fas fa-phone mr-2"></i>
                       {store.phone}
-                    </p>
+                    </a>}
                   </div>
                 ))
               ) : (

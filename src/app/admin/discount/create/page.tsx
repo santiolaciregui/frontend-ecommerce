@@ -157,6 +157,8 @@ const DiscountForm = () => {
           <input
             type="number"
             name="discount_percent"
+            min="1"
+            max="100"
             value={formData.discount_percent}
             onChange={handleInputChange}
             className="mt-1 block w-full p-2 border border-gray-300 rounded"
@@ -263,14 +265,14 @@ const DiscountForm = () => {
                           src={
                             product.Images[0]
                               ? getImageUrl(product.Images[0].url)
-                              : "/logo-verde-manzana.svg"
+                              : "/logo-verde-manzana-gris.svg"
                           }
                           alt={product.name}
                           width={50} height={50}
                           className="rounded"
                           />         
                                  ) : (
-                            <Image src={'/logo-verde-manzana.svg'} alt={product.name} width={50} height={50} className="rounded" />
+                            <Image src={'/logo-verde-manzana-gris.svg'} alt={product.name} width={50} height={50} className="rounded" />
                           )}
                           <div>
                             <h4 className="text-sm font-medium">{product.name}</h4>

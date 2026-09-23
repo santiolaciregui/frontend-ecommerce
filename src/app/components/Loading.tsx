@@ -6,7 +6,7 @@ export default function Loading() {
       <div className="flex items-center justify-center">
         <div className="animate-pulse-slow">
           <Image 
-            src="/logo-verde-manzana.svg" 
+            src="/logo-verde-manzana-gris.svg"
             alt="Logo" 
             width={80} 
             height={80} 

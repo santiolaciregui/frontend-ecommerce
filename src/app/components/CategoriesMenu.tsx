@@ -38,7 +38,7 @@ const CategoriesMenu: React.FC<CategoriesProps> = ({
               src={
                 category.previewImage
                   ? `${API_URL}${category.previewImage}`
-                  : '/logo-verde-manzana.svg'
+                  : '/logo-verde-manzana-gris.svg'
               }
               alt={category.name}
               className="w-full h-full object-cover"

@@ -6,7 +6,7 @@ const Header: React.FC = () => {
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between">
         <div className="w-20">
-          <Image src="/logo-verde-manzana.svg" width={80} height={80} alt="Logo" />
+          <Image src="/logo-verde-manzana-gris.svg" width={80} height={80} alt="Logo" />
         </div>
         <div className="space-x-8">
           <a href="https://www.facebook.com/VERDEMANZANAMUEBLESARGENTINA" target="_blank" rel="noopener noreferrer">

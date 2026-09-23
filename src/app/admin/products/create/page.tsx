@@ -558,7 +558,7 @@ const CreateProduct = () => {
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Tamaños
               </label>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="admin-size-row">
                 <MultiSelect
                   value={getSelectedValues(1)} // size IDs
                   options={transformOptionsForSelect(sizeOptions)}
@@ -567,19 +567,20 @@ const CreateProduct = () => {
                   className="min-w-[220px]"
                   display="chip"
                 />
-                <div className="flex gap-2 items-center">
+                <div className="admin-size-entry">
                   <InputText
                     value={newSizeName}
                     onChange={(e) => setNewSizeName(e.target.value)}
                     placeholder="Nuevo tamaño"
+                    aria-label="Nuevo tamaño"
                   />
                   <Button
                     type="button"
                     onClick={handleCreateSize}
                     disabled={creatingSize || !newSizeName.trim()}
                     loading={creatingSize}
-                    className="bg-green-500 hover:bg-green-600"
-                    label="Agregar"
+                    className="admin-size-add-button"
+                    label="Agregar tamaño"
                   />
                 </div>
               </div>

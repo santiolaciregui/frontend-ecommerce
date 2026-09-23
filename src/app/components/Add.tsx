@@ -28,7 +28,7 @@ const Add = ({
   return (
     <div className='flex flex-col gap-4'>
       <button 
-        className="2-36 text-sm rounded-2xl ring-1 ring-green-400 text-green-400 py-2 px-4 hover:bg-green-400 hover:text-white disabled:cursor-not-allowed disabled:bg-green-200"
+        className="text-sm rounded-md ring-1 ring-zinc-800 text-zinc-800 py-2 px-4 hover:bg-zinc-900 hover:text-white disabled:cursor-not-allowed disabled:bg-zinc-200"
         onClick={handleAddToCart}
       >
         Agregar al carrito
