@@ -70,7 +70,7 @@ const StoreCards: React.FC = () => {
               <div className="flex items-center gap-2">
                 {/* Uncomment the icon import and component if desired */}
                 {/* <MapPin className="w-4 h-4 text-gray-600" /> */}
-                <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" className="text-gray-800 font-medium hover:underline">
+                <a href={googleMapsUrl(store.address, store.city, store.state, store.googleMapsUrl)} target="_blank" rel="noopener noreferrer" className="text-gray-800 font-medium hover:underline">
                   {store.address} - {store.city}, {store.state}
                 </a>
               </div>

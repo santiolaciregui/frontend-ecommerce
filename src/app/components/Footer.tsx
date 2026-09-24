@@ -26,7 +26,7 @@ const Footer = () => {
                 <div key={store.id} className="space-y-1">
                   <div className="flex items-start gap-2">
                     <MapPin className="w-4 h-4 text-gray-600 shrink-0" />
-                    <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" className="hover:underline">{store.address} - {store.city}, {store.state}</a>
+                    <a href={googleMapsUrl(store.address, store.city, store.state, store.googleMapsUrl)} target="_blank" rel="noopener noreferrer" className="hover:underline">{store.address} - {store.city}, {store.state}</a>
                   </div>
                   {store.phone && <a href={whatsappUrl(store.phone)} target="_blank" rel="noopener noreferrer" className="ml-6 flex items-center gap-2 text-zinc-700 hover:underline"><Phone className="w-4 h-4" />{store.phone}</a>}
                 </div>

@@ -84,6 +84,7 @@ const StoreAdminList = () => {
               <th className="px-6 py-4 border-b">Ciudad</th>
               <th className="px-6 py-4 border-b">Provincia</th>
               <th className="px-6 py-4 border-b">Teléfono / WhatsApp</th>
+              <th className="px-6 py-4 border-b">Google Maps</th>
               <th className="px-6 py-4 border-b">Estado</th>
               <th className="px-6 py-4 border-b">Acciones</th>
             </tr>
@@ -97,6 +98,7 @@ const StoreAdminList = () => {
                   <td className="px-6 py-4 border-b">{store.city}</td>
                   <td className="px-6 py-4 border-b">{store.state}</td>
                   <td className="px-6 py-4 border-b">{store.phone || 'Sin cargar'}</td>
+                  <td className="px-6 py-4 border-b">{store.googleMapsUrl ? <a href={store.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline">Ficha vinculada</a> : 'Sin vincular'}</td>
                   <td className="px-6 py-4 border-b">{store.isActive ? 'Visible' : 'Oculta'}</td>
                   <td className="px-6 py-4 flex justify-center space-x-4">
                     <Link href={`/admin/stores/create?id=${store.id}`} className="text-zinc-800 underline" aria-label={`Editar ${store.name}`}>Editar</Link>
@@ -114,7 +116,7 @@ const StoreAdminList = () => {
             ) : (
               <tr>
                 <td 
-                  colSpan={7}
+                  colSpan={8}
                   className="px-6 py-8 text-center text-gray-500 text-lg"
                 >
                   Aún no hay elementos

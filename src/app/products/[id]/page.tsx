@@ -216,7 +216,7 @@ const SinglePage = () => {
                       <i className="fas fa-map-marker-alt mr-2"></i>
                       {store.name}
                     </p>
-                    <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" className="block text-gray-700 hover:underline">
+                    <a href={googleMapsUrl(store.address, store.city, store.state, store.googleMapsUrl)} target="_blank" rel="noopener noreferrer" className="block text-gray-700 hover:underline">
                       <i className="fas fa-map-pin mr-2"></i>
                       {store.address} - {store.city}, {store.state}
                     </a>

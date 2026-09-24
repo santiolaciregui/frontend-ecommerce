@@ -5,6 +5,16 @@ import { Product } from '@/app/context/types';
 import Link from 'next/link';
 import BackButton from '@/app/components/BackButton';
 import { ReactSortable } from 'react-sortablejs';
+import Image from 'next/image';
+import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { getImageUrl } from '@/app/utils/getImageURL';
+
+const PAGE_SIZE = 12;
+const formatPrice = (price: number) => new Intl.NumberFormat('es-AR', {
+  style: 'currency',
+  currency: 'ARS',
+  maximumFractionDigits: 0,
+}).format(Number(price));
 
 const AdminList = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,23 +24,25 @@ const AdminList = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
+  const hasDragged = useRef(false);
 
   // Función para obtener productos con paginación y filtrado de duplicados
   const fetchProducts = async (pageNumber: number) => {
     setLoading(true);
     try {
-      // Se solicita un límite de 9 productos por página (ajusta según sea necesario)
       const newProducts: Product[] = await apiService.fetchProducts({ 
         categoryId: null,
         subcategoryId: null,
-        limit: 3,
-        page: pageNumber
+        limit: PAGE_SIZE,
+        page: pageNumber,
+        admin: true
       });
       
       // Si no se retornan productos, se asume que ya no hay más
-      if (newProducts.length === 0) {
+      if (newProducts.length < PAGE_SIZE) {
         setHasMore(false);
-      } else {
+      }
+      if (newProducts.length > 0) {
         setProducts(prevProducts => {
           // Crear un Set con los IDs de los productos ya cargados
           const existingProductIds = new Set(prevProducts.map(p => p.id));
@@ -51,15 +63,22 @@ const AdminList = () => {
     fetchProducts(page);
   }, [page]);
 
-  // Manejador para eliminación de productos (sin cambios)
+  // Los productos con pedidos se retiran de la venta para conservar su historial.
   const handleDelete = async (product_id: number) => {
     const product = products.find(item => item.id === product_id);
-    if (!window.confirm(`¿Eliminar definitivamente "${product?.name || 'este producto'}"?`)) return;
+    if (!window.confirm(`¿Eliminar "${product?.name || 'este producto'}"? Si tiene pedidos, se retirará de la venta y se conservará su historial.`)) return;
     try {
       setLoading(true);
-      await apiService.deleteProductByID({ id: product_id });
-      setProducts(prevProducts => prevProducts.filter(product => product.id !== product_id));
-      setNotification('Producto eliminado con éxito');
+      const result = await apiService.deleteProductByID({ id: product_id });
+      if (result?.archived) {
+        setProducts(prevProducts => prevProducts.map(product =>
+          product.id === product_id ? { ...product, stock: 0 } : product
+        ));
+        setNotification('Producto retirado de la venta. Sus pedidos se conservan.');
+      } else {
+        setProducts(prevProducts => prevProducts.filter(product => product.id !== product_id));
+        setNotification('Producto eliminado con éxito');
+      }
       setTimeout(() => setNotification(null), 3000);
     } catch (err) {
       console.error('Error al eliminar el producto:', err);
@@ -103,110 +122,109 @@ const AdminList = () => {
   };
 
   useEffect(() => {
-    if (!isDragging) {
+    if (!isDragging && hasDragged.current) {
+      hasDragged.current = false;
       handleDragEnd();
     }
   }, [isDragging]);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <BackButton destination="/admin" />
-          <h2 className="text-2xl font-bold text-gray-700">Lista de Productos</h2>
+    <div className="min-h-screen bg-[#f7f9f7] px-4 py-8 text-[#26352d] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <BackButton destination="/admin" />
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#6a8173]">Catálogo</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">Productos</h1>
+            <p className="mt-2 max-w-2xl text-sm text-[#66776c]">
+              Gestioná los productos de la tienda. Los archivados se conservan para los pedidos anteriores.
+            </p>
+          </div>
           <Link
             href="/admin/products/create"
-            className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#285d43] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#204d37]"
           >
-            <i className="fas fa-plus mr-2"></i>
-            Añadir nuevo producto
+            <Plus size={18} aria-hidden="true" />
+            Añadir producto
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="bg-white shadow-md rounded-lg p-4">
-            <div className="grid grid-cols-6 gap-4 bg-gray-200 text-gray-600 text-sm uppercase font-semibold p-3 rounded-t-lg">
-              <div className="col-span-1">SKU</div>
-              <div className="col-span-1">Nombre</div>
-              <div className="col-span-1">Categoría</div>
-              <div className="col-span-1">Precio</div>
-              <div className="col-span-2 text-center">Acciones</div>
+        <div className="overflow-hidden rounded-2xl border border-[#e0e9e2] bg-white shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-[#e8eee9] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div>
+              <h2 className="text-base font-semibold">Listado de productos</h2>
+              <p className="mt-0.5 text-sm text-[#718076]">Arrastrá el ícono junto a un producto para cambiar su orden.</p>
             </div>
-            
-            {products.length > 0 ? (
-              <ReactSortable
-                list={products as any[]}
-                setList={setProducts}
-                animation={200}
-                delayOnTouchOnly={true}
-                delay={2}
-                handle=".drag-handle"
-                onStart={() => setIsDragging(true)}
-                onEnd={() => setIsDragging(false)}
-                className="text-gray-700"
-              >
-                {products.map((product, index) => (
-                  <div 
-                    key={product.id} 
-                    className="grid grid-cols-6 gap-4 items-center border-b p-4 hover:bg-gray-50 transition duration-300 cursor-move"
-                  >
-                    <div className="col-span-1 flex items-center">
-                      <span className="drag-handle mr-2 text-gray-400 cursor-move">
-                        <i className="fas fa-grip-vertical"></i>
+            <div className="flex items-center gap-3 text-xs font-medium text-[#66776c]">
+              <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#2f8055]" /> Activo</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#b47c27]" /> Archivado</span>
+            </div>
+          </div>
+
+          <div className="hidden grid-cols-[minmax(0,2.5fr)_minmax(0,1.1fr)_110px_110px_118px_160px] gap-4 bg-[#f4f8f5] px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-[#718076] lg:grid">
+            <span>Producto</span><span>Categoría</span><span>Precio</span><span>Stock</span><span>Estado</span><span className="text-right">Acciones</span>
+          </div>
+
+          {products.length > 0 ? (
+            <ReactSortable
+              list={products as any[]}
+              setList={setProducts}
+              animation={200}
+              delayOnTouchOnly={true}
+              delay={2}
+              handle=".drag-handle"
+              onStart={() => { hasDragged.current = true; setIsDragging(true); }}
+              onEnd={() => setIsDragging(false)}
+            >
+              {products.map((product) => {
+                const archived = product.stock <= 0;
+                const imageUrl = product.Images?.[0]?.url;
+                return (
+                  <div key={product.id} className={`grid gap-4 border-t border-[#edf1ed] px-5 py-4 transition-colors hover:bg-[#fafcfb] sm:px-6 lg:grid-cols-[minmax(0,2.5fr)_minmax(0,1.1fr)_110px_110px_118px_160px] lg:items-center ${archived ? 'bg-[#fcfcfa]' : ''}`}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <button type="button" className="drag-handle shrink-0 cursor-grab rounded-lg p-1.5 text-[#9aa99f] hover:bg-[#edf3ee] hover:text-[#285d43] active:cursor-grabbing" aria-label={`Cambiar orden de ${product.name}`}>
+                        <GripVertical size={18} aria-hidden="true" />
+                      </button>
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#e8eee9] bg-[#f6f8f6]">
+                        <Image src={imageUrl ? getImageUrl(imageUrl) : '/logo-verde-manzana-gris.svg'} alt="" fill sizes="56px" className="object-contain p-1" unoptimized />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#26352d]" title={product.name}>{product.name}</p>
+                        <p className="mt-1 text-xs text-[#819087]">SKU {product.SKU}</p>
+                      </div>
+                    </div>
+                    <div className="min-w-0 text-sm text-[#5b6b61]"><span className="mr-2 text-xs text-[#8b9990] lg:hidden">Categoría</span>{product.Categories?.map(category => category.name).join(', ') || 'Sin categoría'}</div>
+                    <div className="text-sm font-semibold tabular-nums"><span className="mr-2 text-xs font-normal text-[#8b9990] lg:hidden">Precio</span>{formatPrice(product.price)}</div>
+                    <div className="text-sm tabular-nums text-[#5b6b61]"><span className="mr-2 text-xs text-[#8b9990] lg:hidden">Stock</span>{product.stock}</div>
+                    <div>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${archived ? 'bg-[#fff3df] text-[#8a5d17]' : 'bg-[#e7f4eb] text-[#286447]'}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${archived ? 'bg-[#b47c27]' : 'bg-[#2f8055]'}`} />
+                        {archived ? 'Archivado' : 'Activo'}
                       </span>
-                      {product.SKU}
+                      {archived && <p className="mt-1 text-[11px] text-[#8b9990]">Oculto en tienda</p>}
                     </div>
-                    <div className="col-span-1">{product.name}</div>
-                    <div className="col-span-1">
-                      {product.Categories.map(category => category.name).join(', ')}
-                    </div>
-                    <div className="col-span-1">${product.price}</div>
-                    <div className="col-span-2 flex justify-center space-x-4">
-                      <Link
-                        href={`/admin/products/update/${product.id}`}
-                        className="text-blue-500 hover:text-blue-700"
-                        title="Editar"
-                      >
-                        <i className="fas fa-edit mr-2"></i>
-                        Editar
+                    <div className="flex items-center gap-1 lg:justify-end">
+                      <Link href={`/admin/products/update/${product.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#285d43] hover:bg-[#eaf3ec]" title="Editar producto">
+                        <Pencil size={15} aria-hidden="true" /> Editar
                       </Link>
-                      <button
-                        onClick={() => handleDelete(product.id!)}
-                        className="text-red-500 hover:text-red-700"
-                        title="Eliminar"
-                      >
-                        <i className="fas fa-trash-alt mr-2"></i>
-                        Eliminar
+                      <button type="button" onClick={() => handleDelete(product.id)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-[#a34742] hover:bg-[#fff0ee]" title="Eliminar producto">
+                        <Trash2 size={15} aria-hidden="true" /> Eliminar
                       </button>
                     </div>
-                    
-                    {/* Referencia al último elemento para activar el scroll infinito */}
-                    {index === products.length - 1 && (
-                      <div ref={lastProductElementRef} className="col-span-6 text-center py-2">
-                        {loading && 'Cargando...'}
-                      </div>
-                    )}
                   </div>
-                ))}
-              </ReactSortable>
-            ) : (
-              <div className="p-8 text-center text-gray-500 text-lg">
-                Aún no hay elementos
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-2">Instrucciones</h3>
-          <p className="text-gray-600">
-            Puedes arrastrar y soltar los productos para cambiar su orden. Simplemente haz clic y mantén presionado el ícono <i className="fas fa-grip-vertical"></i> junto al SKU, luego mueve el producto a la posición deseada.  
-          </p>
+                );
+              })}
+            </ReactSortable>
+          ) : (
+            <div className="px-6 py-16 text-center text-sm text-[#718076]">{loading ? 'Cargando productos...' : 'Todavía no hay productos.'}</div>
+          )}
+          <div ref={lastProductElementRef} className="h-2" aria-hidden="true" />
+          {loading && products.length > 0 && <p className="px-6 py-4 text-center text-sm text-[#718076]">Cargando más productos...</p>}
         </div>
       </div>
 
       {notification && (
-        <div className="fixed top-4 right-4 bg-blue-600 text-white py-2 px-4 rounded shadow-lg">
+        <div role="status" className="fixed bottom-5 right-5 z-50 max-w-sm rounded-xl bg-[#285d43] px-4 py-3 text-sm font-medium text-white shadow-lg">
           {notification}
         </div>
       )}

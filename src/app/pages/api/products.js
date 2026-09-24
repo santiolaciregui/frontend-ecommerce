@@ -8,17 +8,19 @@ export const fetchProducts = async ({
   subcategoryId,
   limit = 9,
   page = 0,
-  searchParams = {}
+  searchParams = {},
+  admin = false
 }) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products`, {
+    const response = await axios.get(`${API_BASE_URL}/products${admin ? '/admin' : ''}`, {
       params: {
         categoryId,
         subcategoryId,
         limit,
         page,
         ...searchParams
-      }
+      },
+      ...(admin ? { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } } : {})
     });
     return response.data;
   } catch (error) {
@@ -57,9 +59,11 @@ export const fetchAllProducts = async (all = false) => {
 };
 
 // Fetch product details by ID
-export const fetchProductByID = async ({ id }) => {
+export const fetchProductByID = async ({ id, admin = false }) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products/${id}`);
+    const response = await axios.get(`${API_BASE_URL}/products/${admin ? 'admin/' : ''}${id}`, admin
+      ? { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } }
+      : undefined);
     return response.data;
   } catch (error) {
     console.error('Error fetching product by ID:', error);

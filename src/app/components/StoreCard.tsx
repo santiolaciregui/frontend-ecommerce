@@ -12,7 +12,7 @@ const StoreCard = ({ store, isSelected, onSelect }: { store: any, isSelected: an
       </div>
       <div>
         <h4 className="text-sm font-medium">{store.name}</h4>
-        <a href={googleMapsUrl(store.address, store.city, store.state)} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()} className="text-xs text-gray-500 hover:underline">{store.address} - {store.city}, {store.state}</a>
+        <a href={googleMapsUrl(store.address, store.city, store.state, store.googleMapsUrl)} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()} className="text-xs text-gray-500 hover:underline">{store.address} - {store.city}, {store.state}</a>
       </div>
     </div>
   );

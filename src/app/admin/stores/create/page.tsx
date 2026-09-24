@@ -22,7 +22,7 @@ const CreateEditStore = () => {
     phone: '',
     email: '',
     isActive: true,
-    googlePlaceId: '',
+    googleMapsUrl: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -174,10 +174,10 @@ const CreateEditStore = () => {
             <p className="mt-1 text-xs text-gray-500">JPG, PNG o WebP. Máximo 8 MB.</p>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="googlePlaceId">ID de la ficha en Google Maps</label>
-            <input type="text" id="googlePlaceId" name="googlePlaceId" value={formData.googlePlaceId || ''} onChange={handleInputChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="ChIJ..." />
-            <p className="mt-1 text-xs text-gray-500">Vinculá la ficha exacta de este local para mostrar sus reseñas en Clientes Felices. <a href="https://developers.google.com/maps/documentation/places/web-service/place-id#find-id" target="_blank" rel="noopener noreferrer" className="underline">Buscar ID del lugar</a>.</p>
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="googleMapsUrl">Enlace de la ficha en Google Maps</label>
+            <input type="url" id="googleMapsUrl" name="googleMapsUrl" value={formData.googleMapsUrl || ''} onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="https://maps.app.goo.gl/..." />
+            <p className="mt-1 text-xs text-gray-500">Abrí este local en Google Maps y usá Compartir → Copiar vínculo. La dirección del footer y Clientes Felices abrirán esa ficha.</p>
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">

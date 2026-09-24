@@ -99,7 +99,7 @@ const UpdateProduct = () => {
     const fetchData = async () => {
       try {
         // Fetch the product details.
-        const product = await apiServiceProducts.fetchProductByID({ id: Number(id) });
+        const product = await apiServiceProducts.fetchProductByID({ id: Number(id), admin: true });
         setFormData({
           name: product.name,
           SKU: product.SKU,
