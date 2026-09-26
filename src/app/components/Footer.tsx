@@ -121,7 +121,7 @@ const Footer = () => {
         </div>
         <div className="mt-6 flex flex-col gap-3">
           <a
-            href="https://www.instagram.com/fabricavm.bahia.suarez?stkn=MWt4dHk2aG5jYmtneA=="
+            href="https://www.instagram.com/fabrica_vm?stkn=ZnltaW9xeTcyMXoy"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => instagramDialogRef.current?.close()}
@@ -130,7 +130,7 @@ const Footer = () => {
             Neuquén
           </a>
           <a
-            href="https://www.instagram.com/fabrica_vm?stkn=ZnltaW9xeTcyMXoy"
+            href="https://www.instagram.com/fabricavm.bahia.suarez?stkn=MWt4dHk2aG5jYmtneA=="
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => instagramDialogRef.current?.close()}

@@ -23,6 +23,8 @@ const CreateEditStore = () => {
     email: '',
     isActive: true,
     googleMapsUrl: '',
+    googlePlaceId: '',
+    googleBusinessLocation: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -178,6 +180,12 @@ const CreateEditStore = () => {
             <input type="url" id="googleMapsUrl" name="googleMapsUrl" value={formData.googleMapsUrl || ''} onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="https://maps.app.goo.gl/..." />
             <p className="mt-1 text-xs text-gray-500">Abrí este local en Google Maps y usá Compartir → Copiar vínculo. La dirección del footer y Clientes Felices abrirán esa ficha.</p>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="googleBusinessLocation">Ubicación de Google Business Profile</label>
+            <input type="text" id="googleBusinessLocation" name="googleBusinessLocation" value={formData.googleBusinessLocation || ''} onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="accounts/123456/locations/789012" />
+            <p className="mt-1 text-xs text-gray-500">Asocia las reseñas de esta sucursal con su perfil verificado de Google. Es distinto del enlace de Google Maps y del Place ID.</p>
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">

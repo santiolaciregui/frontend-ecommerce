@@ -108,6 +108,8 @@ export interface Store {
   isActive: boolean;
   imageUrl?: string;
   googleMapsUrl?: string;
+  googlePlaceId?: string;
+  googleBusinessLocation?: string;
 }
 
 export interface CardProvider {
